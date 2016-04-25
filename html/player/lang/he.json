@@ -1,0 +1,15 @@
+{		
+		"title": "עברית - Demo do l10n.js",
+		
+		"alignText": "right",		
+		"greetingText": "ברוכים הבאים לנובו !!!!" ,		
+		"greetings": "ברכות",
+		"createAPlayer": "הירשם לנובו", 
+		"ImAlreadyUser": "אני כבר רשום כמשתמש בנובו", 		
+		"firstName": "שם פרטי",
+		"lastName": "שם משפחה",
+		"jobTitle": "תפקיד",
+		"workEmail": "אימייל בעבודה",
+		
+		"info": "אתה צופה בלוקליזציה לעברית של עמוד זה."
+	}

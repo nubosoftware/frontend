@@ -1,0 +1,68 @@
+<html>
+<head><title>Nubo Player</title></head>
+<link rel="stylesheet" type="text/css" href="./player.css" media="all" />
+<body>
+  <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+  <script type="text/javascript" src="wm.js"></script>
+   
+<script type="text/javascript" >
+$(function() {
+	var wm = new WindowManager(document.getElementById("datadiv"),800,600);
+	var sn = wm.pushWndOnStack(123456,10,100,1,0, 0,0,false);
+	sn.ctx.fillStyle="#FF0000";
+	sn.ctx.fillRect(0,0,200,200);
+	var sn2 = wm.pushWndOnStack(123456,20,200,1,0, 0,0,false);
+	sn2.ctx.fillStyle="#FFFF00";
+	sn2.ctx.fillRect(100,100,300,300);
+	wm.showWindow(123456,10);
+	var sn3 = wm.pushWndOnStack(123456,30,300,1,0, 0,0,false);
+	sn3.ctx.fillStyle="#FF00FF";
+	sn3.ctx.fillRect(150,150,400,400);
+	console.log("z-index:"+$("#"+sn3.canvas.id).css("z-index"));
+	wm.hideWindow(123456,20);
+
+	
+	/*
+  canvas = document.createElement('canvas');
+  canvas.setAttribute('width',800);
+  canvas.setAttribute('height',600);
+  var cssObj = {
+	      'position' : 'absolute',
+	      'left' : '0px',
+	      'right' : '0px'
+	    };
+  
+  ctx = canvas.getContext('2d');
+  ctx.fillStyle="#FF0000";
+  ctx.fillRect(0,0,200,200);
+  canvas.id ="c1"; 
+  document.getElementById("datadiv").appendChild(canvas);
+  
+  $("#c1").css(cssObj);
+  canvas = document.createElement('canvas');
+  canvas.setAttribute('width',800);
+  canvas.setAttribute('height',600);
+  canvas.id ="c2"; 
+  
+  ctx = canvas.getContext('2d');
+  ctx.fillStyle="#FFFF00";
+  ctx.fillRect(100,100,300,300);
+  document.getElementById("datadiv").appendChild(canvas);
+  $("#c2").css(cssObj);
+
+  $("#c1").css("z-index","10");
+  $("#c2").css("z-index","5");
+  */
+
+  
+	  
+});
+
+</script>
+
+<div id="datadiv">
+<!-- <canvas id="playerCanvas" width="1280px" height="800px"  > </canvas>   -->
+
+</div>
+</body>
+</html>

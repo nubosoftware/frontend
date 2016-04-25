@@ -1,74 +1,73 @@
 "use strict";
 
+var net = require('net');
+var tls = require('tls');
+var url = require("url");
+var querystring = require("querystring");
+var accesslog = require('accesslog');
+
 var Common = require('./common.js');
 var logger = Common.logger;
-// console.log(Common.util.inspect(Common));
+
 var Activate = require('./activate.js');
 var Validate = require('./validate.js');
 var StartSession = require('./StartSession.js');
-// var Gateway = require('./Gateway.js');
-var ActivationLink = require('./activationLink.js');
-var setPasscode = require('./setPasscode.js');
 var AuthenticateUser = require('./authenticateUser.js');
 var checkPasscode = require('./checkPasscode.js');
 var resetPasscode = require('./resetPasscode.js');
 var unlockPassword = require('./unlockPassword.js');
-var GetProfiles = require('./getProfiles.js');
-var AddAdmins = require('./addAdmins.js');
-var RemoveAdmins = require('./removeAdmins.js');
-var MySQL = require('./mySQL.js');
-
-var GetProfileDetails = require('./getProfileDetails.js');
-var AddProfile = require('./addProfile.js');
-var DeleteProfiles = require('./deleteProfiles.js');
-var ActivateProfiles = require('./activateProfiles.js');
-var ActivateDevice = require('./activateDevice.js');
-var CheckCertificate = require('./checkCertificate.js');
-var Settings = require('./settings.js');
-var SetupExchange = require('./setupExchange.js');
-var InviteProfiles = require('./inviteProfiles.js');
-var DeleteAppFromProfiles = require('./deleteAppFromProfiles.js');
-var DeleteApps = require('./deleteApps.js');
-var CreateGroup = require('./createGroup.js');
-var AddProfilesToGroup = require('./addProfilesToGroup.js');
-var InstallApps = require('./installApps.js');
-var GetProfilesFromApp = require('./getProfilesFromApp.js');
-var UpdateProfileDetails = require('./updateProfileDetails.js');
 var SendEmailForUnknownJobTitle = require('./sendEmailForUnknownJobTitle.js');
-
-var RemoveProfilesFromGroup = require('./removeProfilesFromGroup.js');
-var GetGroups = require('./getGroups.js');
-var GetAllApps = require('./getAllApps.js');
-var GetGroupDetails = require('./getGroupDetails.js');
-var DeleteGroups = require('./deleteGroups.js');
-var GetCompanyDetails = require('./getCompanyDetails.js');
-var AuthenticateLDAP = require('./authenticateLDAP.js');
-var Notifications = require('./Notifications.js');
-var SmsNotification = require('./SmsNotification.js');
-var Upload = require('./upload.js');
-var net = require('net');
-var tls = require('tls');
-var querystring = require("querystring");
-var accesslog = require('accesslog');
-var url = require("url");
-var ProcessGWsMonitorReqModule = require('./processGWsMonitorRequests');
-var UploadAPK = require('./uploadAPK.js');
-var UpdateApkDescription = require('./updateApkDescription.js');
-var CheckApkStatus = require('./checkApkStatus.js');
-var AddAppRule = require('./addAppRule.js');
-var GetRules = require('./getRules.js');
-var DeleteAppRule = require('./deleteAppRule.js');
-var EditAppRule = require('./editAppRule.js');
-var GetNetwotkAccessStatus = require('./getNetwotkAccessStatus.js');
-var SetNetwotkAccessStatus = require('./setNetwotkAccessStatus.js');
-var MediaStream = require('./mediaStream.js');
-var EWSListener = require('./EWSListener.js');
-var ThreadedLogger = require('./ThreadedLogger.js');
-var SaveUIDs = require('./saveUIDs.js');
-var LoadUIDs = require('./loadUIDs.js');
+var setPasscode = require('./setPasscode.js');
 var captureDeviceDetails = require('./captureDeviceDetails.js');
-var SendPlayback = require('./sendPlayback.js');
-var getNuboRecordings = require('./getNuboRecordings.js');
+var MediaStream = require('./mediaStream.js');
+var ThreadedLogger = require('./ThreadedLogger.js');
+var ActivationLink = require('./activationLink.js');
+var Upload = require('./upload.js');
+
+// var GetProfiles = require('./getProfiles.js');
+// var AddAdmins = require('./addAdmins.js');
+// var RemoveAdmins = require('./removeAdmins.js');
+// var MySQL = require('./mySQL.js');
+// var GetProfileDetails = require('./getProfileDetails.js');
+// var AddProfile = require('./addProfile.js');
+// var DeleteProfiles = require('./deleteProfiles.js');
+// var ActivateProfiles = require('./activateProfiles.js');
+// var ActivateDevice = require('./activateDevice.js');
+// var CheckCertificate = require('./checkCertificate.js');
+// var Settings = require('./settings.js');
+// var SetupExchange = require('./setupExchange.js');
+// var InviteProfiles = require('./inviteProfiles.js');
+// var DeleteAppFromProfiles = require('./deleteAppFromProfiles.js');
+// var DeleteApps = require('./deleteApps.js');
+// var CreateGroup = require('./createGroup.js');
+// var AddProfilesToGroup = require('./addProfilesToGroup.js');
+// var InstallApps = require('./installApps.js');
+// var GetProfilesFromApp = require('./getProfilesFromApp.js');
+// var UpdateProfileDetails = require('./updateProfileDetails.js');
+// var RemoveProfilesFromGroup = require('./removeProfilesFromGroup.js');
+// var GetGroups = require('./getGroups.js');
+// var GetAllApps = require('./getAllApps.js');
+// var GetGroupDetails = require('./getGroupDetails.js');
+// var DeleteGroups = require('./deleteGroups.js');
+// var GetCompanyDetails = require('./getCompanyDetails.js');
+// var AuthenticateLDAP = require('./authenticateLDAP.js');
+// var Notifications = require('./Notifications.js');
+// var SmsNotification = require('./SmsNotification.js');
+// var ProcessGWsMonitorReqModule = require('./processGWsMonitorRequests');
+// var UploadAPK = require('./uploadAPK.js');
+// var UpdateApkDescription = require('./updateApkDescription.js');
+// var CheckApkStatus = require('./checkApkStatus.js');
+// var AddAppRule = require('./addAppRule.js');
+// var GetRules = require('./getRules.js');
+// var DeleteAppRule = require('./deleteAppRule.js');
+// var EditAppRule = require('./editAppRule.js');
+// var GetNetwotkAccessStatus = require('./getNetwotkAccessStatus.js');
+// var SetNetwotkAccessStatus = require('./setNetwotkAccessStatus.js');
+// var EWSListener = require('./EWSListener.js');
+// var SaveUIDs = require('./saveUIDs.js');
+// var LoadUIDs = require('./loadUIDs.js');
+// var SendPlayback = require('./sendPlayback.js');
+// var getNuboRecordings = require('./getNuboRecordings.js');
 
 var port = 8443;
 if (process.argv.length >= 3) {
@@ -234,19 +233,7 @@ var mainFunction = function(err, firstTimeLoad) {
         wsServer.on('request', webSocketRequest);
 
     }
-    var daemon_proc = require('child_process').spawn(
-        "/usr/bin/nodejs",
-        ['daemon.js'],
-        {stdio: [ 'ignore', process.stdout, process.stderr ]}
-    );
-    process.on('SIGINT', function() {
-        logger.info("restserver caught interrupt signal");
 
-        if(daemon_proc) {
-            daemon_proc.kill('SIGINT');
-        }
-        Common.quit();
-    });
 };
 
 function returnInternalError(err, res) {
@@ -389,95 +376,101 @@ function buildServerObject(server) {
         origins: Common.allowedOrigns, // defaults to ['*']
     }));
     server.use(nocache);
-    server.get('/activate', Activate.func);
-    server.get('/registerOrg', Activate.registerOrg);
-    server.get('/activationLink', ActivationLink.func);
-    server.get('/validate', Validate.func);
-    server.get('/startsession', StartSession.func);
-    // server.get('/gateway', Gateway.func);
-    server.get('/download', downloadFunc);
-    // server.get('/testq', testq);
-    server.post('/file/uploadToSession', Upload.uploadToSession);
-    server.post('/file/uploadToLoginToken', Upload.uploadToLoginToken);
-    server.get('/getResourceListByDevice', getResourceListByDevice);
-    server.get('/setPasscode', setPasscode.func);
     server.get('/authenticateUser', AuthenticateUser.func);
     server.get('/checkPasscode', checkPasscode.func);
+    server.get('/setPasscode', setPasscode.func);
     server.get('/resetPasscode', resetPasscode.func);
-    server.get('/unlockPassword', unlockPassword.unlockPassword);
-    server.get('/resendUnlockPasswordLink', unlockPassword.resendUnlockPasswordLink);
+    server.get('/activate', Activate.func);
+    server.get('/validate', Validate.func);
+    server.get('/startsession', StartSession.func);
+    server.get('/getResourceListByDevice', getResourceListByDevice);
     server.get('/sendEmailForUnknownJobTitle', SendEmailForUnknownJobTitle.func);
-
-    // exchange classes
-    server.get('/getProfiles', GetProfiles.func);
-    server.get('/addAdmins', AddAdmins.func);
-    server.get('/removeAdmins', RemoveAdmins.func);
-    server.get('/mySQL', MySQL.func);
-
-    server.get('/getProfileDetails', GetProfileDetails.func);
-    server.get('/addProfile', AddProfile.func);
-    server.get('/deleteProfiles', DeleteProfiles.func);
-    server.get('/activateProfiles', ActivateProfiles.func);
-    server.get('/activateDevice', ActivateDevice.func);
-    server.get('/checkCertificate', CheckCertificate.func);
-    server.get('/setupExchange', SetupExchange.func);
-    server.get('/getExchangeDetails', SetupExchange.GetExchangeDetails);
-    server.get('/inviteProfiles', InviteProfiles.func);
-    server.get('/deleteAppFromProfiles', DeleteAppFromProfiles.func);
-    server.get('/deleteApps', DeleteApps.deleteApps);
-    server.get('/createGroup', CreateGroup.func);
-    server.get('/addProfilesToGroup', AddProfilesToGroup.func);
-    server.get('/installApps', InstallApps.installApps);
-    server.get('/getProfilesFromApp', GetProfilesFromApp.func);
-    server.get('/updateProfileDetails', UpdateProfileDetails.func);
-
-    server.get('/removeProfilesFromGroup', RemoveProfilesFromGroup.func);
-    server.get('/getGroups', GetGroups.func);
-    server.get('/getAllApps', GetAllApps.func);
-    server.get('/getGroupDetails', GetGroupDetails.func);
-    server.get('/deleteGroups', DeleteGroups.func);
-    server.get('/getCompanyDetails', GetCompanyDetails.func);
-    server.get('/setupAD', AuthenticateLDAP.setupAD);
-    server.get('/syncAD', AuthenticateLDAP.syncAD);
-    server.get('/getADDomains', AuthenticateLDAP.getADDomains);
-    server.get('/getOUs', AuthenticateLDAP.getOUs);
-
-    server.get('/SmsNotification/sendSmsNotification', SmsNotification.sendSmsNotification);
-    server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
-
-    server.get('/settings/changePasscode', Settings.changePasscode);
-    server.get('/settings/checkPasscode', Settings.checkPasscode);
-    server.get('/settings/setLanguage', Settings.setLanguage);
-    server.get('/settings/setAccount', Settings.setAccount);
-    server.get('/settings/getSessionDetails', Settings.getSessionDetails);
-    server.get('/settings/changeExpiredPassword', Settings.changeExpiredPassword);
-    server.get('/settings/setNotificationStatusForApp', Settings.setNotificationStatusForApp);
-    server.get('/settings/getNotificationsStatusForAllApps', Settings.getNotificationsStatusForAllApps);
-    server.get('/Notifications/notifyClient', Notifications.notifyClient);
-    server.get('/Notifications/notifyExchangeClient', Notifications.notifyExchangeClient);
-    server.get('/Notifications/pushNotification', Notifications.pushNotification);
-    server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
-    server.get('/uploadAPK', UploadAPK.func);
-    server.get('/updateApkDescription', UpdateApkDescription.func);
-    server.get('/checkApkStatus', CheckApkStatus.func);
-    server.get('/addAppRule', AddAppRule.addAppRule);
-    server.get('/getRules', GetRules.getRules);
-    server.get('/deleteAppRule', DeleteAppRule.deleteAppRule);
-    server.get('/editAppRule', EditAppRule.editAppRule);
-    server.get('/getNetwotkAccessStatus', GetNetwotkAccessStatus.getNetwotkAccessStatus);
-    server.get('/setNetwotkAccessStatus', SetNetwotkAccessStatus.setNetwotkAccessStatus);
+    server.get('/captureDeviceDetails', captureDeviceDetails.captureDeviceDetails);
+    server.get('/resendUnlockPasswordLink', unlockPassword.resendUnlockPasswordLink);
     server.get('/createStream', MediaStream.createStream);
     server.get('/playPauseStream', MediaStream.playPauseStream);
-    server.get('/getGWsList', ProcessGWsMonitorReqModule.getGWsList);
-    server.get('/setIsGWDisabledList', ProcessGWsMonitorReqModule.setIsGWDisabledList);
-    server.get('/EWSListener', EWSListener.ews);
-    server.post('/EWSListener', EWSListener.ews);
-    server.get('/saveUIDs', SaveUIDs.saveUIDs);
-    server.get('/loadUIDs', LoadUIDs.loadUIDs);
-    server.get('/cp/:requestType', require('./ControlPanel/restGet.js').get);
-    server.get('/captureDeviceDetails', captureDeviceDetails.captureDeviceDetails);
-    server.get('/getNuboRecordings', getNuboRecordings.func);
     server.get('/html/player/common.js', require('./webCommon.js'));
+    server.get('/activationLink', ActivationLink.func);
+    server.get('/unlockPassword', unlockPassword.unlockPassword);
+    server.post('/file/uploadToSession', Upload.uploadToSession);
+
+    // server.post('/file/uploadToLoginToken', Upload.uploadToLoginToken);
+    
+
+
+    // server.get('/registerOrg', Activate.registerOrg);
+    // // server.get('/gateway', Gateway.func);
+    // server.get('/download', downloadFunc);
+    // // server.get('/testq', testq);
+    
+    // // exchange classes
+    // server.get('/getProfiles', GetProfiles.func);
+    // server.get('/addAdmins', AddAdmins.func);
+    // server.get('/removeAdmins', RemoveAdmins.func);
+    // server.get('/mySQL', MySQL.func);
+
+    // server.get('/getProfileDetails', GetProfileDetails.func);
+    // server.get('/addProfile', AddProfile.func);
+    // server.get('/deleteProfiles', DeleteProfiles.func);
+    // server.get('/activateProfiles', ActivateProfiles.func);
+    // server.get('/activateDevice', ActivateDevice.func);
+    // server.get('/checkCertificate', CheckCertificate.func);
+    // server.get('/setupExchange', SetupExchange.func);
+    // server.get('/getExchangeDetails', SetupExchange.GetExchangeDetails);
+    // server.get('/inviteProfiles', InviteProfiles.func);
+    // server.get('/deleteAppFromProfiles', DeleteAppFromProfiles.func);
+    // server.get('/deleteApps', DeleteApps.deleteApps);
+    // server.get('/createGroup', CreateGroup.func);
+    // server.get('/addProfilesToGroup', AddProfilesToGroup.func);
+    // server.get('/installApps', InstallApps.installApps);
+    // server.get('/getProfilesFromApp', GetProfilesFromApp.func);
+    // server.get('/updateProfileDetails', UpdateProfileDetails.func);
+
+    // server.get('/removeProfilesFromGroup', RemoveProfilesFromGroup.func);
+    // server.get('/getGroups', GetGroups.func);
+    // server.get('/getAllApps', GetAllApps.func);
+    // server.get('/getGroupDetails', GetGroupDetails.func);
+    // server.get('/deleteGroups', DeleteGroups.func);
+    // server.get('/getCompanyDetails', GetCompanyDetails.func);
+    // server.get('/setupAD', AuthenticateLDAP.setupAD);
+    // server.get('/syncAD', AuthenticateLDAP.syncAD);
+    // server.get('/getADDomains', AuthenticateLDAP.getADDomains);
+    // server.get('/getOUs', AuthenticateLDAP.getOUs);
+
+    // server.get('/SmsNotification/sendSmsNotification', SmsNotification.sendSmsNotification);
+    // server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
+
+    // server.get('/settings/changePasscode', Settings.changePasscode);
+    // server.get('/settings/checkPasscode', Settings.checkPasscode);
+    // server.get('/settings/setLanguage', Settings.setLanguage);
+    // server.get('/settings/setAccount', Settings.setAccount);
+    // server.get('/settings/getSessionDetails', Settings.getSessionDetails);
+    // server.get('/settings/changeExpiredPassword', Settings.changeExpiredPassword);
+    // server.get('/settings/setNotificationStatusForApp', Settings.setNotificationStatusForApp);
+    // server.get('/settings/getNotificationsStatusForAllApps', Settings.getNotificationsStatusForAllApps);
+    // server.get('/Notifications/notifyClient', Notifications.notifyClient);
+    // server.get('/Notifications/notifyExchangeClient', Notifications.notifyExchangeClient);
+    // server.get('/Notifications/pushNotification', Notifications.pushNotification);
+    // server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
+    // server.get('/uploadAPK', UploadAPK.func);
+    // server.get('/updateApkDescription', UpdateApkDescription.func);
+    // server.get('/checkApkStatus', CheckApkStatus.func);
+    // server.get('/addAppRule', AddAppRule.addAppRule);
+    // server.get('/getRules', GetRules.getRules);
+    // server.get('/deleteAppRule', DeleteAppRule.deleteAppRule);
+    // server.get('/editAppRule', EditAppRule.editAppRule);
+    // server.get('/getNetwotkAccessStatus', GetNetwotkAccessStatus.getNetwotkAccessStatus);
+    // server.get('/setNetwotkAccessStatus', SetNetwotkAccessStatus.setNetwotkAccessStatus);
+    // server.get('/getGWsList', ProcessGWsMonitorReqModule.getGWsList);
+    // server.get('/setIsGWDisabledList', ProcessGWsMonitorReqModule.setIsGWDisabledList);
+    // server.get('/EWSListener', EWSListener.ews);
+    // server.post('/EWSListener', EWSListener.ews);
+    // server.get('/saveUIDs', SaveUIDs.saveUIDs);
+    // server.get('/loadUIDs', LoadUIDs.loadUIDs);
+    // server.get('/cp/:requestType', require('./ControlPanel/restGet.js').get);
+
+    // server.get('/getNuboRecordings', getNuboRecordings.func);
+    // server.get('/html/player/common.js', require('./webCommon.js'));
     server.opts('/.*/', optionsHandler);
     
     function optionsHandler(req, res) {

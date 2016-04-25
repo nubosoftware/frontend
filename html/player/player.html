@@ -1,0 +1,99 @@
+<html>
+<head><title>Nubo Player</title></head>
+<link rel="stylesheet" type="text/css" href="./player.css" media="all" />
+<link rel="stylesheet" href="css/toast.css" type="text/css">
+<body>
+  <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+  <script type="text/javascript" src="utf8.js"></script>
+  <script type="text/javascript" src="base.js"></script>
+  <script type="text/javascript" src="long.js"></script>
+  <script type="text/javascript" src="js/modernizr.webp.test.js"></script>
+  <script type="text/javascript" src="js/canvas2image.js"></script>
+  <script type="text/javascript" src="js/toast.js"></script>
+  <script type="text/javascript" src="wm.js"></script>
+  <script type="text/javascript" src="uxipReader.js"></script>
+  <script type="text/javascript" src="uxipWriter.js"></script>
+  <script type="text/javascript" src="uxip.js"></script>
+  <script type="text/javascript" src="nubocache.js"></script>
+<script type="text/javascript" >
+  var uxip = null;
+  var startTime = null;
+  $(function() {
+     //var c=document.getElementById("playerCanvas");
+	 //var ctx=c.getContext("2d");
+	 //ctx.fillStyle="#CCCCCC";
+	 //ctx.fillRect(0,0,1094,720);
+  
+     //uxip = new UXIP(document.getElementById("datadiv"),1280,800);
+     
+     
+     
+     uxip = new UXIP(document.getElementById("datadiv"), 1024, 768);
+
+
+     
+     //uxip.connect('wss://lab.nubosoftware.com/',"2") ;	
+     //uxip.connect('wss://lab.nubosoftware.com/',"TESTTEST")
+     ///validate?deviceid=353918056784503&activationKey=98d6a3b6f6c18b03c874c99dc5923977dba100426485f1a8c76f160305e5b933c5833c2c29973acd2ce0941fc5d03d45
+     
+     $.getJSON('https://lab.nubosoftware.com/validate?deviceid=351554052156594&activationKey=009b978bc286ec5bc759b33359b8ee9fcce22743eae288249aae9050e081072df109c3beb8f2b10df089a7e3a706cc52', function(data) {
+     //$.getJSON('https://lab.nubosoftware.com/validate?deviceid=351554052156594&activationKey=82ce6257a062dc903e0795a217c36ff37219b1755a7aa9b8b955d85e09ac0163d6bb430f851962ac8ec4f52edfe23637', function(data) {
+	    console.log(data);
+        var loginToken = data.loginToken;
+        $.getJSON('https://lab.nubosoftware.com/checkPasscode?passcode=54741&loginToken='+loginToken, function(data) {
+    	  console.log(data);
+    	  startTime = new Date();
+    	  $.getJSON('https://lab.nubosoftware.com/startsession?loginToken='+loginToken, function(data) {
+    	    var endTime = new Date();
+    	    var diff = endTime-startTime;
+    	    console.log("Start session time: "+diff+" ms."); 
+    		console.log(data);
+    		if (data.status==0) 
+    		   uxip.connect('wss://lab.nubosoftware.com/',data.sessionid)                        
+              //else // for DEBUG only
+              //	uxip.connect('wss://lab.nubosoftware.com/',"DEBUG") ;		
+    	  });
+        });
+     }); // getJSON 
+     
+  });   
+
+  function clickHome(e){
+	  if (!e) var e = window.event;
+	  console.log("e.type: "+e.type);
+	  //$( "#iconvolcano" ).attr("src" , "images/volcanoclick.png");
+	  uxip.clickHome();
+	  
+  }
+  function clickSettings(e){
+	  if (!e) var e = window.event;
+	  console.log("e.type: "+e.type);	  
+	  uxip.clickSettings();
+	  
+  }
+  
+</script>
+  <div id="maindiv">
+    <div id="toolbardiv">
+    	<span id="toolbarleftmargin" class="toolbarmargin"></span>
+    	<a id="linkvolcano" href="javascript:;"  onclick="clickHome()" ><span id="homebtn"  class="toolbarbtn" > <img id="iconvolcano" src="images/volcano.png" /> 	
+    	</span></a>
+    	<span id="toolbarpad1" class="toolbarpad"></span>
+    	<a id="linksettings" hreaf="javascript:;" onclick="clickSettings()" > <span id="searchbtn"  class="toolbarbtn" > <img id="iconsettings" src="images/settings.png" />   	 
+    	</span></a>
+    	<span id="toolbarpadr1" class="toolbarpad"></span>
+    	<span id="settingsbtn"  class="toolbarbtn" > <img id="iconsearch" src="images/search.png" />   	 
+    	</span>    	
+    	<span id="toolbarrightmargin" class="toolbarmargin"></span>
+     <!-- 
+    	&nbsp;&nbsp;&nbsp;&nbsp;
+    	<a href="javascript:uxip.clickBack();">Back</a>
+    	&nbsp;&nbsp;&nbsp;&nbsp;
+    	<a href="javascript:uxip.clickHome();">Home</a>
+    	&nbsp;&nbsp;&nbsp;&nbsp;
+    	<a href="javascript:uxip.close();">Close</a>  -->
+    </div>
+    <div id="datadiv"></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,2111 @@
+body {
+    margin: auto;
+    padding: 0;
+    color: white;
+    width: 100%;
+    /*background-image:url('images/pattern.png');	*/
+    background-color: #58585A;
+}
+@font-face {
+    font-family: NuboRoboto;
+    src: url(fonts/Roboto-Regular.ttf);
+}
+@font-face {
+    font-family: NuboRobotoLight;
+    src: url(fonts/Roboto-Light.ttf);
+}
+@font-face {
+    font-family: NuboRobotoBold;
+    src: url(fonts/Roboto-Bold.ttf);
+}
+@font-face {
+    font-family: AndroidClock;
+    src: url(fonts/AndroidClock.ttf);
+}
+@font-face {
+    font-family: FreebooterScript;
+    src: url(fonts/FreebooterScript-Regular.ttf);
+}
+
+div {
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+div#maindiv {
+    position: relative;
+    margin: auto;
+    width: 1024px;
+    height: 768px;
+}
+div.subdiv {
+    margin-top: 10%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 500px;
+}    
+
+div#toolbardiv {
+    position: static;
+    width: 1024px;
+    height: 45px;
+    top: 0px;
+    left: 0px;
+}
+
+div#datadiv {
+   position: absolute;
+   left: 0;
+   width: 100%;
+   top: 46px;
+   bottom: 0;
+}
+span.toolbarmargin {
+    display: inline-block;
+    width: 10px;
+    height: 45px;
+}
+span.toolbarpad {
+    display: inline-block;
+    width: 10px;
+    height: 45px;
+}
+span#toolbarpadr1 {
+    float: right;
+}
+span.toolbarbtn {
+    display: inline-block;
+    height: 45px;
+    vertical-align: top;
+    cursor: pointer;
+}
+div.mobiletoolbardiv {
+    display: none;
+}
+span#settingsbtn {
+    float: right;
+}
+span#toolbarrightmargin {
+    float: right;
+}
+img#iconvolcano {
+    position: relative;
+    top: 9px;
+}
+img#iconsettings {
+    position: relative;
+    top: 13px;
+}
+img#iconRecordings {
+    position: relative;
+    top: 9px;
+}
+img#iconsearch {
+    position: relative;
+    top: 9px;
+}
+img#nubologo {
+    /*position: absolute;
+    left: 431px;
+    top: 102px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;    
+}
+span {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+img {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+span#workEmail {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+
+    width: 100%;
+    height: 80px;
+    font-family: NuboRobotoLight;
+    font-size: 16px;
+    text-align: center;
+}
+span#nameTitle {
+    /*position: absolute;
+    left: 0px;
+    top: 247px;
+    width: 1024px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+     
+    width: 100%;
+    height: 80px;
+    font-family: NuboRobotoLight;
+    font-size: 54px;
+    text-align: center;
+}
+span#greetings {
+    /*position: absolute;
+    left: 320px;
+    top: 213px;
+    width: 388px;
+    height: 80px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+   
+    font-family: FreebooterScript;
+    font-size: 80px;
+    text-align: center;
+}
+span#lorem {
+    /*position: absolute;
+    left: 320px;
+    top: 355px;    
+    height: 79px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+           
+    width: 388px;       
+    font-family: NuboRobotoLight;
+    font-size: 21px;
+    text-align: center;
+}
+span.appbutton {
+    background-color: #5B5B5B;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -khtml-border-radius: 6px;
+    border-radius: 6px;
+    border-color: white;
+    border-style: solid;
+    border-width: 1px;
+    cursor: pointer;
+    font-family: NuboRobotoLight;
+    font-style: normal;
+    font-weight: lighter;
+    font-size: 22px;
+    text-align: center;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    padding-top: 10px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box; /* Firefox, other Gecko */
+    box-sizing: border-box; /* Opera/IE 8+ */
+}
+span.cleanbutton {
+    cursor: pointer;
+    font-family: NuboRobotoLight;
+    font-style: normal;
+    font-weight: lighter;
+    font-size: 22px;
+    text-align: center;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    padding-top: 10px;
+}
+span.errText {
+    font-family: NuboRoboto;
+    font-style: normal;
+    font-size: 15px;
+    text-align: left;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+span#create {
+    /*position: absolute;
+    left: 357px;
+    top: 470px; */
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+    width: 309px;
+    height: 45px;
+    padding-top: 4px;
+}
+span#signin {
+    /*position: absolute;
+    left: 357px;
+    top: 530px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+        
+    width: 309px;    
+    height: 42px;
+    padding-top: 4px;
+}
+span#demo {
+    /*position: absolute;
+    left: 357px;
+    top: 594;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    
+    width: 309px;    
+    height: 42px;
+    padding-top: 4px;
+}
+span#create_create {
+    /*position: absolute;
+    left: 362px;
+    top: 241px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+   
+    width: 309px;
+    height: 46px;
+    padding-top: 6px;
+}
+input {
+    background-color: white;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -khtml-border-radius: 6px;
+    border-radius: 6px;
+    border-color: #CECDCF;
+    border-style: solid;
+    border-width: 1px;
+    font-family: NuboRobotoLight;
+    font-style: normal;
+    font-size: 22px;
+    padding: 10px;
+    height: 42px;
+}
+input:focus {
+    outline: none;
+}
+input.error {
+    border-color: #EA5845;
+    border-style: solid;
+    border-width: 3px;
+}
+.alignText {
+    text-align: left;
+}
+.recordingBar {
+    text-align: left;
+    margin-top: 10px;
+    display: inline-block; 
+    white-space: nowrap;
+    width: 500px;
+    overflow: hidden;
+    text-overflow:ellipsis;
+}
+.recordingBarRow {
+	display: inline-block; 
+    text-align: left;
+    margin-top: 30px;
+    white-space: nowrap;
+    width: 1100px;
+    overflow: hidden;
+    text-overflow:ellipsis;
+}
+.recordingDateField {
+    display: inline-block; 
+    text-align: left;
+    margin-right: 30px;
+    white-space: nowrap;
+    width: 150px;
+    overflow: hidden;
+    text-overflow:ellipsis;
+}
+.recordingTextField {
+	color: #00FFFF;
+    font-style: normal;
+    font-size: 20px;
+}
+.buttonCell {
+    font-style: normal;
+    background-color: #FF7F00;
+}
+select {
+	width:150px;
+	height: 42px;
+	line-height:1;
+	border-radius:5px;
+	font-size:20px;
+	-webkit-appearance:none;
+	background-color:#FFFFFF;
+	margin-right: 20px;
+	margin-left: 10px;
+	text-align:center;
+	text-indent: 10px;
+	outline:none;
+}
+.buttonSearch {
+    background-color: #FFFFFF;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box; /* Firefox, other Gecko */
+    box-sizing: border-box; /* Opera/IE 8+ */
+    position: absolute;
+    width: 98px;
+    height: 42px;
+    opacity: 0.8;
+    font-size: 20px;
+}
+input#edFirstName {
+    /*position: absolute;
+    left: 362px;
+    top: 310px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+    
+    width: 309px;
+    height: 42px;
+    text-transform: capitalize;
+    font-size: 19px;
+}
+span#FirstNameErr {
+    /*position: absolute;
+    left: 372px;
+    top: 358px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    padding-left: 20px;
+    
+    width: 309px;
+    height: 26px;
+}
+input#edLastName {
+    /*position: absolute;
+    left: 362px;
+    top: 387px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px; 
+   
+    width: 309px;
+    height: 42px;
+    text-transform: capitalize;
+    font-size: 19px;
+}
+span#LastNameErr {
+    /*position: absolute;
+    left: 372px;
+    top: 435px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    padding-left: 20px;
+    
+    width: 309px;
+    height: 26px;
+}
+input#edJobTitle {
+    /*position: absolute;
+    left: 362px;
+    top: 465px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px; 
+    
+    width: 309px;
+    height: 42px;
+    z-index: 10;
+    text-transform: capitalize;
+    font-size: 19px;
+}
+
+div.dropdiv {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: -3px;   
+    width: 309px;  
+    position: relative; 
+}
+    
+span#drop1 {
+    background-color: #C2C1C3;
+    position: absolute;    
+     /*left: 362px;
+    top: 486px;*/
+       
+    width: 309px;
+    height: 50px; /*63px;*/
+    visibility: hidden;
+    z-index: 9;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box; /* Firefox, other Gecko */
+    box-sizing: border-box; /* Opera/IE 8+ */
+}
+span#drop2 {
+    background-color: #EDEDED;
+    position: absolute;
+    top: 48px;
+    /*left: 362px;
+    top: 528px;*/     
+    
+    width: 309px;
+    height: 50px; /*63px;*/
+    visibility: hidden;
+    z-index: 8;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box; /* Firefox, other Gecko */
+    box-sizing: border-box; /* Opera/IE 8+ */
+}
+span#drop3 {
+    background-color: #C2C1C3;
+    position: absolute;
+    top: 96px;
+    /*left: 362px;
+    top: 570px;*/    
+       
+    width: 309px;    
+    height: 50px; /*63px;*/
+    visibility: hidden;
+    z-index: 7;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box; /* Firefox, other Gecko */
+    box-sizing: border-box; /* Opera/IE 8+ */
+}
+span#drop4 {
+    background-color: #EDEDED;
+    position: absolute;
+    top: 144px;
+    /*left: 362px;
+    top: 612px;*/    
+       
+    width: 309px;
+    height: 50px; /*63px;*/
+    visibility: hidden;
+    z-index: 6;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box; /* Firefox, other Gecko */
+    box-sizing: border-box; /* Opera/IE 8+ */
+}
+span.dropCommon {
+    font-family: NuboRobotoLight;
+    font-style: normal;
+    font-size: 22px;
+    color: black;
+    padding-top: 10px;   /*25px;*/
+    padding-bottom: 0px;
+    padding-right: 10px;
+    padding-left: 10px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: pointer;
+}
+span.roundDrop {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -khtml-border-radius: 6px;
+    border-radius: 6px;
+    border-color: #CECDCF;
+    border-style: solid;
+    border-width: 0px;
+}
+span#JobTitleErr {
+    /*position: absolute;
+    left: 372px;
+    top: 513px;
+    font-size: 19px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    padding-left: 20px;
+       
+    width: 309px;
+    height: 26px;    
+}
+input#edWorkEmail {
+    /*position: absolute;
+    left: 362px;
+    top: 544px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+   
+    width: 309px;
+    height: 42px;
+    font-size: 19px;
+}
+span#WorkEmailErr {
+    /*position: absolute;
+    left: 372px;
+    top: 592px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    padding-left: 20px;
+       
+    width: 309px;
+    height: 26px;
+}
+span#activationSent {
+    /*position: absolute;
+    left: 306px;
+    top: 228px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    
+    width: 429px;
+    height: 28px;
+    font-family: NuboRobotoLight;
+    font-size: 26px; 
+    text-align: center;
+}
+span#activationEmail {
+    /*position: absolute;
+    left: 346px;
+    top: 264px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    
+    width: 349px;
+    height: 28px;
+    font-family: NuboRobotoLight;
+    font-size: 26px; /*32px;*/
+    text-align: center;
+}
+span#checkInbox {
+    /*position: absolute;
+    left: 346px;
+    top: 314px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    
+    width: 349px;
+    height: 48px;
+    font-family: NuboRobotoLight;
+    font-size: 32px; 
+    text-align: center;
+}
+span#changeBtn {
+    /*position: absolute;
+    left: 363px;
+    top: 400px; */
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+   
+    width: 309px;
+    height: 52px;
+}
+span#changeText {
+    position: absolute;
+    left: 0px;
+    top: 7px;
+    width: 308px;
+    height: 44px;
+}
+span#authMsg {
+    /*position: absolute;
+    left: 327px;
+    top: 227px;
+    width: 388px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    width: 100%;
+   
+    height: 61px;
+    font-family: NuboRobotoLight;
+    font-size: 20px;
+    text-align: center;
+}
+span#enterPasswordOKBtn {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    width: 309px;
+    height: 52px;
+}
+span#signInBtn {
+    /*position: absolute;
+    left: 363px;
+    top: 307px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+    
+    width: 309px;
+    height: 52px;
+}
+input#enterPassword {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+    width: 309px;
+    height: 47px;
+    font-size: 20px;
+}
+input#authUserName {
+    /*position: absolute;
+    left: 362px;
+    top: 383px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+    
+    width: 309px;
+    height: 47px;
+    font-size: 20px;
+}
+span#authUserNameErr {
+    /*position: absolute;
+    left: 372px;
+    top: 431px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    padding-left: 20px;
+
+    width: 309px;
+    height: 26px;
+}
+input#authPassword {
+    /*position: absolute;
+    left: 362px;
+    top: 469px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    
+    width: 309px;
+    height: 47px;
+    font-size: 20px;
+}
+span#authPasswordErr {
+    /*position: absolute;
+    left: 372px;
+    top: 517px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    padding-left: 20px;
+    
+    width: 309px;
+    height: 26px;
+}
+span#passcodeErrMsg {
+    /*position: absolute;
+    left: 333px;
+    top: 197px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+      
+    width: 359px;
+    height: 31px;
+    background-color: #941914;
+    visibility: hidden;
+    font-family: NuboRoboto;
+    font-style: normal;
+    font-size: 18px;
+    text-align: center;
+    padding-top: 5px;
+    box-sizing: border-box;
+}
+span#passcodeErrMsg2 {
+    /*position: absolute;
+    left: 333px;
+    top: 205px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+   
+    width: 359px;
+    height: 25px;
+    background-color: #941914;
+    visibility: hidden;
+    font-family: NuboRoboto;
+    font-style: normal;
+    font-size: 18px;
+    text-align: center;
+    /*padding-top: 5px;*/
+    box-sizing: border-box;
+}
+input#enterPasscode {
+    /*position: absolute;
+    left: 360px;
+    top: 238px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto; 
+    margin-top: 20px; 
+    
+    font: small-caption;
+    font-size: 30px;
+    letter-spacing: 10px;
+   
+    width: 309px;
+    height: 49px;
+}
+
+input#enterPasscode::-webkit-input-placeholder, input#selectPasscode::-webkit-input-placeholder {
+    font-family: NuboRoboto;
+    letter-spacing: 4px;
+    font-size: 18px;
+    padding-top: 7px;
+}
+
+input#enterPasscode::-moz-placeholder, input#selectPasscode::-moz-placeholder {
+    font-family: NuboRoboto;
+    letter-spacing: 4px;
+    font-size: 18px;
+    padding-top: 7px;
+}
+
+input#enterPasscode:-ms-input-placeholder, input#selectPasscode:-ms-input-placeholder {
+    font-family: NuboRoboto;
+    letter-spacing: 4px;
+    font-size: 18px;
+    padding-top: 7px;
+}
+
+div#loginContent {
+    width: 310px;
+    margin: 100px auto 100px auto;
+    background-color: red;
+    height: 500px;
+}
+img#passcodeImg {
+    /*position: absolute;
+    left: 360px;
+    top: 238px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto; 
+    margin-top: 20px; 
+   
+    width: 309px;
+    height: 49px;
+}
+span#forgotBtn {
+    /*position: absolute;
+    left: 455px;
+    top: 303px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto; 
+    text-align: right;       
+
+    width: 309px;
+    height: 32px;
+    padding-top: 10px;
+    font-size: 16px;
+}
+span.numbutton {
+    background-color: #FFFFFF;
+    /*
+     -moz-border-radius: 6px;
+     -webkit-border-radius: 6px;
+     -khtml-border-radius: 6px;
+     border-radius: 6px;
+     border-color: white;
+     border-style: solid;
+     border-width: 0px; */
+    cursor: pointer;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box; /* Firefox, other Gecko */
+    box-sizing: border-box; /* Opera/IE 8+ */
+    position: absolute;
+    width: 98px;
+    height: 53px;
+    opacity: 0.3;
+    filter: alpha(opacity=30); /* For IE8 and earlier */
+}
+span.numKey {
+    position: absolute;
+    line-height: 60px;  /*padding-top: 13px;*/
+    width: 98px;
+    height: 53px;
+    color: #333333;
+    font-family: NuboRobotoBold;
+    font-style: normal;
+    font-size: 28px;
+    text-align: center;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box; /* Firefox, other Gecko */
+    box-sizing: border-box; /* Opera/IE 8+ */
+    cursor: pointer;
+}
+
+div.passcodediv {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;    
+    width: 309px;  
+    position: relative;    
+}
+
+span#btn1, span#key1 {
+    /*left: 360px;
+    top: 350px;*/   
+}
+/*span#key1 {
+    left: 360px;
+    top: 350px;
+}*/
+span#btn2, span#key2 {
+    left: 105px;
+    /*left: 465px;
+    top: 350px;*/
+}
+/*span#key2 {    
+    left: 465px;
+    top: 350px;
+}*/
+span#btn3, span#key3 {
+    left: 210px;
+    /*left: 571px;
+    top: 350px;*/
+}
+/*span#key3 {
+    left: 571px;
+    top: 350px;
+}*/
+span#btn4, span#key4 {
+    top: 60px;
+    /*left: 360px;
+    top: 408px;*/
+}
+/*span#key4 {
+    left: 360px;
+    top: 408px;
+}*/
+span#btn5, span#key5 {
+    top: 60px;
+    left: 105px;
+    /*left: 465px;
+    top: 408px;*/
+}
+/*span#key5 {
+    left: 465px;
+    top: 408px;
+}*/
+span#btn6, span#key6 {
+    top: 60px;
+    left: 210px;
+    /*left: 571px;
+    top: 408px;*/
+}
+/*span#key6 {
+    left: 571px;
+    top: 408px;
+}*/
+span#btn7, span#key7 {
+    top: 120px;    
+    
+    /*left: 360px;
+    top: 466px;*/
+}
+/*span#key7 {
+    left: 360px;
+    top: 466px;
+}*/
+span#btn8, span#key8 {
+    top: 120px;
+    left: 105px;
+    
+    /*left: 465px;
+    top: 466px;*/
+}
+/*span#key8 {
+    left: 465px;
+    top: 466px;
+}*/
+span#btn9,span#key9 {
+    top: 120px;
+    left: 210px;
+    
+    /*left: 571px;
+    top: 466px;*/
+}
+/*span#key9 {
+    left: 571px;
+    top: 466px;
+}*/
+span#btnok {
+    top: 180px;
+    /*left: 360px;
+    top: 523px;*/
+      
+    background-color: #000000;
+    opacity: 0.75;
+    filter: alpha(opacity=75); /* For IE8 and earlier */
+}
+span#keyok {
+    top: 180px;
+    /*left: 360px;
+    top: 523px;*/
+    color: #FFFFFF;
+    font-size: 22px; 
+}
+span#keyok:active {
+    color: gray;
+}
+span#btn0, span#key0 {
+    top: 180px;
+    left: 105px;
+    /*left: 465px;
+    top: 523px;*/
+}
+/*span#key0 {
+    left: 465px;
+    top: 523px;
+}*/
+span#btndel {
+    top: 180px;
+    left: 210px;    
+    cursor: pointer;
+     
+    background-image: url('images/del.png');
+    background-repeat: no-repeat;
+    background-position: center; 
+}
+    
+    /*left: 571px;
+    top: 523px;*/
+}
+/*span#keydel {
+    left: 571px;
+    top: 523px;
+}*/
+img#keydel {
+    /*position: absolute;
+    left: 604px;
+    top: 537px; 
+    cursor: pointer;  */
+    margin-top: 15px;
+    margin-left: 32px;   
+   
+    width: 33px;
+    height: 22px;   
+}
+#selectPasscodeTitle {
+    /*position: absolute;
+    left: 359px;
+    top: 234px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    
+    width: 309px;
+    height: 50px;
+    font-family: NuboRobotoBold;
+    font-style: normal;
+    font-size: 26px;
+    text-align: center;
+    color: white;
+}
+img#setPasscodeImg {
+    /*position: absolute;
+    left: 359px;
+    top: 283px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;    
+    
+    width: 309px;
+    height: 49px;
+}
+input#selectPasscode {
+    /*position: absolute;
+    left: 359px;
+    top: 283px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    
+    font: small-caption;
+    font-size: 30px;
+    letter-spacing: 10px;
+   
+    width: 309px;
+    height: 49px;
+    /*font-family: NuboRobotoBold;
+    font-style: normal;
+    font-size: 26px;*/
+    background-color: white;
+    opacity: 0.70;
+    filter: alpha(opacity=70); /* For IE8 and earlier */
+}
+
+
+span#resetPasscodeTitle {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    
+    font-family: NuboRoboto;
+    font-size: 30px;
+    font-style: normal;
+    color: white;
+    text-align: center;
+}
+div.resetBtn {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+    width: 215px;
+    position: relative;
+}
+span#resetOKBtn {
+    /*position: absolute;
+    left: 415px;
+    top: 297px;*/
+    display: inline-block;
+        
+    width: 97px;
+    height: 54px;
+    font-family: NuboRobotoBold;
+    font-style: normal;
+    font-size: 24px;
+    color: white;
+}
+span#resetCancelBtn {
+    /*position: absolute;
+    left: 529px;
+    top: 297px;*/    
+    margin-left: 30px;
+   
+    width: 97px;
+    height: 54px;
+    font-family: NuboRobotoBold;
+    font-style: normal;
+    font-size: 24px;
+    color: white;
+    padding-top: 10px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box; /* Firefox, other Gecko */
+    box-sizing: border-box; /* Opera/IE 8+ */
+    cursor: pointer;
+}
+img#connerr {
+    /*position: absolute;
+    left: 463px;
+    top: 50px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+   
+    width: 91px;
+    height: 169px;
+}
+span#conerrMsg {
+    /*position: absolute;
+    left: 369px;
+    top: 238px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 70px;
+   
+    width: 309px;
+    height: 35px;
+    font-family: NuboRobotoBold;
+    font-style: normal;
+    font-size: 24px;
+    text-align: center;
+}
+span#tryAgainBtn {
+    /*position: absolute;
+    left: 354px;
+    top: 414px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    
+    width: 309px;
+    height: 42px;
+    padding-top: 5px;
+}
+span#expiredMsg {
+    /*position: absolute;
+    left: 349px;
+    top: 267px;
+    width: 337px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    width: 100%;
+   
+    height: 59px;
+    font-family: NuboRoboto;
+    font-style: normal;
+    font-size: 21px;
+    text-align: center;
+}
+span#expiredCreateBtn {
+    /*position: absolute;
+    left: 363px;
+    top: 421px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;  
+   
+    width: 309px;
+    height: 52px;
+}
+span#sendMeActivationBtn {
+    /*position: absolute;
+    left: 349px;
+    top: 241px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px; 
+   
+    width: 309px;
+    height: 46px;
+    padding-top: 5px;
+}
+input#workEmailSend {
+    /*position: absolute;
+    left: 349px;
+    top: 309px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+    
+    width: 309px;
+    font-size: 19px;
+}
+span#workEmailSendErr {
+    /*position: absolute;
+    left: 357px;
+    top: 358px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    padding-left: 20px;
+       
+    width: 309px;
+    height: 26px;
+}
+span#sendMeActivationCreateBtn {
+    /*position: absolute;
+    left: 349px;
+    top: 462px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+       
+    width: 309px;
+    height: 46px;
+    visibility: hidden;
+    padding-top: 5px;
+}
+span.titleText {
+    font-family: NuboRoboto;
+    font-style: normal;
+    font-size: 26px;
+    text-align: center;
+    color: white;
+}
+span#activationErrorText {
+    position: absolute;
+    left: 180px;
+    top: 336px;
+    width: 708px;
+    height: 80px;
+}
+img#expiredClock {
+    /*position: absolute;
+    left: 484px;
+    top: 250px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    
+    width: 59px;
+    height: 62px;
+}
+img#welcomeTitle {
+    /*position: absolute;
+    left: 405px;
+    top: 224px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    
+    width: 214px;
+    height: 63px;
+}
+span#startDeviceText {
+    /*position: absolute;
+    left: 100px;
+    top: 328px;
+    width: 824px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+       
+    width: 100%;
+    height: 48px;
+}
+span#orText {
+    position: absolute;
+    left: 100px;
+    top: 399px;
+    width: 824px;
+    height: 44px;
+}
+span#startWebText {
+    position: absolute;
+    left: 100px;
+    top: 472px;
+    width: 824px;
+    height: 48px;
+}
+span#createWebPlayer {
+    position: absolute;
+    left: 357px;
+    top: 531px;
+    width: 309px;
+    height: 42px;
+    padding-top: 3px;
+}
+span#testText1 {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 3in;
+    height: 42px;
+    font-size: 23pt;
+}
+span#testText2 {
+    position: absolute;
+    left: 0px;
+    top: 50px;
+    width: 3in;
+    height: 42px;
+    font-size: 32px;
+}
+img#dropfilesimg {
+    position: absolute;
+    margin: auto;
+    width: 1024px;
+    height: 768px;
+    z-index: 1000;
+    visibility: hidden;
+}
+span#welcome {
+    position: absolute;
+    left: 394px;
+    top: 241px;
+    width: 214px;
+    height: 63px;
+    background-image: url('images/Welcome_Word.png');
+}
+span#downloadLink {
+    /*position: absolute;
+    left: 193px;
+    top: 374px;
+     width: 647px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;    
+   
+    height: 48px;
+    cursor: pointer;
+}
+span#downloadLink:hover {
+    color: #CCCCCC;
+}
+span#downloadTwoSteps {
+    /*position: absolute;
+    left: 193px;
+    top: 367px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+   
+    width: 668px;
+    height: 48px;
+    text-align: left;
+}
+span#downloadStep1 {
+    /*position: absolute;
+    left: 193px;
+    top: 433px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+   
+    width: 668px;
+    height: 48px;
+    text-align: left;
+    cursor: pointer;
+}
+span#downloadStep1:hover {
+    color: #CCCCCC;
+}
+span#downloadStep2 {
+    /*position: absolute;
+    left: 193px;
+    top: 500px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+   
+    width: 668px;
+    height: 48px;
+    text-align: left;
+    cursor: pointer;
+}
+span#downloadStep2:hover {
+    color: #CCCCCC;
+}
+span#downloadMessage {
+    /*position: absolute;
+    left: 173px;
+    top: 611px; */
+    display: block;
+    margin-left: auto;
+    margin-right: auto;    
+    
+    width: 667px;  
+    height: 79px;
+    font-family: NuboRobotoLight;
+    font-size: 19px;
+}
+span#iosMessage {
+    /*position: absolute;
+    left: 236px;
+    top: 317px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto; 
+    margin-top: -300px;
+    
+    width: 630px;
+    height: 150px;
+    font-family: NuboRobotoLight;
+    font-size: 24px;
+}
+span#iosMessage a {
+    color: white;
+    text-decoration: none;
+}
+span#lockMsg {
+    /*position: absolute;
+    left: 280px;
+    top: 241px;
+    height: 46px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px; 
+    
+    width: 480px;    
+    text-align: center;
+    font-size: 21px;
+    font-family: NuboRobotoLight;
+}
+span#unlockMsg {
+    /*position: absolute;
+    left: 280px;
+    top: 330px;
+    height: 46px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    
+    width: 480px;
+    text-align: center;
+    font-size: 21px;
+    font-family: NuboRoboto;
+}
+
+img#managerImg {
+    position: absolute;
+    left: 357px;
+    top: 230px;
+    width: 45px;
+    height: 50px;
+}
+span#disableTitle {
+    position: absolute;
+    left: 285px;
+    top: 241px;
+    width: 480px;
+    height: 46px;
+    text-align: center;
+    font-size: 23px;
+    font-family: NuboRoboto;
+}
+span#disableMsg {
+    position: absolute;
+    left: 358px;
+    top: 295px;
+    width: 480px;
+    height: 46px;
+    text-align: left;
+    font-size: 23px;
+    font-family: NuboRoboto;
+}
+span#disableMsg a {
+    text-decoration: none;
+    color: #00ccff;
+}
+
+span#resendMailBtn {
+    /*position: absolute;
+    left: 340px;
+    top: 410px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;   
+   
+    width: 309px;
+    height: 46px;
+    text-align: center;
+    font-size: 21px;
+    font-family: NuboRoboto;
+}
+img#medal {
+    /*position: absolute;
+    left: 480px;
+    top: 227px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+   
+    width: 66px;
+    height: 92px;
+}
+span#expiredTxt {
+    /*position: absolute;
+    left: 275px;
+    top: 380px;
+    width: 500px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+    width: 100%;
+    
+    font-family: NuboRoboto;
+    text-align: center;
+}
+span#resetPasscodeTxt {
+    /*position: absolute;
+    left: 305px;
+    top: 380px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+       
+    width: 430px;    
+    font-family: NuboRoboto;
+    text-align: center;
+}
+span#unlockPasscodeTxt {
+    /*position: absolute;
+    left: 275px;
+    top: 380px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+       
+    width: 500px;
+    font-family: NuboRoboto;
+    text-align: center;
+}
+
+span#versionErrTitle {
+    /*position: absolute;
+    left: 285px;
+    top: 241px;*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;    
+   
+    width: 480px;
+    height: 46px;
+    text-align: center;
+    font-size: 28px;
+    font-family: NuboRoboto;
+}
+img#chrome {
+    /*position: absolute;
+    top: 320px;
+    left: 400px;*/    
+    margin-left: 200px;
+    margin-top: 100px;
+}
+span#chromeTxt {
+    /*position: absolute;
+    top: 330px;
+    left: 470px;*/
+    margin-left: 20px;
+    width: 200px;    
+        
+    text-align: left;
+    font-size: 20px;
+    font-family: NuboRobotoLight;
+
+}
+img#firefox {
+    /*position: absolute;
+    top: 390px;
+    left: 400px;*/   
+    margin-left: 200px;
+    margin-top: 50px;
+}
+span#firefoxTxt {
+    /*position: absolute;
+    top: 400px;
+    left: 470px;*/    
+    margin-left: 20px;
+    
+    width: 200px;
+    text-align: left;
+    font-size: 20px;
+    font-family: NuboRobotoLight;    
+}
+img#ie {
+    /*position: absolute;
+    top: 460px;
+    left: 400px;*/
+    margin-left: 200px;
+    margin-top: 50px;   
+}
+span#ieTxt {
+    /*position: absolute;
+    top: 470px;
+    left: 470px;*/
+    margin-left: 20px;
+   
+    width: 200px;
+    text-align: left;
+    font-size: 20px;
+    font-family: NuboRobotoLight;
+}
+
+div#recordingTimeLbl {
+    position: absolute;
+    width: 485px;
+    height: 40px;
+    text-align: left;
+    font-size: 40px;
+    font-family: NuboRobotoLight;
+    color: red;
+    /*visibility: hidden;*/
+    z-index: 1000;
+    top: 100px;
+    left: 100px;
+}
+
+div#uploadFiles {
+    position: absolute;
+    width: 485px;
+    height: 440px;
+    background-color: rgba(221,221,220,1);
+    visibility: visible -moz-border-radius :6px;
+    -webkit-border-radius: 6px;
+    -khtml-border-radius: 6px;
+    border-radius: 6px;
+    border-color: rgba(194,193,195,0.85);
+    border-style: solid;
+    border-width: 2px;
+    visibility: hidden;
+    z-index: 1000;
+}
+
+div#uploadTitle {
+    position: static;
+    left: 0;
+    top: 0;
+    width: 405px;
+    height: 50px;
+    float: left;
+    padding-top: 10px;
+    padding-left: 20px;
+    font-family: NuboRoboto;
+    font-size: 34px;
+    text-align: left;
+    display: block;
+}
+
+div#uploadErrorMsg {
+    position: absolute;
+    top: 70px;
+    left: 100px;
+    width: 500px;
+    height: 200px;
+    background-color: #ededed;
+    border-radius: 6px;
+    border-color: #ededed;
+    border-style: solid;
+    border-width: 1px;
+}
+div#txtErrorMsg {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 490px;
+    height: 120px;
+    background-color: #c2c1c3;
+    border-color: #c2c1c3;
+    border-style: solid;
+    border-width: 1px;
+}
+div#txtErrorMsg p {
+    position: absolute;
+    top: 30px;
+    width: 490px;
+    color: #ffffff;
+    font-family: NuboRobotoLight;
+    font-size: 20px;
+    text-align: center;
+}
+div#btnErrorMsg {
+    position: absolute;
+    top: 140px;
+    left: 25px;
+    width: 450;
+    height: 50px;
+    color: #ffffff;
+    font-family: NuboRoboto;
+    font-size: 30px;
+    text-align: center;
+    line-height: 50px;
+    background-color: #666666;
+    border-radius: 6px;
+    border-color: #666666;
+    border-style: solid;
+    border-width: 1px;
+}
+
+div#uploadX {
+    position: static;
+    width: 56px;
+    height: 60px;
+    background-image: url('images/x.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    float: left;
+    display: block;
+}
+
+div#uploadContent {
+    background-color: rgba(194,193,195,1);
+    position: relative;
+    top: 0;
+    left: 5px;
+    width: 473px;
+    height: 374px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -khtml-border-radius: 6px;
+    border-radius: 6px;
+    border-color: rgba(194,193,195,0.85);
+    border-style: solid;
+    border-width: 1px;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+div.fileItem {
+    position: relative;
+    top: 0;
+    width: 140px;
+    height: 145px;
+    margin-left: 60px;
+    margin-top: 10px;
+    float: left;
+}
+div.fileIcon {
+    position: static;
+    width: 98px;
+    height: 92px;
+    float: left;
+    background-image: url('images/folder.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.5;
+}
+div.fileName {
+    position: relative;
+    left: -40px;
+    font-family: NuboRoboto;
+    font-size: 18px;
+    text-align: center;
+    text-overflow: ellipsis;
+    width: 200px;
+    height: 20px;
+    overflow: hidden;
+}
+div.fileItem progress {
+    position: relative;
+    left: 0;
+    top: 5px;
+    width: 100px;
+    height: 10px;
+    border: 0;
+    border-radius: 3px;
+}
+
+progress::-moz-progress-bar {
+    background: white;
+    border-radius: 3px;
+}
+progress::-webkit-progress-value {
+    background: white;
+    border-radius: 3px;
+}
+progress::-webkit-progress-bar {
+    border-radius: 3px;
+}
+
+#edVirtualKeyboard {
+    display: none;
+}
+
+div.spinner {
+    position: absolute;
+    left: 50%;
+    margin-left: -50px;
+    margin-top: -120px;
+    text-align:center;
+    z-index:1234;
+    width: 100px;
+    height: 102px;
+}
+
+* {
+    outline: none;
+}
+   
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
+        
+    div#uploadErrorMsg, div#uploadTitle,  div#txtErrorMsg, div#txtErrorMsg p, div#btnErrorMsg, div#uploadContent, div#uploadFiles {
+        width: 0;
+        height: 0;
+        display: none;
+    }       
+            
+    div#maindiv {
+       width: 100%;
+       height: 100%;
+    }
+    
+    div.mobiletoolbardiv {
+        display: inline-block;
+        position: static;
+        width: 100%;
+        height: 90px;
+    }
+    span.mobileToolbarRight {
+        float: right;
+    }
+        
+    div#toolbardiv {
+        display: none;
+        /*position: static;
+        width: 100%;
+        height: 90px;*/
+    }
+        
+    div#datadiv {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        top: 91px;
+        bottom: 0;
+    }
+    span.toolbarbtn {
+        height: 90px;
+    }
+    span#backbtn {
+        
+    }   
+    img#iconback {
+        position: relative;
+        top: 25px;
+        width: 25px;
+        height: 40px;
+        margin: 0 20px;
+    }
+    img#iconvolcano {
+        top: 19px;
+        width: 52px;
+        height: 52px;
+        margin: 0 20px;
+    }
+    img#iconsettings {
+        top: 25px;
+        width: 46px;
+        height: 40px;
+    }
+    img#iconsearch {
+        top: 18px;
+        width: 50px;
+        height: 54px;
+    }
+    img#nubologo {
+       position: static;       
+       width: 280px;
+       height: 100px;
+    }
+    span#welcome {
+        left: 50px;
+        top: 100px;
+        width: 214px;
+        height: 63px;
+    }
+     
+    span#orText {
+        left: 10px;
+        top: 230px;
+        width: 290px;
+        height: 27px;
+    }
+    span#startWebText {
+        left: 10px;
+        top: 280px;
+        width: 290px;
+        height: 27px;
+    }
+    #edVirtualKeyboard {
+        background-color: white;
+        -moz-border-radius: 0;
+        -webkit-border-radius: 0;
+        -khtml-border-radius:0;
+        border-radius: 0;
+        border-style: solid;
+        border-width: 0;
+        border: none;
+        font-size: 0;
+        padding: 0;
+        height: 10px;
+        width: 10px;
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 100px;
+        opacity: 0;
+    }   
+    
+    div.subdiv, span#passcodeErrMsg, span#passcodeErrMsg2 {
+        width: 100%;   
+        height: 100%;
+    }
+        
+    span#create, span#signin, span#demo, span#lorem, span#create_create, input#edFirstName, span#FirstNameErr,
+    input#edLastName, span#LastNameErr, input#edJobTitle, span#JobTitleErr, input#edWorkEmail, span#WorkEmailErr,
+    div.dropdiv, span#drop1, span#drop2, span#drop3, span#drop4, span#sendMeActivationBtn, input#workEmailSend, span#workEmailSendErr,
+    span#sendMeActicationCreateBtn, span#activationSent, span#activationEmail, span#checkInbox, span#changeBtn,
+    span#tryAgainBtn, span#conerrMsg, span#expiredCreateBtn, span#signInBtn, input#authUserName, span#authUserNameErr,
+    input#authPassword, span#authPasswordErr, span#unlockPasscodeTxt, span#resetPasscodeTxt,  input#enterPasswordcode,
+    span#lockMsg, span#unlockMsg, span#resendMailBtn, img#passcodeImg, img#setPasscodeImg, span#enterPasswordOKBtn,
+    span#selectPasscodeTitle, input#enterPasscode, input#selectPasscode {
+        width: 450px; 
+    }      
+    
+    div.passcodediv {
+        width: 500px;
+    }
+    span#nameTitle {
+        font-size: 50px; 
+    }
+    
+    span#greetings {
+        font-size: 100px;
+    }
+    
+    span#lorem, span#activationSent, span#activationEmail, span#authMsg, span#expiredMsg,
+    span#lockMsg, span#unlockMsg, span#forgotBtn, span#passcodeErrMsg, span#passcodeErrMsg2,
+    span#unlockPasscodeTxt, span#resetPasscodeTxt, span#downloadMessage, span#iosMessage {
+        font-size: 30px;
+    }
+        
+    span#selectPasscodeTitle, span#versionErrTitle, span#chromeTxt, span#firefoxTxt, span#ieTxt, span#resetPasscodeTitle,
+    span#expiredTxt, span.titleText, input#enterPasscode, input#selectPasscode {
+        font-size: 36px;
+    }        
+        
+    span#create, span#signin, span#demo, span#create_create, input#edFirstName, input#edLastName, input#edJobTitle,
+    input#edWorkEmail, span#sendMeActivationBtn, input#workEmailSend, span#changeBtn, span#signInBtn, span#enterPasswordOKBtn,
+    input#authUserName, input#authPassword, span#expiredCreateBtn, span#resendMailBtn, span#tryAgainBtn, 
+    span#resetOKBtn, span#resetCancelBtn, input#enterPasswordcode {
+        height: 60px;
+        font-size: 30px;
+        padding-top: 10px;
+    }
+    
+    span#drop1, span#drop2, span#drop3, span#drop4 { 
+        height: 60px;
+        padding-top: 20px;
+    }
+     
+    span#FirstNameErr, span#LastNameErr, span#JobTitleErr, span#WorkEmailErr, span#workEmailSendErr,
+    span#authUserNameErr, span#authPasswordErr, input#enterPasswordcode {
+        font-size: 22px;
+    }    
+    
+    span#passcodeErrMsg, span#passcodeErrMsg2 {
+        height: 50px;
+    }
+    img#passcodeImg, img#setPasscodeImg, input#enterPasscode, input#selectPasscode {      
+        height: 70px;
+    }
+    span#forgotBtn {
+        width: 400px;   
+        height: 55px;    
+    }
+    
+    div.resetBtn {
+        width: 250px;
+    }
+    
+    span.numbutton, span.numKey {
+        width: 161px;
+        height: 93px;
+        font-size: 45px;
+        line-height: 93px;
+    }
+         
+    span#btn2, span#key2 {
+        left: 170px;    
+    }
+    span#btn3, span#key3 {
+        left: 340px;    
+    }
+    span#btn4, span#key4 {
+        top: 104px;    
+    }
+    span#btn5, span#key5 {
+        left: 170px;  
+        top: 104px;    
+    }
+    span#btn6, span#key6 {
+        left: 340px;
+        top: 104px;      
+    }
+    span#btn7, span#key7 {
+        top: 208px;    
+    }
+    span#btn8, span#key8 {
+        top: 208px; 
+        left: 170px;    
+    }
+    span#btn9, span#key9 {
+        top: 208px; 
+        left: 340px;    
+    }
+    span#btn0, span#key0 {
+        top: 312px;
+        left: 170px;    
+    }
+    span#btnok, span#keyok {
+        top: 312px;
+        font-size: 40px; 
+    }
+    span#btndel, span#keydel {
+        top: 312px;
+        left: 340px;
+    }  
+    img#keydel {
+        margin-top: 10px;
+        margin-left: 45px;
+        width: 50px;
+        height: 27px; 
+    }  
+    img#medal, img#expiredClock {
+        width: 90px;
+        height: 120px;
+    }
+    
+    span#downloadTwoSteps, span#downloadStep1, span#downloadStep2, span#downloadLink, span#downloadMessage, span#iosMessage {
+        margin-left: 60px;
+    }
+    span#downloadMessage {
+        width: 550px;
+        margin-top: 80px;        
+    }
+    span#iosMessage {
+        width: 550px;
+    }
+    
+    input#enterPasscode::-webkit-input-placeholder, input#selectPasscode::-webkit-input-placeholder {
+        font-size: 30px;
+        padding-top: 4px;
+    }
+    
+    input#enterPasscode::-moz-placeholder, input#selectPasscode::-moz-placeholder {
+        font-size: 30px;
+        padding-top: 4px;
+    }
+    
+    input#enterPasscode:-ms-input-placeholder, input#selectPasscode:-ms-input-placeholder {
+        font-size: 30px;
+        padding-top: 4px;
+    }
+}

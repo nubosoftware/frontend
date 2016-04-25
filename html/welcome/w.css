@@ -1,0 +1,28 @@
+body {	
+	margin: auto;
+	padding: 0;
+	color:white;	
+	width: 100%;
+	
+}
+div{ font-family:"Arial",Georgia,Serif; }
+div#main{
+	margin: auto;
+	width:800px;
+	height:600px;
+	background-image:url('../player/pattern_72.png'); 
+}
+div#top {  height: 14pt;} 
+div#icon {  width: 76px; margin: 0 auto;} 
+div#iconbottom {  height: 17pt;} 
+div#logo { width: 79px; margin: 0 auto;  } 
+div#logobottom {  height: 47pt;}
+div#logobottome {  height: 80pt;}  
+div#maintitle { font-size:40pt; text-align:center; }
+div#maintitlebottom {  height: 33pt;}  
+div#subtitle { font-size:26pt; text-align:center; width: 550pt ; margin: 0 auto; } 
+div#subtitlebottom {  height: 111pt;}  
+div#desc { font-size:18pt; text-align:center; width: 500pt ; margin: 0 auto;  } 
+
+
+

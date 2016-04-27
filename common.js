@@ -15,6 +15,8 @@ var Common = {
     //SendGrid: require('sendgrid').SendGrid,
     geoip : require('geoipcity'),
     serverurl : "https://lab.nubosoftware.com/",
+    publicurl : "https://lab.nubosoftware.com/",
+    internalurl : "https://lab.nubosoftware.com/",
     restify : require('restify'),
     crypto : require('crypto'),
     sequelizeModule : require('sequelize'),
@@ -155,7 +157,7 @@ var logger = Common.logger;
 try {
     require('winston-syslog').Syslog;
     logger.add(winston.transports.Syslog, {
-        app_name : "nubomanagement",
+        app_name : "nubomanagement-public",
         handleExceptions : true,
         json : true
     });
@@ -214,6 +216,7 @@ function parse_configs() {
             Common[attrname] = settings[attrname];
         }
 
+        Common.serverurl = Common.publicurl;
         Common.dcURL = Common.serverurl;
         Common.showOnlyControlPanel = Common.withService ? Common.withService : Common.showOnlyControlPanel;
 

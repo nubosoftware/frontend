@@ -490,9 +490,14 @@ function buildServerObject(server) {
         return res.send(204);
     }
 
-    var file = new nodestatic.Server('./', {
+    var webclientfile = new nodestatic.Server('./', {
         cache : 10
     });
+
+    var resourcesfile = new nodestatic.Server(Common.nfshomefolder, {
+        cache : 10
+    });
+
     var isPermittedUrl = function(url) {
         var match;
         match = url.match('^.*/html/(.*)');
@@ -526,68 +531,64 @@ function buildServerObject(server) {
             res.end();
             return;
         }
-// maybe we need this for streaming
-//req.addListener('end', function () {
-//        file.serve(req, res, function (err, result) {
-//            if (err) { // There was an error serving the file
-//               var sys = require('sys');
-//                sys.error("Error serving " + req.url + " - " + err.message);
-//
-//                // Respond to the client
-//                res.writeHead(err.status, err.headers);
-//                res.end();
-//            }
-//        });
-//    }).resume();
-        file.serve(req, res, function(err, result) {
-            //console.log("served err:", err);
-            if (err) {// There was an error serving the file
-                logger.error("Error serving " + req.url + " - " + err.message);
 
-                // Respond to the client
+        var urlObj = url.parse(req.url);
+        var urlObj = url.parse(req.url);
+        var pathname = urlObj.pathname;
 
-                res.writeHead(404, {
-                    "Content-Type" : "text/plain"
-                });
-
-                res.write("404 Not Found\n");
-                res.end();
-
-                /*
-                 * res.writeHead(302, { 'Location' : '/404Page.html' });
-                 * res.end();
-                 */
-
-                Common.redisClient.zincrby("missing_res", 1, req.url);
-                return;
-            }
-            var deviceName = req.params.deviceName;
-            var resolution = req.params.resolution;
-            if (deviceName != null || resolution != null) {
-                var urlObj = url.parse(req.url);
-                var pathname = urlObj.pathname;
-                if (pathname.indexOf("/html/player/extres/") === 0)
-                    pathname = pathname.substr(20);
-                if (deviceName != null && deviceName.length > 0) {
-                    Common.redisClient.sadd("devices", deviceName);
-                    Common.redisClient.zincrby("d_" + deviceName, 1, pathname);
+        //handle apps resoureces
+        if (pathname.indexOf("/html/player/extres/") === 0) {
+            resourcesfile.serve(req, res, function(err, result) {
+                if (err) { 
+                    logger.error("Error serving " + req.url + " - " + err.message);
+                    res.writeHead(404, {
+                        "Content-Type": "text/plain"
+                    });
+                    res.write("404 Not Found\n");
+                    res.end();
+                    Common.redisClient.zincrby("missing_res", 1, req.url);
+                    return;
                 }
-                if (resolution != null && resolution.length > 0) {
-                    Common.redisClient.sadd("resolutions", resolution);
-                    Common.redisClient.zincrby("r_" + resolution, 1, pathname);
+                else{
+                    userConnectionStatics(req, pathname);
                 }
-            }
-        });
-        // console.log("req.socket.localPort:"+JSON.stringify(req.socket.localPort));
+            });
+        //handle web client resources
+        } else {
+            webclientfile.serve(req, res, function(err, result) {
+                if (err) { // There was an error serving the file
+                    logger.error("Error serving " + req.url + " - " + err.message);
+                    res.writeHead(404, {
+                        "Content-Type": "text/plain"
+                    });
+                    res.write("404 Not Found\n");
+                    res.end();
+                    Common.redisClient.zincrby("missing_res", 1, req.url);
+                    return;
+                }
+                else{
+                    userConnectionStatics(req, pathname);
+                }
+            });
+        }
     });
-    /*
-     * server.on('connection', function(socket) { cnt++; socket.cnt= cnt;
-     * console.log("connection "+cnt+" from "+socket.remoteAddress);
-     * socket.on('close' , function() { console.log("connection "+this.cnt+"
-     * closed."); });
-     *
-     * });
-     */
+}
+
+function userConnectionStatics(req, pathname) {
+    var deviceName = req.params.deviceName;
+    var resolution = req.params.resolution;
+    if (deviceName != null || resolution != null) {
+        if (pathname.indexOf("/html/player/extres/") === 0)
+            pathname = pathname.substr(20);
+        if (deviceName != null && deviceName.length > 0) {
+            Common.redisClient.sadd("devices", deviceName);
+            Common.redisClient.zincrby("d_" + deviceName, 1, pathname);
+        }
+        if (resolution != null && resolution.length > 0) {
+            Common.redisClient.sadd("resolutions", resolution);
+            Common.redisClient.zincrby("r_" + resolution, 1, pathname);
+        }
+    }
 }
 
 Common.loadCallback = mainFunction;

@@ -1697,7 +1697,7 @@ function createSessionFiles(session, callback) {
             //create Session.xml                     
             var rootFolder = Common.nfshomefolder;
             var xml_file = rootFolder + User.getUserDeviceDataFolder(UserName, deviceID) + "Session.xml";
-            var xml_file_content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\r\n" + "<session>\r\n" + "\t<gateway_url>" + session.params.gatewayInternal + "</gateway_url>\r\n" + "\t<gateway_controller_port>" + session.params.gatewayControllerPort + "</gateway_controller_port>\r\n" + "\t<gateway_apps_port>" + session.params.gatewayAppsPort + "</gateway_apps_port>\r\n" + "\t<platformID>" + platform.params.platid + "</platformID>\r\n" + "\t<management_url>" + Common.serverurl + "</management_url>\r\n" + "\t<username>" + login.getUserName() + "</username>\r\n" + "</session>\r\n"
+            var xml_file_content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\r\n" + "<session>\r\n" + "\t<gateway_url>" + session.params.gatewayInternal + "</gateway_url>\r\n" + "\t<gateway_controller_port>" + session.params.gatewayControllerPort + "</gateway_controller_port>\r\n" + "\t<gateway_apps_port>" + session.params.gatewayAppsPort + "</gateway_apps_port>\r\n" + "\t<platformID>" + platform.params.platid + "</platformID>\r\n" + "\t<management_url>" + Common.internalurl + "</management_url>\r\n" + "\t<username>" + login.getUserName() + "</username>\r\n" + "</session>\r\n"
             Common.fs.writeFile(xml_file, xml_file_content, function(err) {
                 if (err) {
                     var msg = "Failed to create Session.xml file. error: " + err;

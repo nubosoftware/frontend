@@ -1,0 +1,94 @@
+#############################################################################################################################################
+# README: To use Nubo, copy to Settings.json, edit this file, and get rid of all annotations and this readme.
+#         I added some annotations, along with things I completely not understand.
+#         If you see <...> then it's a parameter you should modify for your lab/deployed environment. Other annotations are inline as well.
+#
+#         I hope developers remember to update it in further commits.
+# TODO: what are the following params:  (@israel ?)
+#    HUH_*
+#
+# Notes:
+#    internal_network: Deprecated - leave it 177777 for now. - was used for internal_gateway, but now internal_gateway is used for the KVM
+#    urlToAPK /  urlToIOS1 / urlToIOS2 : make sure they are in public area, exposed by the http server
+#    disable orgRdirectionMAp and countryRedirectionMap
+#
+#
+# Viva el Nubo,
+#	Ron
+############################################################################################################################################
+
+{
+ "serverurl": "https://<YOUR LAB>.nubosoftware.com/",       # url of your server
+ "redishost": "127.0.0.1",
+ "redisport": 6379,
+ "redisdb": 0,
+ "cassandraHost": "localhost:9160",
+ "nfsserver": "<YOURUSERNAME>@192.168.122.1",               # ssh-like syntax
+ "default_gateway": "<YOUR.MACHINE.GATEWAY.IP>:7890",       # don't use it... insecure
+ "sessionTimeout":  600,                                    # delay till real logout of android user from client disconnection
+ "internal_gateway": "192.168.122.1",                       # ip of server, accessible by platform
+ "hostline": "<YOURUSERNAME>@192.168.122.1",                # host of android (depricated)
+ "platformpath": "PATHTO/nuboplatform",                     # path to android images and packages list
+ "adminEmail": "<YOUR_EMAIL_FOR_ADMIN_LOGS>@nubosoftware.com",  # destination of notifications
+ "mailOptions": {                                           # configuration for notifications by email
+  "service": "Gmail",
+  "auth": {
+   "user": "gmail.user@gmail.com",
+   "pass": "userpass"
+  }
+ }
+ "adminName": "Admin Devlog ",
+ "platformType": "amazon",                                  # type of platform
+ "sshPrivateKey": "/home/<YOURUSERNAME>/.ssh/id_rsa",       # key to login to youself without password
+ "platformPoolSize": 1,                                     # number of platforms to startup
+ "nfshomefolder": "/srv/nfs4/homes/",                       # path to nfs files
+ "HUH_XXXnfsSyncLocations": [
+  	"HUH_ssh://WHO@WHAT_IS_THIS_PARAM.nubosoftware.com///ssd/data/homes"    		
+ ],
+ "ssl_gateway": "<YOUR LAB>.nubosoftware.com:7443",
+ "useSSLGateway": true,
+ "internal_network": "177777",
+ "nographics": false,
+ "useADB": false,                                           # use ssh connection to android
+ "maxLoginsPerPlatform": 225,
+ "urlToAPK": "http://<PATH_TO_YOUR_PUBLICLY_AVAILABLE_APK_eg>_na02.nubosoftware.com/html/android/NuboClient.apk",
+ "urlToIOS1": "https://labtst.nubosoftware.com/html/yael/Nubo_Distribution_Profile.mobileprovision",
+ "urlToIOS2": "https://labtst.nubosoftware.com/html/yael/NuboClientIOS.plist",
+ "demoActivationKey": "5488884a97a98c0db8f863c074eff683ae3c5819a594e89fc6283772f9a2b26d64e7bb6fad21fc74d729c301d460000f",
+ "HUH_dcName": "devtst",
+ "iosPushUseSandbox": true,
+ "iosPushCertFile": "./cert/pushNuboDevCert.pem",
+ "iosPushKeyFile": "./cert/pushNUBOkey.pem",
+ "minPlayerVersion": "0.2",
+ "isGeoIP": true,
+ "geoipLicense": "<license>",
+ "countryRedirectionMap": {
+ 	"<DisableForDev>IL": "https://nubo02.nubosoftware.com/"
+ },
+ "orgRedirectionMap": {
+ 	"<DisableForDev>sysaidhr.com": "https://nubo02.nubosoftware.com/"
+ }, 
+ "platforversion": "0.7.dev",
+ "listenAddresses" : [
+ 	"https://", 
+ 	"http://"
+ ],
+ "versionRedirectionMap" : {
+ 	"<DisableForDev>0.4" : "https://nubo02.nubosoftware.com:8443/",
+ 	"<DisableForDev>0.6" : "https://nubo02.nubosoftware.com:8443/"
+ }
+ "browserfolder" : "com.android.browser/",     # This is the browser's directory (used for ntlm)
+ "photoCompression" : 70,                      # Compression quality for photos uploaded from the client
+ "http_proxy": "http://10.0.0.1:3128",         # proxy configuration for requests, if necessary
+ "EwsAuthorizationMethod": "NTLM",             # Authenication method for requests to Exchange server
+ "autoLogin" : [          # Handle NTLM aythentication
+     "10.1.21.34",
+     "com.yahoo.com"
+ ],
+ "dcName": <data center name>,                 # for user redirection
+ "dcURL": <data center URL>,                   # for user redirection
+ "allowedOrigns": [<dcURL_1>, <dcURL_2>],      # list of all other data center URL's (for user redirection)
+ "publicurl": <server public URL >,            # address used in nubomanagement-public
+ "internalurl": <server internal URL>          # address used for internal access
+
+}

@@ -23,6 +23,8 @@ var MediaStream = require('./mediaStream.js');
 var ThreadedLogger = require('./ThreadedLogger.js');
 var ActivationLink = require('./activationLink.js');
 var Upload = require('./upload.js');
+var authFilterExcludes = require('./authFilterExcludes.js');
+var authFilterValidator = require('./authFilterValidator.js');
 
 // var GetProfiles = require('./getProfiles.js');
 // var AddAdmins = require('./addAdmins.js');
@@ -350,6 +352,25 @@ function yescache(req, res, next) {
   next();
 }
 
+
+var validator = new authFilterValidator(['LOGINTOKEN'], authFilterExcludes);
+
+function authValidate(req, res, next){
+
+    validator.validate(req, function(err){
+        if(err){
+            logger.error("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$authorization validatation failed: " + err + " ::: " + req.path(req.url));
+            next();
+            return;
+        }
+        else {
+            next();
+            return;
+        }
+    });
+}
+
+
 var cnt = 0;
 
 var accesslogger = accesslog({
@@ -371,11 +392,13 @@ function buildServerObject(server) {
     // server.use(debugFunc);
 
     server.use(accesslogger);
+    server.use(nocache);
+    server.use(authValidate);
     // server.use(Common.restify.gzipResponse());
     server.use(Common.restify.CORS({
         origins: Common.allowedOrigns, // defaults to ['*']
     }));
-    server.use(nocache);
+    
     server.get('/authenticateUser', AuthenticateUser.func);
     server.get('/checkPasscode', checkPasscode.func);
     server.get('/setPasscode', setPasscode.func);
@@ -499,6 +522,7 @@ function buildServerObject(server) {
     });
 
     var isPermittedUrl = function(url) {
+        // logger.error("url: "+ url )
         var match;
         match = url.match('^.*/html/(.*)');
         if (match !== null){

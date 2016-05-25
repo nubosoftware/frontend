@@ -13,6 +13,7 @@ var request = require('./request.js');
 var querystring = require('querystring');
 var settings = require('./settings.js');
 var ThreadedLogger = require('./ThreadedLogger.js');
+var Entities = require('html-entities').XmlEntities;
 
 var Notifications = {
     'notifyClient' : notifyClient,
@@ -218,6 +219,10 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type);
         return;
     }
+    
+    var entities = new Entities();
+    notifyTitle = entities.decode(entities.decode(notifyTitle));
+    
     logger.info("Sending notification to "+pushRegID);
     if (deviceType === "Android") {
         if (!sender) {

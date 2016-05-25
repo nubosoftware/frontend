@@ -4,6 +4,7 @@ var winston = require('winston');
 var memwatch = require('memwatch');
 var crypto = require('crypto');
 var poolModule = require('generic-pool');
+var dataEncryptor = require('./dataEncryptor.js');
 
 var Common = {
     minUXIPVersion : 1,
@@ -33,6 +34,7 @@ var Common = {
     redishost : "127.0.0.1",
     redisport : 6379,
     redisdb : 0,
+    redispassword : null,
     platfromPortStart : 5560,
     platformIPPrefix : "192.168.122.",
     platformMacPrefix : "52:54:00:12:00:",
@@ -84,7 +86,11 @@ var Common = {
         bottomCapacityLevel: 0,
         maxCapacity: 60,
         usersPerPlatform: 20,
-        choosePool: 10
+        choosePool: 10,
+        maxFailed: 0,
+        maxFails: 5,
+        fixedPool: true,
+        cleanPlatformsMode: false
     },
     logLevel: "info",
     defaultApps: [
@@ -96,11 +102,10 @@ var Common = {
         "com.android.gallery",
         "com.mobisystems.editor.office_with_reg",
         "com.mobisystems.mobiscanner",
-        "com.nubo.controlpanel",
         "com.nubo.messenger",
         "com.nubo.nubosettings"
     ],
-    showOnlyControlPanel : false,
+    hideControlPanel : false,
     //TODO change the name to something more appropriate!!!
     withService : false,
     withServiceDeviceID : "virtualDevice",
@@ -122,7 +127,21 @@ var Common = {
     mappingAttributesNubo : ["memberOf", "email", "manager", "officephone", "lastname", "firstname", "distinguishedName", "objectCategory", "mobilephone"],
     isHandlingMediaStreams : false,
     photoCompression : 70,
-    ffmpegCgroupDir : "/sys/fs/cgroup/cpu/ffmpeg/tasks"
+    ffmpegCgroupDir : "/sys/fs/cgroup/cpu/ffmpeg/tasks",
+    activateBySMS : false,
+    smsHandler : false,
+    encryptedParameters: {
+        "dbPassword": 1,
+        "mailOptions": {
+            "auth": {
+                "pass": 1
+            }
+        },
+        "NotificationGateway": {
+            "authKey": 1
+        },
+        "redispassword": 1
+    }
 };
 
 try {
@@ -193,18 +212,16 @@ function to_array(args) {
 }
 
 function parse_configs() {
-    //logger.info('Load settings from file');
-    var msg;
-    Common.fs.readFile('Settings.json', function(err, data) {
+    logger.info('Load settings from file');
+
+    dataEncryptor.readFile('Settings.json', Common.encryptedParameters, Common.enc, Common.dec, function(err, settings) {
         if (err) {
+            logger.error('cannot load settings from file');
             return;
-            logger.error('Error: Cannot load settings from file');
         }
-        msg = data.toString().replace(/[\n|\t]/g, '');
-        var settings = JSON.parse(msg);
 
         if(settings.logLevel && (settings.logLevel !== Common.logLevel)) logger.level = settings.logLevel;
-        logger.debug(msg);
+
         if(settings.EWSDomainPrefix) {
             //TODO: remove this block in Aug 2016 as depricated
             logger.warn("use EWSDomain insead of EWSDomainPrefix");
@@ -218,7 +235,6 @@ function parse_configs() {
 
         Common.serverurl = Common.publicurl;
         Common.dcURL = Common.serverurl;
-        Common.showOnlyControlPanel = Common.withService ? Common.withService : Common.showOnlyControlPanel;
 
         if(Common.platformpath) Common.imagesPath = Common.platformpath + "/out/target/product/x86_platform";
 
@@ -233,7 +249,7 @@ function parse_configs() {
             Common.redisPool = poolModule.Pool({
                 name : 'redis',
                 create : function(callback) {
-                    var c = Common.redis.createClient(Common.redisport, Common.redishost);
+                    var c = Common.redis.createClient(Common.redisport, Common.redishost, { password : Common.redispassword });
                     if (Common.redisdb > 0) {
                         c.select(Common.redisdb, function(err) {
                         });
@@ -342,9 +358,29 @@ function parse_configs() {
                 return;
             });
         };
-    });
+    }, logger);
 
 }
+
+Common.enc = function(plainText) {
+    if (!plainText || plainText.length <= 2)
+        return plainText;
+    var cipher = crypto.createCipher(Common.encAlgorithm, Common.encKey);
+    var encrypted = "enc:" + cipher.update(plainText, 'utf8', 'hex') + cipher.final('hex');
+    return encrypted;
+
+};
+
+Common.dec = function(encText) {
+    if (!encText || encText.length <= 4)
+        return encText;
+    if (encText.indexOf("enc:") != 0)
+        return encText;
+    var encOnlyText = encText.substr(4);
+    var decipher = crypto.createDecipher(Common.encAlgorithm, Common.encKey);
+    var decrypted = decipher.update(encOnlyText, 'hex', 'utf8') + decipher.final('utf8');
+    return decrypted;
+};
 
 parse_configs();
 
@@ -369,26 +405,6 @@ Common.quit = function() {
         logger.clear();
     } catch(err) {}
     process.exit(0);
-};
-
-Common.enc = function(plainText) {
-    if (!plainText || plainText.length <= 2)
-        return plainText;
-    var cipher = crypto.createCipher(Common.encAlgorithm, Common.encKey);
-    var encrypted = "enc:" + cipher.update(plainText, 'utf8', 'hex') + cipher.final('hex');
-    return encrypted;
-
-};
-
-Common.dec = function(encText) {
-    if (!encText || encText.length <= 4)
-        return encText;
-    if (encText.indexOf("enc:") != 0)
-        return encText;
-    var encOnlyText = encText.substr(4);
-    var decipher = crypto.createDecipher(Common.encAlgorithm, Common.encKey);
-    var decrypted = decipher.update(encOnlyText, 'hex', 'utf8') + decipher.final('utf8');
-    return decrypted;
 };
 
 Common.row2obj = function(row) {

@@ -27,6 +27,8 @@
     "sequelize": "2.0.0-rc4",
     "nodemailer": "0.7.1",
     "request": "2.72.0",
-    "mkdirp": "0.5.1"
+    "mkdirp": "0.5.1",
+    "html-entities" : "1.2.0",
+    "permission-parser": "http://nubolab.nubosoftware.com:4873/permission-parser/-/permission-parser-0.0.2.tgz"
   }
 }

@@ -8,6 +8,8 @@ var Login = require('./login.js');
 var Track = require('./track.js');
 var async = require('async');
 var ThreadedLogger = require('./ThreadedLogger.js');
+var smsNotification = require('./SmsNotification.js');
+
 var isFirstTime = "";
 
 var MIN_DIFFERENT_DIGITS = 4;
@@ -280,7 +282,7 @@ function findUserNameSendEmail(userEmail) {
     var msg;
 
     Common.db.User.findAll({
-        attributes : ['firstname', 'lastname'],
+        attributes : ['firstname', 'lastname','mobilephone','orgdomain'],
         where : {
             email : userEmail,
         },
@@ -302,6 +304,8 @@ function findUserNameSendEmail(userEmail) {
 
         var firstname = results[0].firstname != null ? results[0].firstname : '';
         var lastname = results[0].lastname != null ? results[0].lastname : '';
+        var mobilePhone = results[0].mobilephone != null ? results[0].mobilephone : '';
+        var mainDomain = results[0].orgdomain != null ? results[0].orgdomain : '';
 
         Common.crypto.randomBytes(48, function(ex, buf) {
             Common.crypto.randomBytes(48, function(ex, buf) {
@@ -315,7 +319,7 @@ function findUserNameSendEmail(userEmail) {
                         email : userEmail
                     }
                 }).then(function() {
-                    sendEmail(userEmail, firstname, lastname, loginEmailToken);
+                    sendNotification(userEmail, firstname, lastname, loginEmailToken,mobilePhone,mainDomain);
                 }).catch(function(err) {
                     status = 0;
                     msg = "Internal Error: " + err;
@@ -326,32 +330,81 @@ function findUserNameSendEmail(userEmail) {
             });
         });
     });
-
 }
 
-function sendEmail(email, first, last, loginEmailToken) {
-    // var unlockPasswordURL = Common.serverurl + "unlockPassword" + "?email=" + encodeURIComponent(email) + "&&loginemailtoken=" + encodeURIComponent(loginEmailToken);
-    var unlockPasswordURL = Common.serverurl + "html/player/login.html#unlockPassword/" + encodeURIComponent(loginEmailToken) + "/" + encodeURIComponent(email);
-    logger.info("unlock: " + unlockPasswordURL);
-    // setup e-mail data with unicode symbols
-    var mailOptions = {
-        from : "support@nubosoftware.com",
-        // sender address
-        fromname : "Nubo Support",
-        to : email,
-        // list of receivers
-        toname : first + " " + last,
-        subject : "Unlock Nubo Passcode",
-        // Subject line
-        text : "Dear " + first + " " + last + ", \n Unlock your passcode, and then go to your Nubo app from your mobile device." + "\n\n- The Nubo Team",
-        // plaintext body
-        html : "<p>Dear " + first + " " + last + ",</p><p> \n Click the following link to unlock your passcode, and then go to your Nubo app from your mobile device:</p>\n\n" + "<p><a href=\"" + unlockPasswordURL + "\">" + "Unlock Passcode</a></p>  \n\n<p>- The Nubo Team</p>" // html body
-    };
-    logger.info("sent " + email + " unlockpassword email");
-    Common.mailer.send(mailOptions, function(success, message) {
-        if (!success) {
-            logger.info("sendgrid error: " + message);
-            return;
+function sendNotification(email, first, last, loginEmailToken,mobilePhone,mainDomain) {
+
+    Common.db.Orgs.findAll({
+        attributes : ['notifieradmin','deviceapprovaltype'],
+        where : {
+            maindomain : mainDomain
+        },
+    }).complete(function(err, results) {
+
+        if (!!err) { // error on fetching org
+            logger.error('Error on get orgs details for ' + mainDomain +', error: ' + err);
+        } else if (!results || results == "") { // no org in DB
+            logger.error('Cannot find org + ' + mainDomain);
+        } else { // get org details and act accordingly
+            var row = results[0];
+            var notifieradmin = row.notifieradmin != null ? row.notifieradmin : '';
+            var deviceapprovaltype = row.deviceapprovaltype != null ? row.deviceapprovaltype : 0;
+            
+            var senderEmail = "support@nubosoftware.com";
+            var senderName = "Nubo Support";
+            
+            // define to recepient and subject based on device approval type
+            var toEmail = '';
+            var emailSubject = '';
+            var toName = '';
+            if (deviceapprovaltype == 0) { // default behavior, user approve himself
+                toEmail = email;
+                emailSubject = 'Unlock Nubo Passcode';
+                toName = first + " " + last;
+            } else if (deviceapprovaltype == 1) { // manually only by admin
+                toEmail = notifieradmin;
+                emailSubject = 'Unlock Nubo Passcode for ' + first + ' ' + last;
+                toName = notifieradmin;
+            } else if (deviceapprovaltype == 2) { // both for admin and user
+                toEmail = [notifieradmin,email];
+                emailSubject = 'Unlock Nubo Passcode for ' + first + ' ' + last;
+                toName = '';
+            }
+            
+            // build reset password URL 
+            var unlockPasswordURL = Common.serverurl + "html/player/login.html#unlockPassword/" + encodeURIComponent(loginEmailToken) + "/" + encodeURIComponent(email);
+            logger.info("Unlock Link: " + unlockPasswordURL);
+            
+            if (toEmail != null && toEmail.length > 0) {
+                // setup e-mail data with unicode symbols
+                var mailOptions = {
+                    from : senderEmail,
+                    // sender address
+                    fromname : senderName,
+                    to : toEmail,
+                    // list of receivers
+                    toname : toName,
+                    subject : emailSubject,
+                    // Subject line
+                    text : "Dear " + first + " " + last + ", \n Unlock your passcode, and then go to your Nubo app from your mobile device." + "\n\n- The Nubo Team",
+                    // plaintext body
+                    html : "<p>Dear " + first + " " + last + ",</p><p> \n Click the following link to unlock your passcode, and then go to your Nubo app from your mobile device:</p>\n\n" + "<p><a href=\"" + unlockPasswordURL + "\">" + "Unlock Passcode</a></p>  \n\n<p>- The Nubo Team</p>" // html body
+                };
+                logger.info("sent " + email + " unlockpassword email");
+                Common.mailer.send(mailOptions, function(success, message) {
+                    if (!success) {
+                        logger.info("sendgrid error: " + message);
+                        return;
+                    }
+                });
+            }
+
+            // send SMS
+            if (Common.activateBySMS && (deviceapprovaltype == 0 || deviceapprovaltype == 2)) {
+                smsNotification.sendSmsNotificationInternal(mobilePhone,'Click to unlock your Nubo account ' + unlockPasswordURL, function(message, status) {
+                    logger.info(message);
+                });
+            }
         }
     });
 }

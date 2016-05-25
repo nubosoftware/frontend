@@ -133,7 +133,7 @@ module.exports = function(opts, extras, callback) {
 
     if (sshPool[poolLine]) {
         sshPool[poolLine].logger = logger;
-        logger.info("OK... " + poolLine + " already in pool");
+        logger.debug("OK... " + poolLine + " already in pool");
         if (callback) callback(null, sshPool[poolLine]);
     } else {
 

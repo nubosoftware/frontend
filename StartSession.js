@@ -72,7 +72,6 @@ function startSession(req, res, next) {
     var msg = "";
     var status = 100; //unknown
     //logger.info(req.url);
-
     //read and validate params
     var loginToken = req.params.loginToken;
     var timeZone = req.params.timeZone;
@@ -85,7 +84,7 @@ function startSession(req, res, next) {
             new Login(loginToken, function(err, login) {
                 if (err) {
                     res.send({
-                        status: 0,
+                        status: 2,
                         message: 'Internal error. Please contact administrator.',
                         loginToken: 'notValid'
                     });
@@ -104,7 +103,6 @@ function startSession(req, res, next) {
                     callback(msg);
                     return;
                 }
-
                 logger.user(login.getUserName());
                 logger.info("Start session", {mtype: "important"});
                 loginData = login;
@@ -122,7 +120,6 @@ function startSession(req, res, next) {
                     callback(err);
                     return;
                 }
-
                 if (dcname && dcname != loginData.getDcname()) {
                     var msg = "user logged in at diffrent data center and need to be redirected";
                     res.send({
@@ -320,31 +317,17 @@ function endSessionLocked(session, platform, callback) {
                             session.params.totalSessionTime = (hh > 0 ? hh + ' hours, ' : '') + (mm ? mm + ' minutes, ' : '') + (ss ? ss + ' seconds' : '');
                             session.save(callback);
                         },
-                        // if ssh is not initializated, move platform to platforms_errs
-                        function(callback) {
-                            if (platform.ssh) {
-                                callback(null);
-                            } else {
-                                callback("ssh is not initializated");
-                            }
-                        },
                         function(callback) {
                             detachUserFromPlatform(session, callback);
                         },
                         //remove user rules from iptables
                         function(callback) {
-                            firewall.removeRulesFromTable(session.params.localid, session.params.platid, function(err, ruleCmd) {
+                            firewall.removeRulesFromTable(session.params.localid, session.params.platid, function(err, ruleCmd, tasks) {
                                 if (err) {
                                     callback(err);
-                                } else if (ruleCmd) {
-                                    //sessLogger.info("cmd: " + ruleCmd);
-                                    platform.exec(ruleCmd, function(err, code, signal, sshout) {
-                                        if (err) {
-                                            var msg = "Error in adb shell ruleCmd: " + err;
-                                            callback(msg);
-                                            return;
-                                        }
-                                        sessLogger.logTime("rules has been removed from table");
+                                } else if (tasks) {
+                                    platform.applyFirewall(tasks, function(err) {
+                                        if(err) logger.error("applyFirewall failed with err: " + err);
                                         callback(null);
                                     });
                                 } else {
@@ -571,8 +554,7 @@ function syncFiles(session, syncStorage, callback) {
             //sync data folder
             function(callback) {
                 if (session.nfs && (session.params.email !== "demo@nubosoftware.com")) {
-                    var pathToSync = User.getUserDeviceDataFolder(session.params.email, session.params.deviceid);
-                    session.nfs.syncAll(pathToSync, function(err) {
+                    session.nfs.syncAll(User.getUserDeviceDataFolderObj(session.params.email, session.params.deviceid), function(err) {
                         callback(err);
                     });
                 } else {
@@ -582,8 +564,7 @@ function syncFiles(session, syncStorage, callback) {
             //sync storage folder
             function(callback) {
                 if (syncStorage && session.nfs && (session.params.email !== "demo@nubosoftware.com")) {
-                    var pathToSync = User.getUserStorageFolder(session.params.email);
-                    session.nfs.syncAll(pathToSync, function(err) {
+                    session.nfs.syncAll(User.getUserStorageFolderObj(session.params.email), function(err) {
                         callback(err);
                     });
                 } else {
@@ -746,21 +727,22 @@ function endSession(sessionID, callback) {
                                 callback(null);
                             });
                         },
-                        // open ssh connection
+                        //get real device ID (to support when withService set)
                         function(callback) {
-                            platform.initSsh(sessLogger, function(err, sshobj) {
-                                if (err) {
-                                    addToErrorsPlatforms = true;
-                                    callback("error in initSsh err: " + err);
+                            Common.redisClient.hget("login_" + session.params.loginToken, "deviceID", function(err, replay) {
+                                if(err){
+                                    callback(err);
                                     return;
                                 }
 
-                                if (sshobj) {
-                                    ssh = sshobj;
-                                    callback(null);
-                                } else {
-                                    callback("initSsh return null object");
-                                }
+                                realDeviceID = replay;
+                                callback(null);
+                            });
+                        },
+                        // remove login token from redis
+                        function(callback) {
+                            Common.redisClient.DEL('login_' + session.params.loginToken, function(err) {
+                                callback(err);
                             });
                         },
                         function(callback) {
@@ -794,18 +776,6 @@ function endSession(sessionID, callback) {
                                 callback(null);
                             });
                         },
-                        //get real device ID (to support when withService set)
-                        function(callback) {
-                            Common.redisClient.hget("login_" + session.params.loginToken, "deviceID", function(err, replay) {
-                                if(err){
-                                    callback(err);
-                                    return;
-                                }
-
-                                realDeviceID = replay;
-                                callback(null);
-                            });
-                        },
                         // remove platform/gateway assosiation to user device
                         function(callback) {
                             User.updateUserConnectedDevice(email, realDeviceID, null, null, sessLogger, function(err) {
@@ -818,7 +788,7 @@ function endSession(sessionID, callback) {
                         },
                         // remove data center details in case it is last connected device
                         function(callback) {
-                            if (!Common.dcName && !Common.dcURL) {
+                            if (!Common.dcName || !Common.dcURL) {
                                 callback(null);
                                 return;
                             }
@@ -847,7 +817,7 @@ function endSession(sessionID, callback) {
                             });
                         },
                         function(callback){
-                            if (!Common.dcName && !Common.dcURL) {
+                            if (!Common.dcName || !Common.dcURL) {
                                 callback(null);
                                 return;
                             }
@@ -1551,7 +1521,7 @@ function buildUserSession(UserName, deviceID, login, dedicatedPlatID, timeZone, 
                     },
                     // update user DB with data center details
                     function(callback) {
-                        if (!Common.dcName && !Common.dcURL) {
+                        if (!Common.dcName || !Common.dcURL) {
                             callback(null);
                             return;
                         }
@@ -1588,7 +1558,15 @@ function buildUserSession(UserName, deviceID, login, dedicatedPlatID, timeZone, 
                             }
                             callback(null);
                         });
-                    }
+                    },
+                    // Install/Uninstall new apps to user if needed
+                    function(callback) {
+                        // Install/Uninstall new apps to user if needed
+                        // TODO: do this under lock only on 1st login
+                        addAppModule.startSessionInstallations(session, time, hrTime, uninstallFunc, function(err) {
+                            callback(null);
+                        });
+                    },
                 ], function(err) {
                     if (err) {
                         logger.error("buildUserSession: " + err);
@@ -1873,23 +1851,16 @@ function postStartSessionProcedure(session, time, hrTime) {
         },
         //insert user rules into iptables 
         function(callback) {
-            callback(null);
-            return;
-
             Common.redisClient.publish("platformPoolRefresh", "User connected");
-            firewall.generateUserRules(session.params.email, session.params.localid, session.params.platid, firewall.Firewall.add, function(err, ruleCmd) {
+            firewall.generateUserRules(session.params.email, session.params.localid, session.params.platid, firewall.Firewall.add, function(err, ruleCmd, tasks) {
                 if (err) {
                     callback(err);
                     return;
                 }
 
                 if (ruleCmd) {
-                    session.platform.exec(ruleCmd, function(err, code, signal, sshout) {
-                        if (err) {
-                            callback("error in adb shell: " + err);
-                            return;
-                        }
-
+                    session.platform.applyFirewall(tasks, function(err) {
+                        if(err) logger.error("applyFirewall failed with err: " + err);
                         callback(null);
                     });
                 } else {

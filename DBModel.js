@@ -72,6 +72,8 @@ function initSequelize(dbname, user, password, host, port, callback) {
         orguser : Sequelize.STRING,
         passcode : Sequelize.STRING,
         passcodeupdate: Sequelize.DATE,
+        passcodetypechange :  Sequelize.INTEGER,
+        passcodetypeprev : Sequelize.INTEGER,
         securessl : Sequelize.STRING,
         serverurl : Sequelize.STRING,
         signature : Sequelize.STRING,
@@ -107,6 +109,7 @@ function initSequelize(dbname, user, password, host, port, callback) {
             type : Sequelize.STRING,
             primaryKey : true
         },
+        maindomain : Sequelize.STRING,
         deviceid : Sequelize.STRING,
         devicetype : Sequelize.STRING,
         email : Sequelize.STRING,
@@ -150,7 +153,9 @@ function initSequelize(dbname, user, password, host, port, callback) {
             defaultValue : 0
         },
         impersonationpassword : Sequelize.STRING,
-        impersonationuser : Sequelize.STRING
+        impersonationuser : Sequelize.STRING,
+        notifieradmin : Sequelize.STRING,
+        deviceapprovaltype :  Sequelize.INTEGER
     }, {
 
         timestamps : false

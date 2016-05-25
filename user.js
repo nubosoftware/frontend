@@ -44,63 +44,62 @@ function copyFile(src, dst, callback) {
 }
 
 function createDomainForUser(domain, logger, callback) {
-
     //look for org with the same manin domain
-
-    Common.db.Orgs.findAll({
-        where : {
-            maindomain : domain
-        },
-    }).complete(function(err, results) {
-        if (!!err) {
-            var msg = "Error while createUser while selecting main domain: " + err;
-            logger.info(msg);
-            callback(msg);
-            return;
-        }
-
-        if (!results || results == "") {
-            var org_obj = {
-                maindomain : domain,
-                authtype : '0',
-                orgname : '',
-                serverurl : '',
-                securessl : '1',
-                signature : '',
-                passcodeexpirationdays: 0,
-                passcodeminchars: 6,
-                passcodetype: 0
-            };
-            Common.db.Orgs.create(
-                org_obj
-            ).then(function(results) {
-                attachToDomainDefaultApps(domain, logger, function(err) {
-                    callback(err, org_obj);
+    async.waterfall(
+        [
+            function(callback) {
+                var defaults = {
+                    authtype : '0',
+                    orgname : '',
+                    serverurl : '',
+                    securessl : '1',
+                    signature : ''
+                }
+                Common.db.Orgs.findOrCreate({
+                    where : {
+                        maindomain : domain
+                    },
+                    defaults: defaults
+                }).complete(function(err, results) {
+                    if (!!err) {
+                        var msg = "Error while createUser while selecting main domain: " + err;
+                        logger.error(msg);
+                        callback(msg);
+                    } else {
+                        callback(null, results);
+                    }
                 });
-            }).catch(function(err) {
-                var msg = "Error while createUser while insert main domain: " + err;
-                logger.info(msg);
-                callback(msg);
-                return;
-            });
-
-        } else {
-            var org_obj = results[0].dataValues;
-            org_obj.maindomain = domain;
-            org_obj.authtype = results[0].authtype != null ? results[0].authtype : '0';
-            org_obj.orgname = results[0].orgname != null ? results[0].orgname : '';
-            org_obj.serverurl = results[0].serverurl != null ? results[0].serverurl : '';
-            org_obj.securessl = results[0].securessl != null ? results[0].securessl : '1';
-            org_obj.signature = results[0].signature != null ? results[0].signature : '';
-            org_obj.passcodeexpirationdays = results[0].passcodeexpirationdays || 0;
-            org_obj.passcodeminchars = results[0].passcodeminchars || 6;
-            org_obj.passcodetype = results[0].passcodetype || 0;
-            callback(null, org_obj);
-            // return existing domain settings
+            },
+            function(results, callback) {
+                if(results[1]) {
+                    postNewOrgProcedure(domain, logger, function(err) {
+                        callback(null, results);
+                    });
+                } else {
+                    callback(null, results);
+                }
+            },
+            function(results, callback) {
+                var org_obj = results[0].dataValues;
+                org_obj.maindomain = domain;
+                org_obj.authtype = results[0].authtype != null ? results[0].authtype : '0';
+                org_obj.orgname = results[0].orgname != null ? results[0].orgname : '';
+                org_obj.serverurl = results[0].serverurl != null ? results[0].serverurl : '';
+                org_obj.securessl = results[0].securessl != null ? results[0].securessl : '1';
+                org_obj.signature = results[0].signature != null ? results[0].signature : '';
+                org_obj.passcodeexpirationdays = results[0].passcodeexpirationdays || 0;
+                org_obj.passcodeminchars = results[0].passcodeminchars || 6;
+                org_obj.passcodetype = results[0].passcodetype || 0;
+                callback(null, org_obj);
+                // return existing domain settings
+            }
+        ], function(err, res) {
+            if(err) {
+                logger.error("createDomainForUser failed with err: " + err);
+            }
+            callback(err, res);
         }
-
-    });
-
+    );
 }
 
 var attachToDomainDefaultApps = function(maindomain, logger, callback) {
@@ -177,98 +176,153 @@ var attachToDomainDefaultApps = function(maindomain, logger, callback) {
     );
 };
 
+var postNewOrgProcedure = function(domain, logger, callback) {
+    async.series(
+        [
+            function(callback) {
+                var groupObj = {
+                    groupname : "All",
+                    maindomain : domain
+                };
+                require("./createGroup.js").createGroupInternal(groupObj, [], {logger: logger}, function(err) {
+                    if(err) {
+                        logger.error("createDomainForUser cannot create group All for new domain " + domain + " err: " + err);
+                    }
+                    callback(null);
+                });
+            },
+            function(callback) {
+                attachToDomainDefaultApps(domain, logger, function(err) {
+                    callback(null);
+                });
+            },
+            function(callback) {
+                require("./installApps.js").addAppsToGroups(domain, [""], ["All"], Common.defaultApps, function(err) {
+                    if(err) {
+                        logger.error("createDomainForUser cannot install apps to group All for new domain " + domain + " err: " + err);
+                    }
+                    callback(null);
+                });
+            }
+        ], function(err) {
+            callback(err);
+        }
+    );
+}
+
 function createUser(regEmail, org_obj, logger, callback) {
     var domain = org_obj.maindomain;
     var authType = org_obj.authtype;
     var serverURL = org_obj.serverurl;
     var secureSSL = org_obj.securessl;
     var signature = org_obj.signature;
+
     //look if that user already exists
     logger.info("createUser %s %s %s %s %s %s ", regEmail, domain, serverURL, secureSSL, signature, authType);
 
-    Common.db.User.findAll({
-        attributes : [
-            'email', 'username', 'orgdomain', 'passcode',
-            'orgemail', 'orguser', 'orgpassword', 'serverurl',
-            'securessl', 'signature', 'authtype', 'isadmin',
-            'loginattempts', 'language', 'countrylang', 'localevar',
-            'encrypted', 'dcname', 'dcurl', 'passcodeupdate'
-        ],
-        where : {
-            email : regEmail
-        }
-    }).complete(function(err, results) {
+    async.waterfall(
+        [
+            function(callback) {
+                var defaults = {
+                    username : regEmail,
+                    orgdomain : domain,
+                    passcode : '',
+                    passcodeupdate: new Date(),
+                    orgemail : regEmail,
+                    orguser : '',
+                    orgpassword : '',
+                    serverurl : (org_obj.authType !== "0") ? org_obj.serverurl : serverURL,
+                    securessl : (org_obj.authType !== "0") ? org_obj.serverssl : secureSSL.toString(),
+                    signature : (org_obj.authType !== "0") ? org_obj.signature : signature,
+                    authtype : (org_obj.authType !== "0") ? org_obj.authtype : authType.toString(),
+                    loginattempts : 0,
+                    isactive : 1,
+                };
+                Common.db.User.findOrCreate({
+                    where : {
+                        email : regEmail
+                    },
+                    defaults: defaults
+                }).complete(function(err, results) {
+                    if (!!err) {
+                        var msg = "Error while createUser while selecting user: " + err;
+                        logger.error(msg);
+                        callback(msg);
+                    } else {
+                        callback(null, results);
+                    }
+                });
+            },
+            function(results, callback) {
+                if(results[1]) {
+                    postNewUserProcedure(regEmail, domain, logger, function(err) {
+                        callback(null, results);
+                    });
+                } else {
+                    callback(null, results);
+                }
+            },
+            function(results, callback) {
+                logger.info("Found user: " + results[0].username);
+                createUserApplicationNotif(regEmail, domain);
 
-        if (!!err) {
-            var msg = "Error while createUser while selecting user: " + err;
-            logger.info(msg);
-            callback(msg);
-            return;
-        }
-
-        if (results.length < 1) {
-            logger.info("New user: " + regEmail);
-            var user_obj = {
-                email : regEmail,
-                username : regEmail,
-                orgdomain : domain,
-                passcode : '',
-                passcodeupdate: new Date(),
-                orgemail : regEmail,
-                orguser : '',
-                orgpassword : '',
-                serverurl : (org_obj.authType !== "0") ? org_obj.serverurl : serverURL,
-                securessl : (org_obj.authType !== "0") ? org_obj.serverssl : secureSSL.toString(),
-                signature : (org_obj.authType !== "0") ? org_obj.signature : signature,
-                authtype : (org_obj.authType !== "0") ? org_obj.authtype : authType.toString(),
-                isadmin : 0,
-                loginattempts : 0,
-                isactive : 1,
-            };
-            Common.db.User.create(user_obj).then(function(results) {
+                var user_obj = results[0].dataValues;
+                user_obj.email = regEmail;
+                user_obj.username = results[0].username != null ? results[0].username : '';
+                user_obj.passcode = Common.dec(results[0].passcode);
+                user_obj.passcodeupdate = results[0].passcodeupdate;
+                user_obj.passcodetypechange =  results[0].passcodetypechange;
+                user_obj.orgemail = results[0].orgemail != null ? results[0].orgemail : '';
+                user_obj.orguser = results[0].orguser != null ? results[0].orguser : '';
+                user_obj.orgpassword = Common.dec(results[0].orgpassword);
+                //If authType !=0 that means that we
+                //take exchange params from orgs table
+                user_obj.serverurl = results[0].serverurl != null ? results[0].serverurl : '';
+                user_obj.serverssl = results[0].securessl != null ? results[0].securessl : '1';
+                user_obj.signature = results[0].signature != null ? results[0].signature : '';
+                user_obj.authtype = results[0].authtype != null ? results[0].authtype : '0';
+                user_obj.isactive = results[0].isactive != null ? results[0].isactive : 0;
+                user_obj.isadmin = results[0].isadmin != null ? results[0].isadmin : 0;
+                user_obj.encrypted = results[0].encrypted != null ? results[0].encrypted : 0;
+                // if we can't find values for loginattempts assume the worst. user receives login lock.
+                user_obj.loginattempts = results[0].loginattempts != null ? results[0].loginattempts : 3;
+                user_obj.lang = results[0].language ? (results[0].language || "en") : "en";
+                user_obj.countrylang = results[0].countrylang ? (results[0].countrylang || 'US') : 'US';
+                user_obj.localevar = results[0].localevar ? (results[0].localevar || '') : '';
+                user_obj.dcname = results[0].dcname;
+                user_obj.dcurl = results[0].dcurl;
+                user_obj.orgdomain = results[0].orgdomain;
+                //logger.info("Loaded user %s %s %s %s %s %s %s %s", lpasscode, lorgEmail, lorgUser, lorgPassword, lserverURL, lsecureSSL, lsignature, lauthType);
+                callback(null, user_obj);
+            },
+            function(user_obj, callback) {
                 createUserApplicationNotif(regEmail, domain);
                 callback(null, user_obj);
-            }).catch(function(err) {
-                var msg = "Error while createUser while insert user: " + err;
-                logger.info(msg);
-                callback(msg);
-                return;
-            });
-
-        } else {
-            logger.info("Found user: " + results[0].username);
-            createUserApplicationNotif(regEmail, domain);
-
-            var user_obj = results[0].dataValues;
-            user_obj.email = regEmail;
-            user_obj.username = results[0].username != null ? results[0].username : '';
-            user_obj.passcode = Common.dec(results[0].passcode);
-            user_obj.passcodeupdate = results[0].passcodeupdate;
-            user_obj.orgemail = results[0].orgemail != null ? results[0].orgemail : '';
-            user_obj.orguser = results[0].orguser != null ? results[0].orguser : '';
-            user_obj.orgpassword = Common.dec(results[0].orgpassword);
-            //If authType !=0 that means that we
-            //take exchange params from orgs table
-            user_obj.serverurl = results[0].serverurl != null ? results[0].serverurl : '';
-            user_obj.serverssl = results[0].securessl != null ? results[0].securessl : '1';
-            user_obj.signature = results[0].signature != null ? results[0].signature : '';
-            user_obj.authtype = results[0].authtype != null ? results[0].authtype : '0';
-
-            user_obj.isadmin = results[0].isadmin != null ? results[0].isadmin : 0;
-            user_obj.encrypted = results[0].encrypted != null ? results[0].encrypted : 0;
-            // if we can't find values for loginattempts assume the worst. user receives login lock.
-            user_obj.loginattempts = results[0].loginattempts != null ? results[0].loginattempts : 3;
-            user_obj.lang = results[0].language ? (results[0].language || "en") : "en";
-            user_obj.countrylang = results[0].countrylang ? (results[0].countrylang || 'US') : 'US';
-            user_obj.localevar = results[0].localevar ? (results[0].localevar || '') : '';
-            user_obj.dcname = results[0].dcname;
-            user_obj.dcurl = results[0].dcurl;
-            //logger.info("Loaded user %s %s %s %s %s %s %s %s", lpasscode, lorgEmail, lorgUser, lorgPassword, lserverURL, lsecureSSL, lsignature, lauthType);
-            callback(null, user_obj);
-            // return existing user data
+            }
+        ], function(err, res) {
+            if(err) {
+                logger.error("createUser failed with err: " + err);
+            }
+            callback(err, res);
         }
-    });
+    );
+}
 
+var postNewUserProcedure = function(email, domain, logger, callback) {
+    async.series(
+        [
+            function(callback) {
+                require("./addProfilesToGroup.js").addProfilesToGroupInternal("All", domain, "", false, [email], function(status) {
+                    if(status != "added profiles to group successfully") {
+                        logger.error("createUser cannot attach user " + email + " to group All of domain " + domain);
+                    }
+                    callback(null);
+                });
+            }
+        ], function(err) {
+            callback(err);
+        }
+    );
 }
 
 function createUserApplicationNotif(email, domain) {
@@ -315,82 +369,95 @@ function createUserApplicationNotif(email, domain) {
 
 function checkUserDomain(email, callback) {
     //calculate the domain from the user
-    var domain = email.substr(email.indexOf('@') + 1);
+    var domain;
+    getUserDomain(email, function (orgDomainFromDB ) {
+        if (orgDomainFromDB)
+            domain = orgDomainFromDB;
+        else
+            domain = email.substr(email.indexOf('@') + 1);
 
-    //look for org with the same manin domain
+        //look for org with the same manin domain
+        Common.db.Orgs.findAll({
+            attributes : ['authtype', 'orgname', 'serverurl', 'securessl', 'signature'],
+            where : {
+                maindomain : domain
+            },
+        }).complete(function(err, results) {
 
-    Common.db.Orgs.findAll({
-        attributes : ['authtype', 'orgname', 'serverurl', 'securessl', 'signature'],
-        where : {
-            maindomain : domain
-        },
-    }).complete(function(err, results) {
+            if (!!err) {
+                var msg = "Error while checkUserDomain while selecting main domain: " + err;
+                logger.info(msg);
+                callback(msg, domain);
+                return;
+            }
 
-        if (!!err) {
-            var msg = "Error while checkUserDomain while selecting main domain: " + err;
-            logger.info(msg);
-            callback(msg, domain);
-            return;
-        }
-
-        if (results.length < 1 || results[0].count < 2 || results[0].authtype == null || results[0].authtype == "") {
-            callback("Domain not found", domain);
-        } else {
-            callback(null, domain);
-        }
+            if (results.length < 1 || results[0].count < 2 || results[0].authtype == null || results[0].authtype == "") {
+                callback("Domain not found", domain);
+            } else {
+                callback(null, domain);
+            }
+        });
     });
+
 
 }
 
 function createOrReturnUserAndDomain(email, logger, callback) {
     //calculate the domain from the user
-    var domain = email.substr(email.indexOf('@') + 1);
+    var domain;
+    getUserDomain(email, function (orgDomainFromDB ) {
+        if (orgDomainFromDB)
+            domain = orgDomainFromDB;
+        else
+            domain = email.substr(email.indexOf('@') + 1);
 
-    createDomainForUser(domain, logger, function(err, org_fixed_obj) {
-        if (err) {
-            callback(err);
-            return;
-        }
-        //domain, authType, orgName, serverURL, secureSSL, signature
-
-        //logger.info("callback of createDomainForUser %s %s %s %s %s %s ",domain,authType,orgName,serverURL,secureSSL,signature);
-        createUser(email, org_fixed_obj, logger, function(err, user_fixed_obj) {
+        createDomainForUser(domain, logger, function(err, org_fixed_obj) {
             if (err) {
                 callback(err);
                 return;
             }
-            //logger.info("createOrReturnUserAndDomain %s %s %s %s %s %s %s %s %s %s %s", email, domain, authTypeU, orgName, serverURLU, passcode, orgEmail, orgUser, orgPassword, secureSSLU, signatureU);
-            var callback_obj = {
-                email: email,
-                username: user_fixed_obj.username,
-                domain: org_fixed_obj.maindomain,
-                authType: org_fixed_obj.authtype !== "0" ? org_fixed_obj.authtype : user_fixed_obj.authtype,
-                orgName: org_fixed_obj.orgname,
-                orgEmail: user_fixed_obj.orgemail,
-                passcode: user_fixed_obj.passcode,
-                passcodeupdate: user_fixed_obj.passcodeupdate,
-                passcodeexpirationdays: org_fixed_obj.passcodeexpirationdays,
-                exchange_conf: {
-                    orgUser: user_fixed_obj.orguser,
-                    orgPassword: user_fixed_obj.orgpassword,
-                    serverURL: org_fixed_obj.authtype !== "0" ? org_fixed_obj.serverurl : user_fixed_obj.serverurl,
-                    secureSSL: org_fixed_obj.authtype !== "0" ? org_fixed_obj.securessl : user_fixed_obj.securessl,
-                    signature: user_fixed_obj.signature
-                },
-                isAdmin: user_fixed_obj.isadmin,
-                loginattempts: user_fixed_obj.loginattempts,
-                lang: user_fixed_obj.lang,
-                countrylang: user_fixed_obj.countrylang,
-                localevar: user_fixed_obj.localevar,
-                encrypted: user_fixed_obj.encrypted,
-                dcname: user_fixed_obj.dcname,
-                dcurl: user_fixed_obj.dcurl
-            }
-            callback(null, callback_obj, user_fixed_obj, org_fixed_obj);
+            //domain, authType, orgName, serverURL, secureSSL, signature
+
+            //logger.info("callback of createDomainForUser %s %s %s %s %s %s ",domain,authType,orgName,serverURL,secureSSL,signature);
+            createUser(email, org_fixed_obj, logger, function(err, user_fixed_obj) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                //logger.info("createOrReturnUserAndDomain %s %s %s %s %s %s %s %s %s %s %s", email, domain, authTypeU, orgName, serverURLU, passcode, orgEmail, orgUser, orgPassword, secureSSLU, signatureU);
+                var callback_obj = {
+                    email: email,
+                    username: user_fixed_obj.username,
+                    domain: user_fixed_obj.orgdomain,
+                    authType: org_fixed_obj.authtype !== "0" ? org_fixed_obj.authtype : user_fixed_obj.authtype,
+                    orgName: org_fixed_obj.orgname,
+                    orgEmail: user_fixed_obj.orgemail,
+                    passcode: user_fixed_obj.passcode,
+                    passcodeupdate: user_fixed_obj.passcodeupdate,
+                    passcodeexpirationdays: org_fixed_obj.passcodeexpirationdays,
+                    exchange_conf: {
+                        orgUser: user_fixed_obj.orguser,
+                        orgPassword: user_fixed_obj.orgpassword,
+                        serverURL: org_fixed_obj.authtype !== "0" ? org_fixed_obj.serverurl : user_fixed_obj.serverurl,
+                        secureSSL: org_fixed_obj.authtype !== "0" ? org_fixed_obj.securessl : user_fixed_obj.securessl,
+                        signature: user_fixed_obj.signature
+                    },
+                    isAdmin: user_fixed_obj.isadmin,
+                    loginattempts: user_fixed_obj.loginattempts,
+                    lang: user_fixed_obj.lang,
+                    countrylang: user_fixed_obj.countrylang,
+                    localevar: user_fixed_obj.localevar,
+                    encrypted: user_fixed_obj.encrypted,
+                    dcname: user_fixed_obj.dcname,
+                    dcurl: user_fixed_obj.dcurl
+                }
+                callback(null, callback_obj, user_fixed_obj, org_fixed_obj);
+            });
+            // createUser
         });
-        // createUser
+        //  createDomainForUser
     });
-    //  createDomainForUser
+
 }// createOrReturnUserAndDomain
 
 function setUserDetails(email, firstName, lastName, jobTitle, callback) {
@@ -992,9 +1059,24 @@ function getUserDeviceDataFolder(email, deviceid) {
     return folder;
 }
 
+function getUserDeviceDataFolderObj(email, deviceid){
+     var deviceId = Common.getWithServiceDeviceID(deviceid) + '/';
+     return {
+        root: getUserHomeFolder(email),
+        folder: deviceId
+     };
+}
+
 function getUserStorageFolder(email) {
     var folder = getUserHomeFolder(email) + 'storage/';
     return folder;
+}
+
+function getUserStorageFolderObj(email) {
+     return {
+        root: getUserHomeFolder(email),
+        folder: 'storage/'
+     };
 }
 
 function getUserHomeFolder(email) {
@@ -1039,44 +1121,50 @@ function syncUserFolders(email, deviceid) {
 
 // Insert all uer's apps as "to be installed" in device_apps
 function enableNewDeviceApps(email, deviceId, time, hrTime, callback) {
-    var maindomain = email.substr(email.indexOf('@') + 1);
+    var maindomain;
+    getUserDomain(email, function (orgDomainFromDB ) {
+        if (orgDomainFromDB)
+            maindomain = orgDomainFromDB;
+        else
+            maindomain = email.substr(email.indexOf('@') + 1);
 
-    // Iterate over all user apps
+        // Iterate over all user apps
 
-    Common.db.UserApps.findAll({
-        attributes : ['packagename'],
-        where : {
-            email : email,
-            maindomain : maindomain
-        },
-    }).complete(function(err, results) {
+        Common.db.UserApps.findAll({
+            attributes : ['packagename'],
+            where : {
+                email : email,
+                maindomain : maindomain
+            },
+        }).complete(function(err, results) {
 
-        if (!!err) {
-            msg = "Internal error: ";
-            logger.info(msg);
-            callback(msg);
-            return;
-            ;
-        }
+            if (!!err) {
+                msg = "Internal error: ";
+                logger.info(msg);
+                callback(msg);
+                return;
+                ;
+            }
 
-        if (!results || results == "") {
-            logger.info("No installed packages found for user.");
-            callback(null);
-            return;
-        }
+            if (!results || results == "") {
+                logger.info("No installed packages found for user.");
+                callback(null);
+                return;
+            }
 
-        var addAppModule = require('./addAppsToProfiles.js');
-        var insertToDeviceApps = addAppModule.insertToDeviceApps;
-        var TO_BE_INSTALLED = addAppModule.TO_BE_INSTALLED;
+            var addAppModule = require('./addAppsToProfiles.js');
+            var insertToDeviceApps = addAppModule.insertToDeviceApps;
+            var TO_BE_INSTALLED = addAppModule.TO_BE_INSTALLED;
 
-        async.each(results, function(result, callback) {
-            var packageName = result.packagename;
-            // Insert app to device_apps
-            insertToDeviceApps(email, deviceId, packageName, maindomain, TO_BE_INSTALLED, time, hrTime, function(err) {
+            async.each(results, function(result, callback) {
+                var packageName = result.packagename;
+                // Insert app to device_apps
+                insertToDeviceApps(email, deviceId, packageName, maindomain, TO_BE_INSTALLED, time, hrTime, function(err) {
+                    callback(err);
+                });
+            }, function(err) {
                 callback(err);
             });
-        }, function(err) {
-            callback(err);
         });
     });
 
@@ -1224,7 +1312,7 @@ function validateAuthentication(mainDomain, email, authType, serverURL, domain, 
     };
     if (Common.ActiveDirectoryAuthenticate == true)
         authType = 3;
-    
+
     logger.info("serverURL: " + serverURL);
     if (authType && serverURL == "https://m.google.com") {
         logger.info("Validate google apps with active sync");
@@ -1604,7 +1692,7 @@ var createNewUserTar = function(platform, callback) {
             // First ssh command
             function(callback) {
                 var cmd = 'pm create-user createDirUser';
-                platform.exec(cmd, function(err, code, signal, exec_sshout) {
+                platform.exec(cmd, function(err, code, signal, sshout) {
                     if (err) {
                         var msg = 'ERROR:: cannot connect to platform ' + err;
                         callback(msg);
@@ -1866,6 +1954,36 @@ function getUserDataCenter(email, logger, callback) {
     });
 }
 
+function getUserDomain(email, callback) {
+    //read the domain from the database
+
+    Common.db.User.findAll({
+        attributes : ['orgdomain'],
+        where : {
+            email : email
+        },
+    }).complete(function(err, results) {
+
+        if (!!err) {
+            var msg = "getUserDomain: Error while selecting orgdomain: " + err;
+            logger.info(msg);
+            callback(null);
+            return;
+        } else if (!results || results == "") {
+            var msg = "getUserDomain: user does not exist in database";
+            logger.info(msg);
+            callback(null);
+            return;
+
+        } else {
+            var orgdomain = results[0].orgdomain
+            var msg = "getUserDomain: found orgdomain = " + orgdomain;
+            logger.info(msg);
+            callback(orgdomain);
+        }
+    });
+
+}
 
 var User = {
     createOrReturnUserAndDomain : createOrReturnUserAndDomain,
@@ -1891,7 +2009,11 @@ var User = {
     updateUserConnectedDevice: updateUserConnectedDevice,
     getUserConnectedDevices: getUserConnectedDevices,
     updateUserDataCenter: updateUserDataCenter,
-    getUserDataCenter: getUserDataCenter
+    getUserDataCenter: getUserDataCenter,
+    getUserDomain : getUserDomain,
+    postNewUserProcedure : postNewUserProcedure,
+    getUserDeviceDataFolderObj: getUserDeviceDataFolderObj,
+    getUserStorageFolderObj: getUserStorageFolderObj
 };
 module.exports = User;
 

@@ -16,6 +16,7 @@ var exec = require('child_process').exec;
 var mount = require('./mount.js');
 var eventLog = require('./eventLog.js');
 var firewall = require('./firewall.js');
+var _ = require('underscore');
 
 // Lock constants
 var LOCK_TIMEOUT = 7000;
@@ -137,7 +138,8 @@ function unlock_DevicePackages_On_device_apps(locks, lockTimeouts, wait, retries
             i++;
 
             if (err) {
-                cb(err);
+                logger.error("unlock_DevicePackages_On_device_apps: " + err);
+                cb(null);
                 return;
             }
 
@@ -338,166 +340,170 @@ function startSessionInstallations(session, time, hrTime, uninstallFunc, callbac
     var platform = session.platform;
     var deviceId = session.params.deviceid;
 
-    var maindomain = email.substr(email.indexOf('@') + 1);
+    var maindomain;
+    User.getUserDomain(email, function (orgDomainFromDB ) {
+        if (orgDomainFromDB)
+            maindomain = orgDomainFromDB;
+        else
+            maindomain = email.substr(email.indexOf('@') + 1);
+        // Go over all new packages
 
-    // Go over all new packages
+        Common.db.DeviceApps.findAll({
+            attributes : ['packagename'],
+            where : {
+                email : email,
+                deviceid : deviceId
+            },
+        }).complete(function(err, results) {
 
-    Common.db.DeviceApps.findAll({
-        attributes : ['packagename'],
-        where : {
-            email : email,
-            deviceid : deviceId
-        },
-    }).complete(function(err, results) {
-
-        if (!!err) {
-            logger.info(err);
-            callback(null);
-            return;
-
-        }
-
-        if (!results || results == "") {
-            logger.info('No change in packages for user.');
-            callback(null);
-            return;
-
-        }
-
-        var packageNames = [];
-        for (var i = 0; i < results.length; ++i) {
-            packageNames.push(results[i].packagename != null ? results[i].packagename : '');
-        }
-
-        var platforms = [platform];
-        var userIdInPlatforms = [localid];
-        var deviceIds = [deviceId];
-        // Locks
-        var locksLocked = [];
-        var locksTimeouts = [];
-        // Packages
-        var packagesToInstall = [];
-        var packagesToUninstall = [];
-        var packagesToRemove = [];
-
-        async.series([
-        // Lock device_apps for packages
-        function(callback) {
-            lockDeviceApps(deviceIds, packageNames, function(err, locks, timeouts) {
-                locksLocked = locks;
-                locksTimeouts = timeouts;
-                callback(err);
-            });
-        },
-        // Read installed again for packages
-        function(callback) {
-            Common.db.DeviceApps.findAll({
-                attributes : ['packagename', 'installed', 'time', 'hrtime'],
-                where : {
-                    email : email,
-                    deviceid : deviceId
-                },
-            }).complete(function(err, results) {
-
-                if (!!err) {
-                    logger.info(err);
-                    callback(null);
-                    return;
-
-                }
-
-                if (!results || results == "") {
-                    logger.info('No change in packages for user.');
-                    callback(null);
-                    return;
-
-                }
-
-                for (var i = 0; i < results.length; ++i) {
-
-                    var packageName = results[i].packagename != null ? results[i].packagename : '';
-                    var timeInTable = results[i].time != null ? results[i].time : '';
-                    var hrtimeInTable = results[i].hrtime != null ? results[i].hrtime : '';
-
-                    var shouldUpdate = shouldUpdateTable(time, hrTime, timeInTable, hrtimeInTable);
-                    if ((shouldUpdate == null) && (packageNames.indexOf(packageName) != -1)) {
-                        // Package is locked
-                        var installed = results[i].installed != null ? results[i].installed : '';
-                        if (installed == TO_BE_INSTALLED) {
-                            packagesToInstall.push(packageName);
-                        } else if (installed == TO_BE_UNINSTALLED) {
-                            packagesToUninstall.push(packageName);
-                        } else if (installed == REMOVE_FROM_TABLE) {
-                            packagesToRemove.push(packageName);
-                        }
-                    }
-
-                }
+            if (!!err) {
+                logger.info(err);
                 callback(null);
-            });
-
-        },
-        // Remove unnecessary lines in table
-        function(callback) {
-            async.eachSeries(packagesToRemove, function(packageToRemove, callback) {
-                removeInstalledFlag(email, packageToRemove, deviceId, function(err) {
-                callback(null);
-                    return;
-                });
-            }, function(err) {
-                callback(null);
-            });
-        },
-        // Install the ones needed
-        function(callback) {
-           async.eachSeries(packagesToInstall, function(packageToInstall, callback) {
-                installAPKForUsersOnPlatforms(platforms, packageToInstall, userIdInPlatforms, email, maindomain, function(err1) {
-                    if (err1) {
-                        logger.info(err1);
-                        callback(null);
-                        return;
-                    }
-                    // Set flag to remove line from table
-                    insertToDeviceApps(email, deviceId, packageToInstall, maindomain, REMOVE_FROM_TABLE, time, hrTime, function(err) {
-                        callback(null);
-                    });
-                });
-                // installAPKForUsersOnPlatforms
-            }, function(err) {
-                callback(null);
-            });
-        },
-        // Uninstall
-        function(callback) {
-            async.eachSeries(packagesToUninstall, function(packageToUninstall, callback) {
-                uninstallFunc(platforms, packageToUninstall, userIdInPlatforms, email, maindomain, function(err1) {
-                    if (err1) {
-                        logger.info(err1);
-                        callback(null);
-                        return;
-                    }
-                    // Set flag to remove line from table
-                    insertToDeviceApps(email, deviceId, packageToUninstall, maindomain, REMOVE_FROM_TABLE, time, hrTime, function(err) {
-                        callback(null);
-                    });
-                });
-                // uninstallFunc
-            }, function(err) {
-                callback(null);
-            });
-        }], function(err) {
-            if (err) {
-                logger.info("ERROR: startSessionInstallations: " + err);
-            }
-            // Unlock
-            unlock_DevicePackages_On_device_apps(locksLocked, locksTimeouts, TIME_BETWEEN_RETRIES, LOCK_RETRY, function(err1) {
-                callback(err || err1);
                 return;
+
+            }
+
+            if (!results || results == "") {
+                logger.info('No change in packages for user.');
+                callback(null);
+                return;
+
+            }
+
+            var packageNames = [];
+            for (var i = 0; i < results.length; ++i) {
+                packageNames.push(results[i].packagename != null ? results[i].packagename : '');
+            }
+
+            var platforms = [platform];
+            var userIdInPlatforms = [localid];
+            var deviceIds = [deviceId];
+            // Locks
+            var locksLocked = [];
+            var locksTimeouts = [];
+            // Packages
+            var packagesToInstall = [];
+            var packagesToUninstall = [];
+            var packagesToRemove = [];
+
+            async.series([
+            // Lock device_apps for packages
+            function(callback) {
+                lockDeviceApps(deviceIds, packageNames, function(err, locks, timeouts) {
+                    locksLocked = locks;
+                    locksTimeouts = timeouts;
+                    callback(err);
+                });
+            },
+            // Read installed again for packages
+            function(callback) {
+                Common.db.DeviceApps.findAll({
+                    attributes : ['packagename', 'installed', 'time', 'hrtime'],
+                    where : {
+                        email : email,
+                        deviceid : deviceId
+                    },
+                }).complete(function(err, results) {
+
+                    if (!!err) {
+                        logger.info(err);
+                        callback(null);
+                        return;
+
+                    }
+
+                    if (!results || results == "") {
+                        logger.info('No change in packages for user.');
+                        callback(null);
+                        return;
+
+                    }
+
+                    for (var i = 0; i < results.length; ++i) {
+
+                        var packageName = results[i].packagename != null ? results[i].packagename : '';
+                        var timeInTable = results[i].time != null ? results[i].time : '';
+                        var hrtimeInTable = results[i].hrtime != null ? results[i].hrtime : '';
+
+                        var shouldUpdate = shouldUpdateTable(time, hrTime, timeInTable, hrtimeInTable);
+                        if ((shouldUpdate == null) && (packageNames.indexOf(packageName) != -1)) {
+                            // Package is locked
+                            var installed = results[i].installed != null ? results[i].installed : '';
+                            if (installed == TO_BE_INSTALLED) {
+                                packagesToInstall.push(packageName);
+                            } else if (installed == TO_BE_UNINSTALLED) {
+                                packagesToUninstall.push(packageName);
+                            } else if (installed == REMOVE_FROM_TABLE) {
+                                packagesToRemove.push(packageName);
+                            }
+                        }
+
+                    }
+                    callback(null);
+                });
+
+            },
+            // Remove unnecessary lines in table
+            function(callback) {
+                async.eachSeries(packagesToRemove, function(packageToRemove, callback) {
+                    removeInstalledFlag(email, packageToRemove, deviceId, function(err) {
+                    callback(null);
+                        return;
+                    });
+                }, function(err) {
+                    callback(null);
+                });
+            },
+            // Install the ones needed
+            function(callback) {
+               async.eachSeries(packagesToInstall, function(packageToInstall, callback) {
+                    installAPKForUsersOnPlatforms(platforms, packageToInstall, userIdInPlatforms, email, maindomain, function(err1) {
+                        if (err1) {
+                            logger.info(err1);
+                            callback(null);
+                            return;
+                        }
+                        // Set flag to remove line from table
+                        insertToDeviceApps(email, deviceId, packageToInstall, maindomain, REMOVE_FROM_TABLE, time, hrTime, function(err) {
+                            callback(null);
+                        });
+                    });
+                    // installAPKForUsersOnPlatforms
+                }, function(err) {
+                    callback(null);
+                });
+            },
+            // Uninstall
+            function(callback) {
+                async.eachSeries(packagesToUninstall, function(packageToUninstall, callback) {
+                    uninstallFunc(platforms, packageToUninstall, userIdInPlatforms, email, maindomain, function(err1) {
+                        if (err1) {
+                            logger.info(err1);
+                            callback(null);
+                            return;
+                        }
+                        // Set flag to remove line from table
+                        insertToDeviceApps(email, deviceId, packageToUninstall, maindomain, REMOVE_FROM_TABLE, time, hrTime, function(err) {
+                            callback(null);
+                        });
+                    });
+                    // uninstallFunc
+                }, function(err) {
+                    callback(null);
+                });
+            }], function(err) {
+                if (err) {
+                    logger.info("ERROR: startSessionInstallations: " + err);
+                }
+                // Unlock
+                unlock_DevicePackages_On_device_apps(locksLocked, locksTimeouts, TIME_BETWEEN_RETRIES, LOCK_RETRY, function(err1) {
+                    callback(err || err1);
+                    return;
+                });
             });
+
         });
-
     });
-
 }
 
 // Installs
@@ -547,80 +553,86 @@ function updateUserAppsTableForUser(packageNames, email, isNeedToInstall, domain
         callback('email = ' + email);
         return;
     }
-    // Go over all packages
-    async.eachSeries(packageNames, function(packageName, callback) {
-
-        Common.db.UserApps.findAll({
-            attributes : ['private'],
-            where : {
-                email : email,
-                maindomain : domain,
-                packagename : packageName
-            },
-        }).complete(function(err, results) {
-
-            if (!!err) {
-                logger.info(new Error().stack);
-                callback(err);
-                return;
-
-            }
-
-            // check if the app is already in the DB and it private app -
-            // in this case dont install anyway but we need to check if the
-            // command is uninstall.
-            if (results != null && results.length > 0 && results[0].private === IS_PRIVATE_APP_TRUE) {
-
-                // the app is profile (private) app, and the command is for
-                // groups - do nothing.
-                if (isPrivateApp == IS_PRIVATE_APP_FALSE) {
-                    callback(null);
-                    return;
-                }
-            }
-
-            if (isNeedToInstall) {
-                addAppToUserInDB(email, packageName, domain, isPrivateApp, function(err) {
-                    if (err) {
-                        logger.info("ERROR: Internal error: " + err);
+    if (packageNames.length === 0) {
+        callback(null);
+    }
+    async.waterfall(
+        [
+            function(callback) {
+                Common.db.UserApps.findAll({
+                    attributes : ['private', 'packagename'],
+                    where : {
+                        email : email,
+                        maindomain : domain,
+                        packagename : packageNames
+                    },
+                }).complete(function(err, results) {
+                    if (!!err) {
+                        logger.error(new Error().stack);
                         callback(err);
-                        return;
-                    }
-                });
-            } else {
-                // Before uninstall from private user, we need to check if the
-                // app is installed on another group that the user belongs to
-                // AND its IS_PRIVATE_APP_TRUE.
-                isAppInstalledToGroup(packageName, domain, function(isBelongsToInstalledGroup, err) {
-
-                    if (isBelongsToInstalledGroup && isPrivateApp == IS_PRIVATE_APP_TRUE) {
-
-                        // change the user_app to private.
-                        changeAppPrivacyToUser(email, packageName, domain, IS_PRIVATE_APP_FALSE, function(err) {
-                            if (err) {
-                                logger.error("ERROR: Internal error: " + err);
-                                callback(err);
-                                return;
-                            }
-                        });
-
                     } else {
-
-                        removeAppFromUserInDB(email, packageName, domain, isPrivateApp, function(err) {
-                            if (err) {
-                                logger.error("ERROR: Internal error: " + err);
-                                callback(err);
-                                return;
-                            }
-                        });
+                        callback(null, results);
                     }
                 });
+            },
+            function(results, callback) {
+                async.eachSeries(
+                    results,
+                    function(result, callback) {
+                        console.log("result: " + JSON.stringify(result));
+                        processPackage(result, callback);
+                    },
+                    function(err) {
+                        callback(err);
+                    }
+                );
+            },
+        ], function(err) {
+            callback(err);
+        }
+    );
+
+    var processPackage = function(result, callback) {
+        if (result.private === IS_PRIVATE_APP_TRUE) {
+            // the app is profile (private) app, and the command is for
+            // groups - do nothing.
+            if (isPrivateApp == IS_PRIVATE_APP_FALSE) {
+                callback(null);
+                return;
             }
-        });
+        }
 
-    }, callback);
-
-    callback(null);
+        if (isNeedToInstall) {
+            addAppToUserInDB(email, result.packagename, domain, isPrivateApp, function(err) {
+                if (err) {
+                    logger.info("ERROR: Internal error: " + err);
+                }
+                callback(err);
+            });
+        } else {
+            // Before uninstall from private user, we need to check if the
+            // app is installed on another group that the user belongs to
+            // AND its IS_PRIVATE_APP_TRUE.
+            isAppInstalledToGroup(result.packagename, domain, function(isBelongsToInstalledGroup, err) {
+                if (isBelongsToInstalledGroup && isPrivateApp == IS_PRIVATE_APP_TRUE) {
+                    // change the user_app to private.
+                    changeAppPrivacyToUser(email, result.packagename, domain, IS_PRIVATE_APP_FALSE, function(err) {
+                        if (err) {
+                            logger.error("ERROR: Internal error: " + err);
+                        }
+                        callback(err);
+                    });
+                } else {
+                    removeAppFromUserInDB(email, result.packagename, domain, isPrivateApp, function(err) {
+                        if (err) {
+                            logger.error("ERROR: Internal error: " + err);
+                        }
+                        callback(err);
+                    });
+                }
+            });
+        }
+    };
 }
 
 function isAppInstalledToGroup(packageName, domain, callback) {
@@ -773,67 +785,21 @@ function removeAppFromUserInDB(email, packageName, domain, isPrivateApp, callbac
 }
 
 function insertToDeviceApps(email, deviceid, packageName, maindomain, installed, time, hrTime, callback) {
-
     var deviceId = Common.getWithServiceDeviceID(deviceid);
 
-    // select deviceApp
-    Common.db.DeviceApps.findAll({
-        attributes : ['email'],
-        where : {
-            email : email,
-            deviceid : deviceId,
-            packagename : packageName
-        },
-    }).complete(function(err, results) {
-
-        if (!!err) {
-            callback(err);
-            return;
-        }
-
-
-        if (!results || results == "") {
-            // insert new deviceApp
-            Common.db.DeviceApps.create({
-                email : email,
-                deviceid : deviceId,
-                packagename : packageName,
-                maindomain : maindomain,
-                installed : installed,
-                time : time,
-                hrtime : hrTime
-            }).then(function() {
-                callback(null);
-            }).catch(function(err) {
-                callback(err);
-            });
-
-        } else {
-
-            // insert existing deviceApp
-            Common.db.DeviceApps.update({
-                email : email,
-                deviceid : deviceId,
-                packagename : packageName,
-                maindomain : maindomain,
-                installed : installed,
-                time : time,
-                hrtime : hrTime
-            }, {
-                where : {
-                    email : email,
-                    deviceid : deviceId,
-                    packagename : packageName
-                }
-            }).then(function() {
-                callback(null);
-            }).catch(function(err) {
-                callback(err);
-            });
-        }
-
+    Common.db.DeviceApps.upsert({
+        email : email,
+        deviceid : deviceId,
+        packagename : packageName,
+        maindomain : maindomain,
+        installed : installed,
+        time : time,
+        hrtime : hrTime
+    }).then(function() {
+        callback(null);
+    }).catch(function(err) {
+        callback(err);
     });
-
 }
 
 function getAllUserDevices(email, callback) {
@@ -868,60 +834,51 @@ function getAllUserDevices(email, callback) {
 }
 
 function updateDevicePackage(email, deviceId, packageName, domain, time, hrTime, installed, callback) {
-    async.series([
-    // Get
-    function(callback) {
-        // Ok, locked
-
-        Common.db.DeviceApps.findAll({
-            attributes : ['time', 'hrtime'],
-            where : {
-                email : email,
-                deviceid : deviceId,
-                packagename : packageName,
-                maindomain : domain
+    async.waterfall(
+        [
+            // Get
+            function(callback) {
+                // Ok, locked
+                Common.db.DeviceApps.findAll({
+                    attributes : ['time', 'hrtime'],
+                    where : {
+                        email : email,
+                        deviceid : deviceId,
+                        packagename : packageName,
+                        maindomain : domain
+                    },
+                }).complete(function(err, results) {
+                    if (!!err) {
+                        logger.info(err);
+                        callback(err);
+                    } else {
+                        callback(null, results);
+                    }
+                });
             },
-        }).complete(function(err, results) {
-
-            if (!!err) {
-                logger.info(err);
-                callback(err);
-                return;
+            // Put
+            function(results, callback) {
+                if (!results) {
+                    logger.error("addAppsToProfiles.js::updateDevicePackage missed app " + packageName + "in device_apps table for " + email + " # " + deviceId);
+                    callback(null);
+                    return;
+                }
+                var timeInTable = results[0].time;
+                var hrtimeInTable = results[0].hrtime;
+                var result = shouldUpdateTable(time, hrTime, timeInTable, hrtimeInTable);
+                if (result === null) {
+                    insertToDeviceApps(email, deviceId, packageName, domain, installed, time, hrTime, callback);
+                } else {
+                    callback(null);
+                }
             }
-
-            if (!results || results == "") {
-                callback(null);
-                return;
-
+        ], function(err) {
+            if (err) {
+                logger.error("ERROR: " + err);
             }
-
-            var timeInTable = results[0].time;
-            var hrtimeInTable = results[0].hrtime;
-            var result = shouldUpdateTable(time, hrTime, timeInTable, hrtimeInTable);
-            if (result != null) {
-                callback(result);
-                return;
-            }
-
-            // logger.info('About to update curTime='+time+'
-            // curHrtime='+hrTime+' intTableTime='+timeInTable+'
-            // hrtimeInTable='+hrtimeInTable);
-            // Insert to table
-            callback(null);
-
-        });
-
-    },
-    // Put
-    function(callback) {
-        // Insert
-        insertToDeviceApps(email, deviceId, packageName, domain, installed, time, hrTime, callback);
-    }], function(err) {
-        if (err) {
-            logger.info("ERROR: " + err);
+            callback(err);
         }
-        callback(err);
-    });
+    );
 }
 
 function lockDeviceApps(deviceIds, packageNames, callback) {
@@ -977,7 +934,7 @@ function shouldUpdateTable(curTime, curTimeHr, timeInTable, hrtimeInTable) {
     return null;
 }
 
-function createLogEvents(email, packageNames, isNeedToInstall, callback) {
+function createLogEvents(email, domain, packageNames, isNeedToInstall, callback) {
     // TODO: In some cases the mgmt does the installing by itself. Need to
     // decide which calling user to put here
     var callerEmail = email;
@@ -989,8 +946,8 @@ function createLogEvents(email, packageNames, isNeedToInstall, callback) {
     async.eachSeries(packageNames, function(packageName, cb) {
         var extra_info = 'app:' + packageName + ' email:' + email;
         // Create event in Eventlog
-        eventLog.createEvent(eventtype, callerEmail, extra_info, WARN, function(err) {
-            logger.error(err);
+        eventLog.createEvent(eventtype, callerEmail, domain, extra_info, WARN, function(err) {
+            if (err) logger.error(err);
             cb(null);
         });
     }, function(err) {
@@ -1035,7 +992,7 @@ function addRemoveAPKsForRunningUser(time, hrTime, email, packageNames, domain, 
     },
     // Create events in Eventlog
     function(callback) {
-        createLogEvents(email, packageNames, isNeedToInstall, callback);
+        createLogEvents(email, domain, packageNames, isNeedToInstall, callback);
     },
     // Get all user devices
     function(callback) {
@@ -1173,59 +1130,61 @@ function existAPKs(packageNames, callback) {
     });
 }
 
-function checkUsersInTable(emails, callback) {
-    async.eachSeries(emails, function(email, cb) {
-
+var checkUsersInTable = function(emails, callback) {
+    if(emails) {
         Common.db.User.findAll({
             attributes : ['email'],
             where : {
-                email : email
+                username : emails
             },
         }).complete(function(err, results) {
-
+            var missedEmails = [];
             if (!!err) {
-                logger.info('Internal error: ' + err);
-                cb(err);
+                callback(err);
                 return;
             }
 
-            if (!results || results == "") {
-                cb('User ' + email + ' not found');
-                return;
+            if (results.length === emails.length) {
+                callback(null);
+            } else {
+                var resEmails = _.map(results, function(item) {return item.email;});
+                missedEmails = _.difference(emails, resEmails);
+                callback('User ' + JSON.stringify(missedEmails) + ' not found', missedEmails);
             }
-            cb(null);
         });
-    }, function(err) {
-        callback(err);
-    });
-}
+    } else {
+        callback(null);
+    }
+};
 
-function checkAppsInTable(packageNames, callback) {
+function checkAppsInTable(packageNames, domain, callback) {
     logger.info('checkUsersInTable: packageNames= ' + packageNames);
-    async.eachSeries(packageNames, function(packagename, callBack) {
-
+    if(packageNames) {
         Common.db.Apps.findAll({
             attributes : ['packagename'],
             where : {
-                packagename : packagename
+                packagename : packageNames,
+                maindomain: domain
             },
         }).complete(function(err, results) {
-
+            var missedPackageNames = [];
             if (!!err) {
                 logger.info('Internal error: ' + err);
-                callBack(err);
+                callback(err);
                 return;
             }
 
-            if (!results || results == "") {
-                callBack('App ' + packagename + ' not found');
-                return;
+            if (results.length === packageNames.length) {
+                callback(null);
+            } else {
+                var resPackageNames = _.map(results, function(item) {return item.packagename;});
+                missedPackageNames = _.difference(packageNames, resPackageNames);
+                callback('App ' + JSON.stringify(missedPackageNames) + ' not found', missedPackageNames);
             }
-            callBack(null);
         });
-    }, function(err) {
-        callback(err);
-    });
+    } else {
+        callback(null);
+    }
 }
 
 function addAppsToProfiles(req, res, next) {
@@ -1315,7 +1274,7 @@ function addAppsToProfilesInternal(domain, emails, packageNames, isPrivateApp, c
         logger.info("addAppsToProfilesInternal: checkUsersInTable");
         // Verify that the apps are in the apps table (currently there is NO
         // removal from this table)
-        checkAppsInTable(packageNames, function(err) {
+        checkAppsInTable(packageNames, domain, function(err) {
             if (err) {
                 callback(err);
                 return;

@@ -38,7 +38,8 @@ function uploadToLoginToken (req, res, next) {
 		 }
 		 console.dir(login.loginParams);	
 		 var userName= login.getUserName();
-		 upload(userName,req, res);
+         var deviceID= login.getDeviceID();
+		 upload(userName, deviceID, req, res);
 		   	
 	});
 }
@@ -59,36 +60,50 @@ function uploadToSession (req, res, next) {
 		   res.send({status: '0' , message: "Cannot find session"}); 					
 		   return;
 		 }		 
-		 var email = obj.params.email;				
-		 upload(email,req, res);		
+		 var email = obj.params.email;
+         var deviceID = obj.params.deviceid;		
+		 upload(email, deviceID, req, res);		
 	});
 }
 
 
-function upload (userName,req, res) {
+function upload (userName, deviceID, req, res) {
         var destPath = req.params.destPath;
+        var existsOnSDcard = req.params.existsOnSDcard;
         var isMedia  = req.params.isMedia;
         var dontChangeName  = req.params.dontChangeName;
+        var loginToken = req.params.loginToken;
         var logger = new ThreadedLogger();
         logger.user(userName);
+        var folder;
+        var saveToPath;
 	//logger.info(req.url);
 	//console.dir(req.headers);
 	//logger.info('req.headers: '+JSON.stringify(req.headers, undefined, 2));
 	if(req.method === "POST") {
-		
-		
-		
-    	var form = new formidable.IncomingForm();
+		if (existsOnSDcard != null && existsOnSDcard != '' && destPath != null && destPath != '') {
+            dontChangeName = true;
+            if (existsOnSDcard == "external://") {
+                saveToPath = 'media/'+ destPath;
+                folder = Common.nfshomefolder+User.getUserStorageFolder(userName) + saveToPath;
+            } else if (existsOnSDcard == "internal://") {
+                //TODO need to get user deviceID
+                folder = Common.nfshomefolder+User.getUserDeviceDataFolder(userName, deviceID) + destPath;
+            } else {
+                logger.error("Upload error: wrong path");
+                res.send({status: '0' , message: "Upload error: "});
+                return;
+            }
+        } else {
+            // Where this file should be saved to
+            if (!destPath) {
+                destPath = 'Download';
+            }
+            saveToPath = 'media/'+ destPath;
+            folder = Common.nfshomefolder+User.getUserStorageFolder(userName) + saveToPath;
 
-        // Where this file should be saved to
-        var saveToPath;
-        if (!destPath) {
-            destPath = 'Download';
         }
-        saveToPath = 'media/'+ destPath;
-
-        var folder = Common.nfshomefolder+User.getUserStorageFolder(userName) + saveToPath;
-        //logger.info("Folder:"+folder);
+    	var form = new formidable.IncomingForm();
 
         Common.fs.mkdir(folder, function (err) {
                 if (err) {

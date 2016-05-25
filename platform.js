@@ -12,7 +12,7 @@ var sessionModule = require('./session.js');
 var firewall = require('./firewall.js');
 var Session = sessionModule.Session;
 var Platform, DeleteAll, killPlatform, installAPKOnPlatform, addOnlineRuleToPlatform;
-var validtypes = ["kvm", "aws", "vmw", "kvm2", "vmw_static"];
+var validtypes = ["aws", "kvm", "kvm2", "static", "vmw", "vmw_static"];
 
 var Platform = function(platid, platType, callback, newplatid) {
     var self = this;
@@ -266,6 +266,14 @@ var Platform = function(platid, platType, callback, newplatid) {
         sshconnect(this, 10);
     }; // this.initSsh
 
+    this.increaseFails = function(callback) {
+        Common.redisClient.ZINCRBY("platforms_fails", 1, this.params.platid, callback);
+    }
+
+    this.resetFails = function(callback) {
+        Common.redisClient.ZREM("platforms_fails", this.params.platid, callback);
+    }
+
     // increase (decrece) refernce to number of sessions in platform
     this.increaseReference = function(inc, callback) {
         var platid = this.params.platid;
@@ -379,6 +387,29 @@ var Platform = function(platid, platType, callback, newplatid) {
                     callback(null, resObj);
                 else
                     callback("Request return error " + resData);
+            }
+        });
+    };
+
+    this.testStartPlatform = function(callback) {
+        var options = {
+            host: this.params.platform_ip,
+            port: 3333,
+            path: "/startPlatform",
+            method: "GET",
+            rejectUnauthorized: false,
+        };
+
+        http.doGetRequest(options, function(err, resData) {
+            if (err) {
+                logger.error('problem with request: ' + err);
+                callback(err);
+            } else {
+                var resObj = JSON.parse(resData);
+                if (resObj.status === 1)
+                    callback(null, resObj);
+                else
+                    callback("Request return error", resObj);
             }
         });
     };
@@ -600,6 +631,47 @@ var Platform = function(platid, platType, callback, newplatid) {
                     callback("Request return error " + resData);
             }
         });
+    };
+
+    this.applyFirewall = function(tasks, callback) {
+        if (Common.platformType === "kvm") {
+            callback(null);
+        } else {
+            var postData = JSON.stringify({
+                tasks: tasks
+            });
+            var options = {
+                host: this.params.platform_ip,
+                port: 3333,
+                path: "/applyFirewall",
+                method: "POST",
+                rejectUnauthorized: false,
+                headers: {
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Content-Length': postData.length
+                },
+            };
+
+            http.doPostRequest(options, postData, function(err, resData) {
+                var resObj;
+                if (err) {
+                    logger.error('problem with request: ' + err);
+                    callback(err);
+                } else {
+                    try {
+                        resObj = JSON.parse(resData);
+                    } catch (e) {
+                        logger.error("bad response on applyFirewall: " + resData);
+                        resObj = {};
+                    }
+                    if (resObj.status === 1) {
+                        callback(null, resObj);
+                    } else {
+                        callback("Request return error: " + resData, resObj);
+                    }
+                }
+            });
+        }
     };
 
     if (platid == null) { // generate new platform
@@ -1077,8 +1149,9 @@ var registerAvailPlatform = function(hostline, top, platType, callback) {
 var registerPlatformNum = function(_opts, callback) {
 
     var opts = {};
+    var maxFailed = isNaN(Common.platformParams.maxFailed) ? 10 : Common.platformParams.maxFailed;
     opts.min = _opts.min || Common.startPlatformNum;
-    opts.max = _opts.max || (Common.startPlatformNum + Common.platformParams.maxCapacity/Common.platformParams.usersPerPlatform - 1 + 10); //allow upto 10 in bad states
+    opts.max = _opts.max || (Common.startPlatformNum + Common.platformParams.maxCapacity/Common.platformParams.usersPerPlatform - 1 + maxFailed); //allow upto 10 in bad states
     opts.hostline = (_opts.hostline === undefined) ? Common.hostline : _opts.hostline;
     opts.platType = _opts.platType || "";
     var logger = _opts.logger || Common.logger;
@@ -1112,6 +1185,7 @@ var registerPlatformNum = function(_opts, callback) {
                         multi.zscore('platforms_errs', curPlatID);
                         multi.SISMEMBER('platforms_idle', curPlatID);
                         multi.SISMEMBER('platforms_close', curPlatID);
+                        multi.zscore('platforms_fails', curPlatID);
                         multi.exec(function(err, replies) {
                             Common.redisPool.release(client);
                             if (err) {
@@ -1119,7 +1193,7 @@ var registerPlatformNum = function(_opts, callback) {
                                 callback(errMsg);
                                 return;
                             }
-                            if (replies[0] === null && replies[1] === null && replies[2] === 0 && replies[3] === 0)
+                            if (replies[0] === null && replies[1] === null && replies[2] === 0 && replies[3] === 0 && (replies[4] < Common.platformParams.maxFails))
                                 foundAvaliblePlatID = true;
                             else
                                 curPlatID++;
@@ -1218,6 +1292,7 @@ var registerPlatform = function(platid, hostline, platType, callback) {
                         platform, platType,
                         function(err, obj) {
                             if (err) {
+                                platform.increaseFails(function() {});
                                 callback(err);
                             } else {
                                 platform = obj;
@@ -1261,6 +1336,7 @@ var registerPlatform = function(platid, hostline, platType, callback) {
                     });
                 });
             } else {
+                platform.resetFails(function() {});
                 callback(null);
             }
         }); //async.series([
@@ -1302,8 +1378,8 @@ var postBootProcedure = function(platform, logger, callback) {
             }
         },
         function(callback) {
-            if (Common.showOnlyControlPanel) {
-                var cmd = "setprop ro.kernel.showOnlyControlPanel showOnlyControlPanel";
+            if (Common.hideControlPanel) {
+                var cmd = "setprop ro.kernel.hideControlPanel hideControlPanel";
                 platform.exec(cmd, function(err, code, signal, sshout) {
                     callback(null);
                 });

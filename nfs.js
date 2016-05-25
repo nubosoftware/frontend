@@ -48,7 +48,8 @@ function syncFolders(nfs, dst, path, callback) {
         },
         // create folder if not exist
         function(callback) {
-            var cmd = "sudo mkdir -p " + nfs_target.nfs_path + "/" + path;
+
+            var cmd = "sudo mkdir -p " + nfs_target.nfs_path + "/" + getPathFromObj(path);
             ssh.exec(cmd, function(err, code, signal, sshout) {
                 if (err || (code != 0)) {
                     nfs.logger.error("cmd: " + cmd +
@@ -65,10 +66,10 @@ function syncFolders(nfs, dst, path, callback) {
             var stderr = null;
             var stdout = null;
             var redisClient = null;
-            var localPath = nfs.params.nfs_path + "/" + path;
-            var remotePath = "ssh://" + nfs_target.ssh_user + "@" + nfs_target.ssh_ip + "/" + nfs_target.nfs_path + "/" + path;
+            var localPath = nfs.params.nfs_path + "/" + path.root;
+            var remotePath = "ssh://" + nfs_target.ssh_user + "@" + nfs_target.ssh_ip + "/" + nfs_target.nfs_path + "/" + path.root;
             var unisonParams = [localPath, remotePath, '-retry', '5', '-silent', '-times', '-force', 'newer', '-batch', '-numericids', '-perms', '-1',
-                '-owner', '-group', '-servercmd', 'sudo /usr/bin/unison', '-sshargs', "-i " + nfs.params.key_path
+                '-owner', '-group', '-servercmd', 'sudo /usr/bin/unison', '-sshargs', "-i " + nfs.params.key_path, "-path", path.folder
             ];
 
             var unisonProc = spawn("unison", unisonParams);
@@ -119,24 +120,38 @@ function syncFolders(nfs, dst, path, callback) {
             return;
         }
 
-        nfs.logger.info("syncFolders: sync done for: " + path);
+        nfs.logger.info("syncFolders: sync done for: " + getPathFromObj(path));
         callback(null);
     });
 }
 
 function setSyncAbort(path, spawnProcess, logger){
 
-    var redisClient = Common.redis.createClient(Common.redisport, Common.redishost);
-    var channel = "sync_" + path;
+    var redisClient = Common.redis.createClient(Common.redisport, Common.redishost,{ password : Common.redispassword });
+    var channel = "sync_" + getPathFromObj(path);
     redisClient.subscribe(channel);
                 
     redisClient.on("message", function(channel, message) {
-        logger.info("setSyncAbort: aborting sync for: " + path);
+        logger.info("setSyncAbort: aborting sync for: " + getPathFromObj(path));
         spawnProcess.kill('SIGINT');
         redisClient.unsubscribe();
     });
 
     return redisClient;
+}
+
+function getPathFromObj(path) {
+    var realPath;
+    if (path.folder == './') {
+        realPath = path.root;
+    } else {
+        if (path.root[path.root.length - 1] === '/')
+            realPath = path.root + path.folder;
+        else
+            realPath = path.root + '/' + path.folder;
+    }
+
+    return realPath;
 }
 
 var nfs = function (obj, callback) {
@@ -153,7 +168,7 @@ var nfs = function (obj, callback) {
     }
 
     this.syncFolder = function(path, callback) {
-        logger.info("syncFolder: syncing " + path);
+        logger.debug("syncFolder: syncing " + getPathFromObj(path));
         (function (nfsobj) {
             var all_nfs_servers;
             var other_nfs_servers;

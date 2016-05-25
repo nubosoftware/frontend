@@ -18,8 +18,6 @@ var Firewall = {
     ipv6 : "v6"
 };
 
-var sysApps = ["com.android.email", "com.android.calendar", "com.mobisystems.editor.office_with_reg", "com.android.contacts", "com.nubo.nubosettings", "com.android.calculator2", "com.android.browser", "com.android.gallery", "com.android.camera"];
-
 function loadAdminParamsFromSession(req, res, callback) {
     setting.loadAdminParamsFromSession(req, res, callback);
 }
@@ -36,13 +34,18 @@ function loadAdminParamsFromSession(req, res, callback) {
 function createRule(appID, userID, ip, mask, port, protocol, addOrRemove, ipVersion, accessStatus, callback) {
 
     var mUID = userID.toString() + appID.toString();
+    var tasks = [];
 
     if (accessStatus == "open") {
         var mOutputRuleV4 = "iptables -A " + userID + "_OUTPUT  -m owner --uid-owner " + mUID + " -j ACCEPT;";
         var mOutputRuleV6 = "ip6tables -A " + userID + "_OUTPUT  -m owner --uid-owner " + mUID + " -j ACCEPT;";
         var mInputRuleV4 = "iptables -A " + userID + "_INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT;";
         var mInputRuleV6 = "ip6tables -A " + userID + "_INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT;";
-        callback(null, mOutputRuleV4 + mOutputRuleV6 + mInputRuleV4 + mInputRuleV6);
+        tasks.push({v: "v4", cmd: "append", chain: userID + "_OUTPUT", match: "owner --uid-owner " + mUID, job: "ACCEPT"});
+        tasks.push({v: "v6", cmd: "append", chain: userID + "_OUTPUT", match: "owner --uid-owner " + mUID, job: "ACCEPT"});
+        tasks.push({v: "v4", cmd: "append", chain: userID + "_INPUT", match: "state --state ESTABLISHED,RELATED", job: "ACCEPT"});
+        tasks.push({v: "v6", cmd: "append", chain: userID + "_INPUT", match: "state --state ESTABLISHED,RELATED", job: "ACCEPT"});
+        callback(null, mOutputRuleV4 + mOutputRuleV6 + mInputRuleV4 + mInputRuleV6, tasks);
         return;
     }
 
@@ -60,6 +63,12 @@ function createRule(appID, userID, ip, mask, port, protocol, addOrRemove, ipVers
     } else {
         var chainRule = iptables + " -D ";
     }
+    var fObj = function(obj) {
+            obj.v = (ipVersion === Firewall.ipv4) ? "v4" : "v6";
+            obj.cmd = (addOrRemove === Firewall.add) ? "append" : "delete";
+            obj.job = "ACCEPT";
+        return obj;
+    }
 
     var mIP = ip + "/" + mask;
     var mDPort = " --dport " + port;
@@ -69,7 +78,9 @@ function createRule(appID, userID, ip, mask, port, protocol, addOrRemove, ipVers
         mProtocol = " -p " + protocol;
         var mOutputRule = chainRule + userID + "_OUTPUT -d " + mIP + mProtocol + mDPort + " -m owner --uid-owner " + mUID + " -j ACCEPT;";
         var mInputRule = chainRule + userID + "_INPUT -s " + mIP + mProtocol + mSPort + " -m state --state ESTABLISHED,RELATED -j ACCEPT;";
-        callback(null, mOutputRule + mInputRule);
+        tasks.push(fObj({chain: userID + "_OUTPUT", destination: {ip: mIP, port: port}, protocol: protocol, match: "owner --uid-owner " + mUID}));
+        tasks.push(fObj({chain: userID + "_INPUT", source: {ip:mIP, port: port}, protocol: protocol, match: "state --state ESTABLISHED,RELATED"}));
+        callback(null, mOutputRule + mInputRule, tasks);
         return;
     } else {
         var mProtocolTcp = " -p TCP";
@@ -82,7 +93,13 @@ function createRule(appID, userID, ip, mask, port, protocol, addOrRemove, ipVers
         var mInputRuleUDP = chainRule + userID + "_INPUT -s " + mIP + mProtocolUdp + mSPort + " -m state --state ESTABLISHED,RELATED -j ACCEPT;";
         var mOutputRuleICMP = chainRule + userID + "_OUTPUT -d " + mIP + mProtocolIcmp + " -m owner --uid-owner " + mUID + " -j ACCEPT;";
         var mInputRuleICMP = chainRule + userID + "_INPUT -s " + mIP + mProtocolIcmp + " -m state --state ESTABLISHED,RELATED -j ACCEPT;";
-        callback(null, mOutputRuleTCP + mInputRuleTCP + mOutputRuleUDP + mInputRuleUDP + mOutputRuleICMP + mInputRuleICMP);
+        tasks.push(fObj({chain: userID + "_OUTPUT", destination: {ip: mIP, port: port}, protocol: "TCP", match: "owner --uid-owner " + mUID}));
+        tasks.push(fObj({chain: userID + "_INPUT", source: {ip: mIP, port: port}, protocol: "TCP", match: "state --state ESTABLISHED,RELATED"}));
+        tasks.push(fObj({chain: userID + "_OUTPUT", destination: {ip: mIP, port: port}, protocol: "UDP", match: "owner --uid-owner " + mUID}));
+        tasks.push(fObj({chain: userID + "_INPUT", source: {ip: mIP, port: port}, protocol: "UDP", match: "state --state ESTABLISHED,RELATED"}));
+        tasks.push(fObj({chain: userID + "_OUTPUT", destination: {ip: mIP}, protocol: "ICMP", match: "owner --uid-owner " + mUID}));
+        tasks.push(fObj({chain: userID + "_INPUT", source: {ip: mIP}, protocol: "ICMP", match: "state --state ESTABLISHED,RELATED"}));
+        callback(null, mOutputRuleTCP + mInputRuleTCP + mOutputRuleUDP + mInputRuleUDP + mOutputRuleICMP + mInputRuleICMP, tasks);
         return;
     }
 
@@ -108,12 +125,12 @@ function generateUserRules(email, userID, platID, addOrRemove, callback) {
     var mRule = "";
     var mAccessStatus;
     var mMainDomain;
+    var tasks = [];
     
     async.series([
     	
     function(callback) {
-    	
-        removeRulesFromTable(userID, platID, function(err, delCmd) {
+        removeRulesFromTable(userID, platID, function(err, delCmd, delTasks) {
             if (err) {
                 callback(err);
                 return;
@@ -126,6 +143,15 @@ function generateUserRules(email, userID, platID, addOrRemove, callback) {
                 var mV6Table = "ip6tables -N " + userID + "_INPUT;ip6tables -N " + userID + "_OUTPUT;";
                 var mV4Link = "iptables -A INPUT -j " + userID + "_INPUT;iptables -A OUTPUT -j " + userID + "_OUTPUT;";
                 var mV6Link = "ip6tables -A INPUT -j " + userID + "_INPUT;ip6tables -A OUTPUT -j " + userID + "_OUTPUT;";
+                //tasks = tasks.concat(delTasks);
+                tasks.push({v: "v4", cmd: "new", chain: userID + "_INPUT"});
+                tasks.push({v: "v4", cmd: "new", chain: userID + "_OUTPUT"});
+                tasks.push({v: "v6", cmd: "new", chain: userID + "_INPUT"});
+                tasks.push({v: "v6", cmd: "new", chain: userID + "_OUTPUT"});
+                tasks.push({v: "v4", cmd: "append", chain: "INPUT", job: userID + "_INPUT"});
+                tasks.push({v: "v4", cmd: "append", chain: "OUTPUT", job: userID + "_OUTPUT"});
+                tasks.push({v: "v6", cmd: "append", chain: "INPUT", job: userID + "_INPUT"});
+                tasks.push({v: "v6", cmd: "append", chain: "OUTPUT", job: userID + "_OUTPUT"});
                 mRule = delCmd + mV4Table + mV6Table + mV4Link + mV6Link;
                 callback(null);
             }
@@ -133,55 +159,7 @@ function generateUserRules(email, userID, platID, addOrRemove, callback) {
         });
 
     },
-    function(callback) {
 
-        getMainDomainAndAccessStatus(email, function(err, mainDomain, accessStatus) {
-            if (err) {
-                callback(err);
-                return;
-            } else {
-                mMainDomain = mainDomain;
-                mAccessStatus = accessStatus;
-                //TODO It's a temporary fix, need to be removed
-                if (mAccessStatus == "open") {
-                    generateOpenAccessRulesForSysApp(Firewall.add, mMainDomain, userID, platID, mAccessStatus, function(err, ruleCmd) {
-                        if (err) {
-                            callback(err);
-                            return;
-                        } else if (ruleCmd) {
-                            mRule = mRule + ruleCmd;
-                            callback(null);
-                        }
-                    });
-
-                } else {
-                    async.eachSeries(sysApps, function(packageName, callback) {
-                        GeneralCreateRules(platID, userID, packageName, mMainDomain, Firewall.add, mAccessStatus, function(err, rule) {
-                            if (err) {
-                                callback("ERROR:GeneralCreateRules:createRule " + err);
-                                return;
-                            } else if (rule) {
-                                mRule = mRule + rule;
-                                callback(null);
-                            } else {
-                                callback(null);
-                            }
-                        });
-                    }, function(err) {
-                        if (err) {
-                            logger.error(err);
-                            callback(err);
-                            return;
-                        } else {
-                            callback(null);
-                            return;
-                        }
-                    });
-
-                }
-            }
-        });
-    },
     function(callback) {
     	
         Common.db.UserApps.findAll({
@@ -203,12 +181,13 @@ function generateUserRules(email, userID, platID, addOrRemove, callback) {
                 async.eachSeries(async_results, function(row_packagename, callback) {
                     var mainDomain = row_packagename.maindomain ? row_packagename.maindomain : null;
                     var packageName = row_packagename.packagename ? row_packagename.packagename : null;
-                    GeneralCreateRules(platID, userID, packageName, mainDomain, Firewall.add, mAccessStatus, function(err, rule) {
+                    createSingleRule(platID, userID, packageName, mainDomain, Firewall.add, mAccessStatus, function(err, rule, resTasks) {
                         if (err) {
-                            callback("ERROR:GeneralCreateRules:createRule " + err);
+                            callback("ERROR:createSingleRule:createRule " + err);
                             return;
                         } else if (rule) {
                             mRule = mRule + rule;
+                            tasks = tasks.concat(resTasks);
                             callback(null);
                         } else {
                             callback(null);
@@ -232,10 +211,10 @@ function generateUserRules(email, userID, platID, addOrRemove, callback) {
     }], function(err) {
 
         if (err) {
-            callback(err, mRule);
+            callback(err, mRule, tasks);
             return;
         } else {
-            callback(null, mRule);
+            callback(null, mRule, tasks);
             return;
         }
     });
@@ -318,29 +297,30 @@ function updateOnlineUsersOpenCloseAccess(domain, callback) {
 
 }
 
-function GeneralCreateRules(platID, userID, packageName, domain, addOrRemove, accessStatus, callback) {
+function createSingleRule(platID, userID, packageName, domain, addOrRemove, accessStatus, callback) {
 
     var mRule = "";
+    var tasks = [];
     if (accessStatus == "open") {
         getAppID(platID, packageName, function(err, appID) {
             if (err) {
-                callback("ERROR:GeneralCreateRules: getAppID " + err);
+                callback("ERROR:createSingleRule: getAppID " + err);
                 return;
             } else if (appID) {
-                createRule(appID, userID, null, null, null, null, null, null, accessStatus, function(err, rule) {
+                createRule(appID, userID, null, null, null, null, null, null, accessStatus, function(err, rule, resTasks) {
                     if (err) {
-                        callback("ERROR:GeneralCreateRules:createRule " + err);
+                        callback("ERROR:createSingleRule:createRule " + err);
                         return;
                     } else if (rule) {
-                        callback(null, rule);
+                        callback(null, rule, resTasks);
                         return;
                     } else {
-                        callback("ERROR:GeneralCreateRules:createRule rule is null");
+                        callback("ERROR:createSingleRule:createRule rule is null");
                         return;
                     }
                 });
             } else {
-                callback("ERROR:GeneralCreateRules:getAppID appID is null!!!");
+                callback("ERROR:createSingleRule:getAppID appID is null!!!");
                 return;
             }
         });
@@ -354,7 +334,7 @@ function GeneralCreateRules(platID, userID, packageName, domain, addOrRemove, ac
             },
         }).complete(function(err, results) {
             if (err) {
-                callback('ERROR:GeneralCreateRules: get rules from app_rules' + err);
+                callback('ERROR:createSingleRule: get rules from app_rules' + err);
                 return;
             } else if (!results || results == "") {
                 callback(null);
@@ -367,23 +347,24 @@ function GeneralCreateRules(platID, userID, packageName, domain, addOrRemove, ac
                     var mIpVersion = row_rule.ipversion ? row_rule.ipversion : null;
                     getAppID(platID, packageName, function(err, appID) {
                         if (err) {
-                            callback("ERROR:GeneralCreateRules: getAppID " + err);
+                            callback("ERROR:createSingleRule: getAppID " + err);
                             return;
                         } else if (appID) {
-                            createRule(appID, userID, mIP, mMask, mPort, mProtocol, addOrRemove, mIpVersion, accessStatus, function(err, rule) {
+                            createRule(appID, userID, mIP, mMask, mPort, mProtocol, addOrRemove, mIpVersion, accessStatus, function(err, rule, uTasks) {
                                 if (err) {
-                                    callback("ERROR:GeneralCreateRules:createRule " + err);
+                                    callback("ERROR:createSingleRule:createRule " + err);
                                     return;
                                 } else if (rule) {
                                     mRule = mRule + rule;
+                                    tasks = tasks.concat(uTasks);
                                     callback(null);
                                 } else {
-                                    callback("ERROR:GeneralCreateRules:createRule rule is null");
+                                    callback("ERROR:createSingleRule:createRule rule is null");
                                     return;
                                 }
                             });
                         } else {
-                            callback("ERROR:GeneralCreateRules:getAppID appID is null!!!");
+                            callback("ERROR:createSingleRule:getAppID appID is null!!!");
                             return;
                         }
                     });
@@ -393,7 +374,7 @@ function GeneralCreateRules(platID, userID, packageName, domain, addOrRemove, ac
                         callback(err);
                         return;
                     } else {
-                        callback(null, mRule);
+                        callback(null, mRule, tasks);
                         return;
                     }
                 });
@@ -436,6 +417,7 @@ function addNuboRules(platform_ip, callback) {
 
     var mgmtIP;
     var mServerurl = Common.serverurl;
+    var tasks = [];
 
     if (platform_ip != null) {
         var mPlatform_ip_out = "iptables -I OUTPUT -d " + platform_ip + "/" + Common.nuboMask + " -j ACCEPT;";
@@ -443,6 +425,12 @@ function addNuboRules(platform_ip, callback) {
         var mLocalHost_ip_out = "iptables -I OUTPUT -d 127.0.0.1 -j ACCEPT;";
         var mLocalHost_ip_in = "iptables -I INPUT -s 127.0.0.1 -j ACCEPT;";
         var mIptablesPolicy = "iptables -P INPUT DROP;iptables -P OUTPUT DROP;";
+        tasks.push({v: "v4", cmd: "insert", chain: "OUTPUT", destination: {ip: platform_ip + "/" + Common.nuboMask}, job: "ACCEPT"});
+        tasks.push({v: "v4", cmd: "insert", chain: "INPUT", source: {ip: platform_ip + "/" + Common.nuboMask}, job: "ACCEPT"});
+        tasks.push({v: "v4", cmd: "insert", chain: "OUTPUT", destination: {ip: "127.0.0.1"}, job: "ACCEPT"});
+        tasks.push({v: "v4", cmd: "insert", chain: "INPUT", source: {ip: "127.0.0.1"}, job: "ACCEPT"});
+        tasks.push({v: "v4", cmd: "policy", chain: "OUTPUT", job: "DROP"});
+        tasks.push({v: "v4", cmd: "policy", chain: "INPUT", job: "DROP"});
 
         validateIP(mServerurl, function(validateResult) {
             if (validateResult === false) {
@@ -463,9 +451,11 @@ function addNuboRules(platform_ip, callback) {
                             } else {
                                 var mHost_ip_out = "iptables -I OUTPUT -d " + mgmtIP + " -j ACCEPT;";
                                 var mHost_ip_in = "iptables -I INPUT -s " + mgmtIP + " -j ACCEPT;";
+                                tasks.push({v: "v4", cmd: "insert", chain: "OUTPUT", destination: {ip: mgmtIP}, job: "ACCEPT"});
+                                tasks.push({v: "v4", cmd: "insert", chain: "INPUT", source: {ip: mgmtIP}, job: "ACCEPT"});
                                 var mIptablesCMD = mPlatform_ip_out + mPlatform_ip_in + mHost_ip_out + mHost_ip_in + mLocalHost_ip_in + mLocalHost_ip_out + mIptablesPolicy;
                                 logger.info(" firewall - mIptablesCMD  - " + mIptablesCMD);
-                                callback(null, mIptablesCMD);
+                                callback(null, mIptablesCMD, tasks);
                                 return;
                             }
                         });
@@ -475,9 +465,11 @@ function addNuboRules(platform_ip, callback) {
             } else {
                 var mHost_ip_out = "iptables -I OUTPUT -d " + mServerurl + " -j ACCEPT;";
                 var mHost_ip_in = "iptables -I INPUT -s " + mServerurl + " -j ACCEPT;";
+                tasks.push({v: "v4", cmd: "insert", chain: "OUTPUT", destination: {ip: mServerurl}, job: "ACCEPT"});
+                tasks.push({v: "v4", cmd: "insert", chain: "INPUT", source: {ip: mServerurl}, job: "ACCEPT"});
                 var mIptablesCMD = mPlatform_ip_out + mPlatform_ip_in + mHost_ip_out + mHost_ip_in + mLocalHost_ip_in + mLocalHost_ip_out + mIptablesPolicy;
                 logger.info(" firewall - mIptablesCMD  - " + mIptablesCMD);
-                callback(null, mIptablesCMD);
+                callback(null, mIptablesCMD, tasks);
                 return;
             }
         });
@@ -536,18 +528,6 @@ function saveAppsUID(packagesList, platID, callback) {
 function updateOnlineUsersRule(packageName, ip, port, protocol, mask, domain, ipVersion, addOrRemove, callback) {
 
     var email;
-    if (sysApps.indexOf(packageName) >= 0) {
-        updateOnlineUsersOpenCloseAccess(domain, function(err) {
-            if (err) {
-                logger.error(err);
-                callback(err);
-            } else {
-                callback(null);
-            }
-
-        });
-    }
-    //updateOnlineUsersOpenCloseAccess
     var usersess = [];
     Common.db.UserApps.findAll({
         attributes : ['email'],
@@ -670,13 +650,25 @@ function updateRulesInIptables(packageName, ip, port, protocol, mask, domain, ip
  * @sessions - sessions array
  */
 function removeRulesFromTable(userID, platID, callback) {
-
+    var tasks = [];
     var mV4Table = "iptables -F " + userID + "_INPUT;iptables -X " + userID + "_INPUT;iptables -F " + userID + "_OUTPUT;iptables -X " + userID + "_OUTPUT;";
     var mV6Table = "ip6tables -F " + userID + "_INPUT;ip6tables -X " + userID + "_INPUT;ip6tables -F " + userID + "_OUTPUT;ip6tables -X " + userID + "_OUTPUT;";
     var mV4Link = "iptables -D INPUT -j " + userID + "_INPUT;iptables -D OUTPUT -j " + userID + "_OUTPUT;";
     var mV6Link = "ip6tables -D INPUT -j " + userID + "_INPUT;ip6tables -D OUTPUT -j " + userID + "_OUTPUT;";
+    tasks.push({v: "v4", cmd: "delete", chain: "INPUT", job: userID + "_INPUT"});
+    tasks.push({v: "v4", cmd: "delete", chain: "OUTPUT", job: userID + "_OUTPUT"});
+    tasks.push({v: "v6", cmd: "delete", chain: "INPUT", job: userID + "_INPUT"});
+    tasks.push({v: "v6", cmd: "delete", chain: "OUTPUT", job: userID + "_OUTPUT"});
+    tasks.push({v: "v4", cmd: "flush", chain: userID + "_INPUT"});
+    tasks.push({v: "v4", cmd: "delete-chain", chain: userID + "_INPUT"});
+    tasks.push({v: "v4", cmd: "flush", chain: userID + "_OUTPUT"});
+    tasks.push({v: "v4", cmd: "delete-chain", chain: userID + "_OUTPUT"});
+    tasks.push({v: "v6", cmd: "flush", chain: userID + "_INPUT"});
+    tasks.push({v: "v6", cmd: "delete-chain", chain: userID + "_INPUT"});
+    tasks.push({v: "v6", cmd: "flush", chain: userID + "_OUTPUT"});
+    tasks.push({v: "v6", cmd: "delete-chain", chain: userID + "_OUTPUT"});
 
-    callback(null, mV4Link + mV6Link + mV4Table + mV6Table);
+    callback(null, mV4Link + mV6Link + mV4Table + mV6Table, tasks);
     return;
 
 }
@@ -697,12 +689,12 @@ function addRuleForRunningUserFromInstallAPK(packageName, domain, addOrRemove, u
             if (mAccessStatus == "open") {
                 getAppID(platformID, packageName, function(err, appID) {
                     if (err) {
-                        callback("ERROR:GeneralCreateRules: getAppID " + err);
+                        callback("ERROR:addRuleForRunningUserFromInstallAPK: getAppID " + err);
                         return;
                     } else if (appID) {
                         createRule(appID, userIdInPlatform, null, null, null, null, null, null, mAccessStatus, function(err, rule) {
                             if (err) {
-                                callback("ERROR:GeneralCreateRules:createRule " + err);
+                                callback("ERROR:addRuleForRunningUserFromInstallAPK:createRule " + err);
                                 return;
                             } else if (rule) {
                                 var PlatformModule = require('./platform.js');
@@ -716,12 +708,12 @@ function addRuleForRunningUserFromInstallAPK(packageName, domain, addOrRemove, u
                                     }
                                 });
                             } else {
-                                callback("ERROR:GeneralCreateRules:createRule rule is null");
+                                callback("ERROR:addRuleForRunningUserFromInstallAPK:createRule rule is null");
                                 return;
                             }
                         });
                     } else {
-                        callback("ERROR:GeneralCreateRules:getAppID appID is null!!!");
+                        callback("ERROR:addRuleForRunningUserFromInstallAPK:getAppID appID is null!!!");
                         return;
                     }
                 });
@@ -746,16 +738,16 @@ function addRuleForRunningUserFromInstallAPK(packageName, domain, addOrRemove, u
                             var ipVersion = row.ipversion != null ? row.ipversion : '';
                             getAppID(platformID, packageName, function(err, appID) {
                                 if (err) {
-                                    callback("Error:: updateRulesInIptables.getAppID " + err);
+                                    callback("Error:: addRuleForRunningUserFromInstallAPK.getAppID " + err);
                                 } else {
                                     createRule(appID, userIdInPlatform, ip, mask, port, protocol, addOrRemove, ipVersion, mAccessStatus, function(err, rule) {
                                         if (err) {
-                                            callback("Error:: updateRulesInIptables.createRule " + err);
+                                            callback("Error:: addRuleForRunningUserFromInstallAPK.createRule " + err);
                                         } else {
                                             var PlatformModule = require('./platform.js');
                                             PlatformModule.addOnlineRuleToPlatform(platformID, '', rule, function(err) {
                                                 if (err) {
-                                                    callback("Error:: updateRulesInIptables.PlatformModule.addOnlineRuleToPlatform " + err);
+                                                    callback("Error:: addRuleForRunningUserFromInstallAPK.PlatformModule.addOnlineRuleToPlatform " + err);
                                                 } else {
                                                     callback(null);
                                                 }
@@ -894,45 +886,6 @@ function getMainDomainAndAccessStatus(email, callback) {
 
 }
 
-function generateOpenAccessRulesForSysApp(addOrRemove, domain, userID, platID, openAccess, callback) {
-
-    var mRule = "";
-
-    async.eachSeries(sysApps, function(packageName, callback) {
-        getAppID(platID, packageName, function(err, appID) {
-            if (err) {
-                callback("ERROR:generateOpenAccessRulesForSysApp: getAppID " + err);
-                return;
-            } else if (appID) {
-                createRule(appID, userID, null, null, null, null, Firewall.add, null, openAccess, function(err, rule) {
-                    if (err) {
-                        callback("ERROR:generateOpenAccessRulesForSysApp:createRule " + err);
-                        return;
-                    } else if (rule) {
-                        mRule = mRule + rule;
-                        callback(null);
-                    } else {
-                        callback("ERROR:generateOpenAccessRulesForSysApp:createRule rule is null");
-                        return;
-                    }
-                });
-            } else {
-                callback("ERROR:generateOpenAccessRulesForSysApp:getAppID appID is null!!!");
-                return;
-            }
-        });
-    }, function(err) {
-        if (err) {
-            logger.error(err);
-            callback(err);
-            return;
-        } else {
-            callback(null, mRule);
-            return;
-        }
-    });
-
-}
 
 var firewall = {
     saveAppsUID : saveAppsUID,

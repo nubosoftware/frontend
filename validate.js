@@ -38,12 +38,21 @@ function returnInternalError(err, res) {
 function validate(req, res, next) {
     var logger = new ThreadedLogger();
     //var timelog = logger.timelogger;
-
     res.contentType = 'json';
     var playerVersion = req.params.playerVersion ? req.params.playerVersion : null;
     var activationKey = req.params.activationKey ? req.params.activationKey : null;
     var deviceId = req.params.deviceid ? req.params.deviceid : null;
     var clientIP = req.connection.remoteAddress;
+    var clientUserName = req.params.username ? req.params.username : null;
+
+    if(Common.withService && !clientUserName){
+        res.send({
+            status: 1,
+            message: "Invalid username"
+        });
+        logger.error("validate: invalid username, URL: " + req.url);
+        return;    
+    }
 
     if (!activationKey || activationKey.length < 5) {
         res.send({
@@ -84,7 +93,7 @@ function validate(req, res, next) {
                     return (!response && iter <= MAX_VALIDATE_RETRIES);
                 },
                 function(callback) {
-                    validateActivation(activationKey, deviceId, userData, activationData, req.url, logger, function(err, validateResponse) {
+                    validateActivation(activationKey, deviceId, userData, activationData, req.url, clientUserName, logger, function(err, validateResponse) {
                         if (err)
                             error = err;
 
@@ -206,7 +215,7 @@ function checkIfNeedRedirection(playerVersion, activationKey, clientIP, logger, 
         },
         //get activation data to get the user name
         function(callback) {
-            if (!Common.dcName && !Common.dcURL) {
+            if (!Common.dcName || !Common.dcURL) {
                 callback(finish);
                 return;
             }
@@ -228,6 +237,11 @@ function checkIfNeedRedirection(playerVersion, activationKey, clientIP, logger, 
         },
         // check if user connected already to some data center
         function(callback) {
+            if (!Common.dcName || !Common.dcURL) {
+                callback(finish);
+                return;
+            }
+
             User.createOrReturnUserAndDomain(activationData.email, logger, function(err, user, userObj, orgObj) {
                 if (err) {
                     response = {
@@ -346,9 +360,11 @@ function getUserDeviceData(email, deviceID, logger, maindomain, callback) {
         var isDeviceBlocked = false;
         for (var i=0; i < blockedDevices.length; i++) {
             // console.log("****getUserDeviceData. devicename: " + results[0].devicename + ", blockedDevices[i]: " + blockedDevices[i]);
-            if (results[0].devicename.indexOf(blockedDevices[i]) > -1) {
-                isDeviceBlocked = true;
-                break;
+            if (results[0].devicename && blockedDevices[i]) {
+                if (results[0].devicename.toLowerCase().indexOf(blockedDevices[i].toLowerCase()) > -1) {
+                    isDeviceBlocked = true;
+                    break;
+                }
             }
         };
 
@@ -356,7 +372,7 @@ function getUserDeviceData(email, deviceID, logger, maindomain, callback) {
     });
 }
 
-function validateActivation(activationKey, deviceID, userdata, activationdata, url, logger, callback) {
+function validateActivation(activationKey, deviceID, userdata, activationdata, url, clientUserName, logger, callback) {
 
     var finish = 'finish';
     var demoActivation = false;
@@ -572,21 +588,20 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
             function(callback) {
                 //validate username on motorola project
                 if (Common.withService) {
-                    var clientUserName = activationData.email;
-                    if (clientUserName != null && userData.username != clientUserName) {
+                    if (userData.username != clientUserName) {
                         response = {
                             status: 0,
-                            message: "User " + clientUserName + ", Could not find username: " + clientUserName
+                            message: "Could not find username: " + clientUserName
                         }
                         callback(finish);
                         return;
                     }
                 }
 
-                if (userData.isactive == 0) {
+                if (userData.user.isactive == 0) {
                     response = {
                         status: 6,
-                        message: "user " + clientUserName + " not active!. Please contact administrator.",
+                        message: "user not active!. Please contact administrator.",
                         orgName: userData.orgName,
                         adminEmail: adminEmail,
                         adminName: adminName
@@ -602,7 +617,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                 if (loginattempts >= MAX_LOGIN_ATTEMPTS) {
                     response = {
                         status: 4,
-                        message: "User " + clientUserName + " passcode has been locked. Unlock email was sent. Please contact administrator."
+                        message: "User passcode has been locked. Unlock email was sent. Please contact administrator."
                     }
                     callback(finish);
                     return;
@@ -781,6 +796,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                             'clientProperties' : Common.clientProperties,
                             passcodeminchars: userData.org.passcodeminchars,
                             passcodetype: userData.org.passcodetype,
+                            passcodetypechange: userData.user.passcodetypechange,
                             loginToken: login.getLoginToken()
                         }
 

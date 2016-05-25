@@ -94,7 +94,7 @@ function setPasscode(req, res, next) {
 
     var loginToken = req.params.loginToken;
     if (loginToken == undefined || loginToken.length < 5) {
-        status = 0;
+        status = 2;
         // invalid parameter
         msg = "Invalid loginToken";
         res.send({
@@ -121,7 +121,7 @@ function setPasscode(req, res, next) {
     (function(loginToken, passcode) {
         new Login(loginToken, function(err, login) {
             if (err) {
-                status = 0;
+                status = 2;
                 // invalid parameter
                 msg = "Invalid loginToken, err:" + err;
                 res.send({
@@ -158,7 +158,8 @@ function setPasscode(req, res, next) {
 
             Common.db.User.update({
                 passcodeupdate: new Date(),
-                passcode : Common.enc(passcode)
+                passcode : Common.enc(passcode),
+                passcodetypechange : 0
             }, {
                 where : {
                     email : login.getUserName()

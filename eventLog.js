@@ -46,49 +46,25 @@ var EV_CONST = {
  * @param level        INFO, WARN or ERR constants
  * @param callback     function(err)
  */
-function createEvent(event_type, email, extra_info, level, callback) {
+function createEvent(event_type, email, maindomain, extra_info, level, callback) {
     var time = new Date();
-    // Retreive user's maindomain
 
-    Common.db.User.findAll({
-        attributes : ['orgdomain'],
-        where : {
-            email : email
-        },
-    }).complete(function(err, results) {
-        if (!!err) {
-            callback('reportEvent Error:' + err);
-            return;
-        }
-
-        if (!results || results == "") {
-            callback('reportEvent Error: Cannot find user');
-            return;
-        }
-
-        // Retreive maindomain
-        var maindomain = (results[0].orgdomain ? results[0].orgdomain : '');
-        console.log("maindomain " + maindomain + ", event_type " + event_type + ", email " + email + ", time " + time);
-        Common.db.EventsLog.create({
-            eventtype : event_type,
-            email : email,
-            maindomain : maindomain,
-            extrainfo : extra_info,
-            time : time,
-            level : level
-        }).then(function(results) {
-            console.log('results');
-            callback(null);
-            return;
-        }).catch(function(err) {
-            console.log('err');
-            logger.error('reportEvent Error: Cannot Insert to table.\n' + 'event_type=' + event_type + ' email=' + email + ' maindomain=' + maindomain + '\n extra_info=' + extra_info + ' time=' + time + 'level=' + level + '\nERROR: ' + err);
-            callback(err);
-            return;
-        });
-
+    console.log("maindomain " + maindomain + ", event_type " + event_type + ", email " + email + ", time " + time);
+    Common.db.EventsLog.create({
+        eventtype : event_type,
+        email : email,
+        maindomain : maindomain,
+        extrainfo : extra_info,
+        time : time,
+        level : level
+    }).then(function(results) {
+        console.log('results');
+        callback(null);
+    }).catch(function(err) {
+        console.log('err');
+        logger.error('reportEvent Error: Cannot Insert to table.\n' + 'event_type=' + event_type + ' email=' + email + ' maindomain=' + maindomain + '\n extra_info=' + extra_info + ' time=' + time + 'level=' + level + '\nERROR: ' + err);
+        callback(err);
     });
-
 }
 
 module.exports = {

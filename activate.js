@@ -12,21 +12,21 @@ var MailingList = require('./mailingList.js').MailingList;
 var Track = require('./track.js');
 var ThreadedLogger = require('./ThreadedLogger.js');
 var eventLog = require('./eventLog.js');
+var smsNotification = require('./SmsNotification.js');
 
 // Event log Const
 var EV_CONST = eventLog.EV_CONST;
 var EV_CREATE_PLAYER = EV_CONST.EV_CREATE_PLAYER;
 var INFO = EV_CONST.INFO;
 
-function createLogEvents(deviceid, email, firstName, lastName, regid, creationData, deviceType, activationKey, callback) {
+function createLogEvents(deviceid, email, domain, firstName, lastName, regid, creationData, deviceType, activationKey, callback) {
     var eventtype = EV_CREATE_PLAYER;
-    var callerEmail = email;
     var extra_info = 'email:' + email + ' firstName:' + firstName + ' lastName:' + lastName
         + ' regid:' + regid + ' creationData:' + creationData + ' deviceType:' + deviceType
         + ' activationKey:' + activationKey;
 
     // Create event in Eventlog
-    eventLog.createEvent(eventtype, callerEmail, extra_info, INFO, function(err) {
+    eventLog.createEvent(eventtype, email, domain, extra_info, INFO, function(err) {
         logger.error(err);
         callback(null);
     });
@@ -200,7 +200,7 @@ function activate(req, res, next) {
 }
 
 function execActivate(req, res, next, email, username) {
-	var msg = "";
+    var msg = "";
     var status = 100;
 
     //read and validate params
@@ -305,19 +305,27 @@ function execActivate(req, res, next, email, username) {
     logger.info("After params...");
 
     if (Common.orgRedirectionMap) {
-        var emailDomain = email.substr(email.indexOf('@') + 1);
-        var redirect = Common.orgRedirectionMap[emailDomain];
-        if (redirect && redirect != Common.serverurl) {
-            msg = "Redirecting user from " + emailDomain + " to " + redirect;
-            logger.info(msg);
-            status = 301;
-            res.send({
-                status : status,
-                message : msg,
-                mgmtURL : redirect
-            });
-            return;
-        }
+
+        var emailDomain;
+        User.getUserDomain(email, function (orgDomainFromDB ) {
+            if (orgDomainFromDB)
+                emailDomain = orgDomainFromDB;
+            else
+                emailDomain = email.substr(email.indexOf('@') + 1);
+
+            var redirect = Common.orgRedirectionMap[emailDomain];
+            if (redirect && redirect != Common.serverurl) {
+                msg = "Redirecting user from " + emailDomain + " to " + redirect;
+                logger.info(msg);
+                status = 301;
+                res.send({
+                    status : status,
+                    message : msg,
+                    mgmtURL : redirect
+                });
+                return;
+            }
+        });
     }
 
     var processActivation = function() {
@@ -379,229 +387,301 @@ function execActivate(req, res, next, email, username) {
                 expirationDate.setHours(expirationDate.getHours() + Common.activationTimeoutPeriod);
 
                 // logger.info('Activation expirationDate:' + expirationDate.getHours());
-
-                // insert activationKey row to db
-                Common.db.Activation.create({
-                    activationkey : token,
-                    deviceid : deviceid,
-                    status : 0,
-                    email : email,
-                    firstname : first,
-                    lastname : last,
-                    jobtitle : title,
-                    emailtoken : emailtoken,
-                    pushregid : regid,
-                    firstlogin : 1,
-                    resetpasscode : 0,
-                    devicetype : deviceType,
-                    createdate : currentDate,
-                    expirationdate : expirationDate
-                }).then(function(results) {
-
-                    // Create events in Eventlog
-                    createLogEvents(deviceid, email, first, last, regid, currentDate, deviceType,token, function(err) {
-                        if (err) {
-                            logger.info('createLogEvents error:' + err);
-                        }
-                    });
-
-                    logger.info("Added activation " + token);
-                    status = 0;
-                    msg = "Activation link has been sent";
-                    res.send({
-                        status : status,
-                        activationKey : token,
-                        message : msg
-                    });
-
-                    // check if device exist
-                    Common.db.UserDevices.findAll({
-                        attributes : ['email', 'imei', 'active', 'devicename'],
-                        where : {
-                            email : email,
-                            imei : deviceid
-                        },
-                    }).complete(function(err, results) {
-
-                        if (!!err) {
-                            returnInternalError(err, res);
-                            return;
-
-                        }
-
-                        if (!results || results == "") {
-                            var isActive = 1;
-                            //by default when user do activate the device is active.
-                            var emailDomain = email.substr(email.indexOf('@') + 1);
-
-                            Common.db.UserDevices.create({
-                                imei : deviceid,
-                                imsi : imsi,
-                                email : email,
-                                devicename : deviceName,
-                                active : isActive,
-                                maindomain : emailDomain,
-                                inserttime : new Date()
-                            }).then(function(results) {
-                                logger.info("user_devices created: device " + deviceid + " added to user: " + email);
-
-                            }).catch(function(err) {
-                                returnInternalError(err, res);
-                                return;
-                            });
-
-                        } else {
-                            Common.db.UserDevices.update({
-                                imsi : imsi,
-                                inserttime : new Date()
-                            }, {
-                                where : {
-                                    email : email,
-                                    imei : deviceid
-                                }
-                            }).then(function() {
-                                logger.info("user_devices exist updated: device " + deviceid + " added to user: " + email);
-                            }).catch(function(err) {
-                                returnInternalError(err, res);
-                                return;
-                            });
-                        }
-                    });
-
-                    if (Common.autoActivation || Common.withService) {
-                        var newreq = {
-                            params : {
-                                token : emailtoken
-                            },
-                            connection : {}
-                        };
-                        var newres = {
-                            send : function() {
-                                logger.info("Autoactivation: \n", arguments);
-                            }
-                        };
-                        require('./activationLink.js').func(newreq, newres, null);
-                        return;
+                var domainEmail;
+                User.getUserDomain(email, function (orgDomainFromDB ) {
+                    if (orgDomainFromDB) {
+                        domainEmail = orgDomainFromDB;
+                    } else {
+                        domainEmail = email.substr(email.indexOf('@') + 1);
                     }
-                    if (!silentActivation) {
-                        var activationLinkURL = Common.serverurl + "html/player/login.html#activationLink/" + encodeURIComponent(emailtoken) + "/" + encodeURIComponent(email);
-                        logger.info("Activation Link: " + activationLinkURL);
+                 // insert activationKey row to db
+                    Common.db.Activation.create({
+                        activationkey : token,
+                        deviceid : deviceid,
+                        status : 0,
+                        email : email,
+                        firstname : first,
+                        lastname : last,
+                        jobtitle : title,
+                        emailtoken : emailtoken,
+                        pushregid : regid,
+                        firstlogin : 1,
+                        resetpasscode : 0,
+                        devicetype : deviceType,
+                        createdate : currentDate,
+                        expirationdate : expirationDate,
+                        maindomain : domainEmail
+                    }).then(function(results) {
 
-                        // setup e-mail data with unicode symbols
-                        var mailOptions = {
-                            from : "support@nubosoftware.com",
-                            // sender address
-                            fromname : "Nubo Support",
-                            to : email,
-                            // list of receivers
-                            toname : first + " " + last,
-                            subject : "Create a Player",
-                            // Subject line
-                            text : "Dear " + first + " " + last + ", \nClick the following link to connect to your working environment, and then continue working from your mobile device.\n\n" + activationLinkURL + "\n\n- The Nubo Team",
-                            // plaintext body
-                            html : "<p>Dear " + first + " " + last + ",</p><p> \nClick the following link to connect to your working environment, and then continue working from your mobile device.</p>\n\n" + "<p><a href=\"" + activationLinkURL + "\">" + first + " " + last + " – Player Activation</a></p>  \n\n<p>- The Nubo Team</p>" // html body
-                        };
-                        logger.info("Before send message");
-                        Common.mailer.send(mailOptions, function(success, message) {
-                            if (!success) {
-                                logger.info("sendgrid error: " + message);
-                            } else {
-
+                        // Create events in Eventlog
+                        createLogEvents(deviceid, email, domainEmail, first, last, regid, currentDate, deviceType,token, function(err) {
+                            if (err) {
+                                logger.info('createLogEvents error:' + err);
                             }
                         });
 
-                        if (Common.mailChimpAPIKey) {
-                            var mailingList = new MailingList();
-                            mailingList.subscribe(email, first, last, clientIP);
-                        }
+                        logger.info("Added activation " + token);
+                        status = 0;
+                        msg = "Activation link has been sent";
+                        res.send({
+                            status : status,
+                            activationKey : token,
+                            message : msg
+                        });
 
-                        var appid = deviceid + "_" + token;
+                        // declaration
+                        var emailDomain;
 
-                        Track.trackAPI({
-                            customAppID : appid,
-                            customSessID : appid,
-                            type : 'Activation request',
-                            appType : 'Nubo',
-                            ip : clientIP,
-                            userParams : {
+                        // check if device exist
+                        Common.db.UserDevices.findAll({
+                            attributes : ['email', 'imei', 'active', 'devicename'],
+                            where : {
                                 email : email,
-                                firstname : first,
-                                lastname : last,
-                                title : title
+                                imei : deviceid
                             },
-                            other : {
-                                dcname : Common.dcName,
-                                devicetype : deviceType,
-                                alreadyuser : alreadyUser,
-                                deviceid : deviceid
+                        }).complete(function(err, results) {
+
+                            if (!!err) {
+                                returnInternalError(err, res);
+                                return;
+
                             }
-                        });
 
-                        if (Common.isGeoIP == true) {
-                            Common.geoip.lookup(clientIP, function(err, data) {
-                                if (!err) {
-                                    logger.info("Country: " + data.countryCode);
-                                    var geoipInfo = data;
-                                    var params = {
-                                        name : first + " " + last,
-                                        email : email,
-                                        title : title,
-                                        devicetype : deviceType,
-                                        deviceid : deviceid,
-                                        geoipInfo : geoipInfo
-                                    };
-
-                                    var mailOptions = {
-                                        from : "support@nubosoftware.com",
-                                        // sender address
-                                        fromname : "Nubo Support",
-                                        to : Common.adminEmail,
-                                        // list of receivers
-                                        toname : Common.adminName,
-                                        subject : (Common.dcName != "" ? Common.dcName + " - " : "") + "Player Activation - " + email + ( geoipInfo ? ' [' + geoipInfo.countryCode + ']' : ''),
-                                        // Subject line
-                                        text : JSON.stringify(params, null, 2)
-                                    };
-
-                                    mailOptions.html = mailOptions.text.replace(/\n/g, "<br />");
-
-                                    Common.mailer.send(mailOptions, function(success, message) {
-                                        if (!success) {
-                                            //logger.info("sendgrid error: "+message);
-                                        } else {
-                                            //logger.info("Message sent to "+email);
-                                        }
-
-                                    });
-                                    //Common.mailer.send
-
+                            User.getUserDomain(email, function (orgDomainFromDB ) {
+                                if (orgDomainFromDB) {
+                                    emailDomain = orgDomainFromDB;
                                 } else {
-                                    logger.info("GeoIP Error: " + err);
+                                    emailDomain = email.substr(email.indexOf('@') + 1);
                                 }
+                                if (!results || results == "") {
+                                    var isActive = 1;
 
+                                    //by default when user do activate the device is active.
+                                    Common.db.UserDevices.create({
+                                        imei : deviceid,
+                                        imsi : imsi,
+                                        email : email,
+                                        devicename : deviceName,
+                                        active : isActive,
+                                        maindomain : emailDomain,
+                                        inserttime : new Date()
+                                    }).then(function(results) {
+                                        logger.info("user_devices created: device " + deviceid + " added to user: " + email);
+
+                                    }).catch(function(err) {
+                                        returnInternalError(err, res);
+                                        return;
+                                    });
+                                    
+                                } else {
+                                    Common.db.UserDevices.update({
+                                        imsi : imsi,
+                                        inserttime : new Date()
+                                    }, {
+                                        where : {
+                                            email : email,
+                                            imei : deviceid
+                                        }
+                                    }).then(function() {
+                                        logger.info("user_devices exist updated: device " + deviceid + " added to user: " + email);
+                                    }).catch(function(err) {
+                                        returnInternalError(err, res);
+                                        return;
+                                    });
+                                }
+                                
+                                if (Common.autoActivation || Common.withService) {
+                                    var newreq = {
+                                        params : {
+                                            token : emailtoken
+                                        },
+                                        connection : {}
+                                    };
+                                    var newres = {
+                                        send : function() {
+                                            logger.info("Autoactivation: \n", arguments);
+                                        }
+                                    };
+                                    require('./activationLink.js').func(newreq, newres, null);
+                                    return;
+                                }
+                                
+                                if (!silentActivation) {
+                                    Common.db.Orgs.findAll({
+                                        attributes : ['notifieradmin','deviceapprovaltype'],
+                                        where : {
+                                            maindomain : emailDomain
+                                        },
+                                    }).complete(function(err, results) {
+                                        if (!!err) { // error on fetching org
+                                            logger.error('Error on get orgs details for ' + emailDomain +', error: ' + err);
+                                        } else if (!results || results == "") { // no org in DB
+                                             logger.error('Cannot find org ' + emailDomain);
+                                        } else { // get org details and act accordingly
+                                            var row = results[0];
+                                            var notifieradmin = row.notifieradmin != null ? row.notifieradmin : '';
+                                            var deviceapprovaltype = row.deviceapprovaltype != null ? row.deviceapprovaltype : 0;
+                                            
+                                            var senderEmail = "support@nubosoftware.com";
+                                            var senderName = "Nubo Support";
+                                            
+                                            // define to recepient and subject based on device approval type
+                                            var toEmail = '';
+                                            var emailSubject = '';
+                                            var toName = '';
+                                            if (deviceapprovaltype == 0) { // default behavior, user approve himself
+                                                toEmail = email;
+                                                emailSubject = 'Create a Player';
+                                                toName = first + " " + last;
+                                            } else if (deviceapprovaltype == 1) { // manually only by admin
+                                                toEmail = notifieradmin;
+                                                emailSubject = 'Create a Player for ' + first + ' ' + last;
+                                                toName = notifieradmin;
+                                            } else if (deviceapprovaltype == 2) { // both for admin and user
+                                                toEmail = [notifieradmin,email];;
+                                                emailSubject = 'Create a Player for ' + first + ' ' + last;
+                                                toName = '';
+                                            }
+                                            
+                                            var activationLinkURL = Common.serverurl + "html/player/login.html#activationLink/" + encodeURIComponent(emailtoken) + "/" + encodeURIComponent(email);
+                                            logger.info("Activation Link: " + activationLinkURL);
+
+                                            // setup e-mail data with unicode symbols
+                                            var mailOptions = {
+                                                from : senderEmail,
+                                                // sender address
+                                                fromname : senderName ,
+                                                to : toEmail,
+                                                // list of receivers
+                                                toname : toName,
+                                                subject : emailSubject,
+                                                // Subject line
+                                                text : "Dear " + first + " " + last + ", \nClick the following link to connect to your working environment, and then continue working from your mobile device.\n\n" + activationLinkURL + "\n\n- The Nubo Team",
+                                                // plaintext body
+                                                html : "<p>Dear " + first + " " + last + ",</p><p> \nClick the following link to connect to your working environment, and then continue working from your mobile device.</p>\n\n" + "<p><a href=\"" + activationLinkURL + "\">" + first + " " + last + " – Player Activation</a></p>  \n\n<p>- The Nubo Team</p>" // html body
+                                            };
+                                            
+                                            Common.mailer.send(mailOptions, function(success, message) {
+                                                if (!success) {
+                                                    logger.info("sendgrid error: " + message);
+                                                } else {
+
+                                                }
+                                            });
+
+                                            // send SMS only if user can approve himself
+                                            if (Common.activateBySMS && (deviceapprovaltype == 0 || deviceapprovaltype == 2)) {
+                                                Common.db.User.findAll({
+                                                    attributes : ['mobilephone'],
+                                                    where : {
+                                                        email : email,
+                                                    },
+                                                }).complete(function(err, results) {
+                                                    if (!!err) {
+                                                        status = 0;
+                                                        msg = "Internal Error: " + err;
+                                                        logger.info("reset passcode find user by email error: " + msg);
+                                                    } else if (!results || results == "") {
+                                                        status = 0;
+                                                        msg = "Cannot find user " + login.getUserName();
+                                                        logger.info("reset passcode find user by email error, " + msg);
+                                                    } else {
+                                                        var mobilePhone = results[0].mobilephone != null ? results[0].mobilephone : '';
+
+                                                        // some validation on mobile phone even they are coming from the data base
+                                                        if (mobilePhone != null && mobilePhone.length > 0 && mobilePhone.length < 20) {
+                                                            smsNotification.sendSmsNotificationInternal(mobilePhone,'Click your Nubo activation link ' + activationLinkURL, function(message, status) {
+                                                                logger.info(message);
+                                                            });
+                                                        }
+                                                    }
+                                                });
+                                            }
+
+                                            if (Common.mailChimpAPIKey) {
+                                                var mailingList = new MailingList();
+                                                mailingList.subscribe(email, first, last, clientIP);
+                                            }
+                                        }
+                                    });
+                                    
+                                    
+                                   
+
+                                    var appid = deviceid + "_" + token;
+
+                                    Track.trackAPI({
+                                        customAppID : appid,
+                                        customSessID : appid,
+                                        type : 'Activation request',
+                                        appType : 'Nubo',
+                                        ip : clientIP,
+                                        userParams : {
+                                            email : email,
+                                            firstname : first,
+                                            lastname : last,
+                                            title : title
+                                        },
+                                        other : {
+                                            dcname : Common.dcName,
+                                            devicetype : deviceType,
+                                            alreadyuser : alreadyUser,
+                                            deviceid : deviceid
+                                        }
+                                    });
+
+                                    if (Common.isGeoIP == true) {
+                                        Common.geoip.lookup(clientIP, function(err, data) {
+                                            if (!err) {
+                                                logger.info("Country: " + data.countryCode);
+                                                var geoipInfo = data;
+                                                var params = {
+                                                    name : first + " " + last,
+                                                    email : email,
+                                                    title : title,
+                                                    devicetype : deviceType,
+                                                    deviceid : deviceid,
+                                                    geoipInfo : geoipInfo
+                                                };
+
+                                                var mailOptions = {
+                                                    from : "support@nubosoftware.com",
+                                                    // sender address
+                                                    fromname : "Nubo Support",
+                                                    to : Common.adminEmail,
+                                                    // list of receivers
+                                                    toname : Common.adminName,
+                                                    subject : (Common.dcName != "" ? Common.dcName + " - " : "") + "Player Activation - " + email + ( geoipInfo ? ' [' + geoipInfo.countryCode + ']' : ''),
+                                                    // Subject line
+                                                    text : JSON.stringify(params, null, 2)
+                                                };
+
+                                                mailOptions.html = mailOptions.text.replace(/\n/g, "<br />");
+
+                                                Common.mailer.send(mailOptions, function(success, message) {
+                                                    if (!success) {
+                                                        //logger.info("sendgrid error: "+message);
+                                                    } else {
+                                                        //logger.info("Message sent to "+email);
+                                                    }
+
+                                                });
+                                                //Common.mailer.send
+
+                                            } else {
+                                                logger.info("GeoIP Error: " + err);
+                                            }
+                                        });
+                                        // Common.geoip.lookup
+                                    }
+                                }
                             });
-                            // Common.geoip.lookup
-                        }
-
-                        /*
-
-                         */
-
-                    }
-                    // send mail with defined transport object
-                    /*Common.smtpTransport.sendMail(mailOptions, function(error, response){
-
-                     if(error){
-                     logger.info(error);
-                     }else{
-                     logger.info("Message sent: " + response.message);
-                     }
-                     });*/
-                }).catch(function(err) {
-                    returnInternalError(err, res);
-                    return;
+                        });
+                    }).catch(function(err) {
+                        returnInternalError(err, res);
+                        return;
+                    });
                 });
-
             });
         });
     };

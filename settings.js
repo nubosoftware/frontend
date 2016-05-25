@@ -240,7 +240,8 @@ function changeOrCheckPasscode(cmd, req, res, next) {
 
             Common.db.User.update({
                 passcodeupdate: new Date(),
-                passcode : newPasscode
+                passcode : Common.enc(newPasscode),
+                passcodetypechange : 0
             }, {
                 where : {
                     email : email
@@ -579,7 +580,7 @@ function setAccount(req, res, next) {
         });
         return;
     }
-    var domain = req.params.domain;
+    var domain = req.params.domain|| Common.EWSDomain;
     logger.debug("settings::setAccount: domain= " + domain);
 
     // Bug: re-write orgdomain while user create email with domain...

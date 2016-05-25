@@ -127,7 +127,7 @@ function syncFolders(nfs, dst, path, callback) {
 
 function setSyncAbort(path, spawnProcess, logger){
 
-    var redisClient = Common.redis.createClient(Common.redisport, Common.redishost,{ password : Common.redispassword });
+    var redisClient = Common.redis.createClient( Common.redisConf);
     var channel = "sync_" + getPathFromObj(path);
     redisClient.subscribe(channel);
                 

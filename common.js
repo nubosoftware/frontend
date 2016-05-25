@@ -31,10 +31,11 @@ var Common = {
     dbMaxIdleTime : 30,
     nodemailer : require("nodemailer"),
     redis : require("redis"),
-    redishost : "127.0.0.1",
-    redisport : 6379,
-    redisdb : 0,
-    redispassword : null,
+    redisConf: {
+        host: "127.0.0.1",
+        port: 6379,
+        db: 0
+    },
     platfromPortStart : 5560,
     platformIPPrefix : "192.168.122.",
     platformMacPrefix : "52:54:00:12:00:",
@@ -140,7 +141,9 @@ var Common = {
         "NotificationGateway": {
             "authKey": 1
         },
-        "redispassword": 1
+        "redisConf" : {
+            "password" : 1
+        }
     }
 };
 
@@ -249,7 +252,7 @@ function parse_configs() {
             Common.redisPool = poolModule.Pool({
                 name : 'redis',
                 create : function(callback) {
-                    var c = Common.redis.createClient(Common.redisport, Common.redishost, { password : Common.redispassword });
+                    var c = Common.redis.createClient(Common.redisConf);
                     if (Common.redisdb > 0) {
                         c.select(Common.redisdb, function(err) {
                         });

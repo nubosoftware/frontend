@@ -332,6 +332,39 @@ var accesslogger = accesslog({
     path : './log/access_log.log'
 });
 
+var filterModule = require('permission-parser');
+var filterOpts = {
+    loge: logger.error
+};
+var filterObj = new filterModule([], filterOpts);
+var filterFile = 'parameters-map.json';
+Common.fs.watchFile(filterFile, {
+    persistent : false,
+    interval : 5007
+}, function(curr, prev) {
+    logger.info(filterFile + ' been modified');
+    refresh_filter();
+});
+
+var refresh_filter = function() {
+    Common.fs.readFile(filterFile, function(err, data) {
+        if (err) {
+            logger.error('Error: Cannot open ' + filterFile + ' file');
+        } else {
+            try {
+                var msg = data.toString().replace(/[\n|\t]/g, '');
+                var obj = JSON.parse(msg);
+            } catch (e) {
+                logger.error("cannot parse json file " + filterFile + " exception:" + JSON.stringify(e));
+                return;
+            }
+            console.log("obj: " + JSON.stringify(obj));
+            filterObj.reload(obj.rules, {permittedMode: obj.permittedMode});
+        }
+    });
+}
+refresh_filter();
+
 function buildServerObject(server) {
     server.on('uncaughtException', function(request, response, route, error) {
         logger.error("Exception in http server: " + (error && error.stack || error));
@@ -339,6 +372,7 @@ function buildServerObject(server) {
         return true;
     });
     server.use(Common.restify.queryParser());
+    server.use(filterObj.useHandler);
     server.use(function(req, res, next) {
         req.realIP = req.headers['x-real-ip'] || req.connection.remoteAddress;
         next();

@@ -5,6 +5,8 @@ var memwatch = require('memwatch');
 var crypto = require('crypto');
 var poolModule = require('generic-pool');
 var dataEncryptor = require('./dataEncryptor.js');
+var async = require('async');
+var _ = require('underscore');
 
 var Common = {
     minUXIPVersion : 1,
@@ -144,7 +146,8 @@ var Common = {
         "redisConf" : {
             "password" : 1
         }
-    }
+    },
+    encryptConf: false
 };
 
 try {
@@ -214,10 +217,72 @@ function to_array(args) {
     return arr;
 }
 
+function load_settings(callback) {
+    var decryptedSettings;
+    var encryptedSettings;
+    var settings;
+
+    async.series([
+        //read file
+        function(callback) {
+            Common.fs.readFile('Settings.json', function(err, data) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+
+                var rawSettings = data.toString().replace(/[\n|\t]/g, '');
+                // logger.debug("load_settings: " + rawSettings);
+                try {
+                    settings = JSON.parse(rawSettings);
+
+                    callback(null);
+                } catch (err) {
+                    callback(err + ", while parsing Settings.json");
+                }
+            });
+        },
+        // decrypt fields
+        function(callback) {
+            try {
+                decryptedSettings = dataEncryptor.parseParameters('dec', settings, Common.encryptedParameters, Common.dec);
+                callback(null);
+            } catch (err) {
+                callback("decrypting " + err);
+            }
+        },
+        // encrypt fields in case some value changed
+        function(callback) {
+            if (settings.encryptConf) {
+                try {
+                    encryptedSettings = dataEncryptor.parseParameters('enc', settings, Common.encryptedParameters, Common.enc);
+                    if (!(_.isEqual(encryptedSettings, settings))) {
+                        var newSettingsToFile = JSON.stringify(encryptedSettings, null, 4);
+                        Common.fs.writeFile('Settings.json', newSettingsToFile, callback);
+                    }
+                    else{
+                        callback(null);
+                    }
+                } catch (err) {
+                    callback("encrypting " + err);
+                }
+            } else {
+                callback(null);
+            }
+        },
+    ], function(err) {
+        if (err) {
+            logger.error("load_settings: " + err);
+            callback(err);
+        }
+        callback(null, decryptedSettings);
+    });
+}
+
 function parse_configs() {
     logger.info('Load settings from file');
 
-    dataEncryptor.readFile('Settings.json', Common.encryptedParameters, Common.enc, Common.dec, function(err, settings) {
+    load_settings(function(err, settings) {
         if (err) {
             logger.error('cannot load settings from file');
             return;
@@ -361,7 +426,7 @@ function parse_configs() {
                 return;
             });
         };
-    }, logger);
+    });
 
 }
 

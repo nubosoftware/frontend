@@ -48,15 +48,10 @@ function readFile(fileName, parameters, enc, dec, callback, log) {
         function(callback) {
             if (modified) {
                 var newSettingsToFile = JSON.stringify(newSettings, null, 4);
-                fs.writeFile(fileName, newSettingsToFile, function(err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }
-                });
+                fs.writeFile(fileName, newSettingsToFile, callback);
+            } else {
+                callback(null);
             }
-            callback(null);
-
         },
         // decrypt fields
         function(callback) {

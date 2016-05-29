@@ -1,6 +1,7 @@
 "use strict";
 
 var http = require('http');
+var https = require('https');
 
 module.exports = {
     doPostRequest: doPostRequest,
@@ -10,7 +11,10 @@ module.exports = {
 function doPostRequest(options, postData, callback) {
     var callbackDone = false;
     var resData = "";
-    var req = http.request(
+    var request;
+    if(options.key) request = https.request;
+    else request = http.request;
+    var req = request(
         options,
         function(res) {
             res.setEncoding('utf8');
@@ -40,7 +44,10 @@ function doPostRequest(options, postData, callback) {
 function doGetRequest(options, callback) {
     var callbackDone = false;
     var resData = "";
-    var req = http.request(
+    var request;
+    if(options.key) request = https.request;
+    else request = http.request;
+    var req = request(
         options,
         function(res) {
             res.setEncoding('utf8');

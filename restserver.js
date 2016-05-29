@@ -311,7 +311,7 @@ function yescache(req, res, next) {
 var validator = new authFilterValidator(['LOGINTOKEN'], authFilterExcludes);
 
 function authValidate(req, res, next){
-
+    req.nubodata = {};
     validator.validate(req, function(err){
         if(err){
             logger.error("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$authorization validatation failed: " + err + " ::: " + req.path(req.url));

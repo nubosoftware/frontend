@@ -30,7 +30,7 @@ function sessionIdFilter(req, excludeList, callback) {
             callback(err);
             return;
         }
-        req.nubodata = {};
+
         req.nubodata.session = obj;
         callback(null)
     });
@@ -70,7 +70,7 @@ function loginTokenFIlter(req, excludeList, callback) {
             callback(err);
             return;
         }
-        req.nubodata = {};
+
         req.nubodata.loginToken = login;
         callback(null);
     });

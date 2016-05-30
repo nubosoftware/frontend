@@ -1,7 +1,6 @@
 "use strict";
 
 var winston = require('winston');
-var memwatch = require('memwatch');
 var crypto = require('crypto');
 var poolModule = require('generic-pool');
 var dataEncryptor = require('./dataEncryptor.js');
@@ -16,7 +15,6 @@ var Common = {
     db : '',
     allowedOrigns : [],
     //SendGrid: require('sendgrid').SendGrid,
-    geoip : require('geoipcity'),
     serverurl : "https://lab.nubosoftware.com/",
     publicurl : "https://lab.nubosoftware.com/",
     internalurl : "https://lab.nubosoftware.com/",

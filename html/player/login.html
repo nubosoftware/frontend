@@ -10,7 +10,7 @@
     <link rel="localization" hreflang="" href="lang/en.json" type="application/vnd.oftn.l10n+json"/>
     <link rel="localization" hreflang="he" href="lang/he.json" type="application/vnd.oftn.l10n+json"/>
     <!-- <link rel="localizations" href="localization.json" type="application/vnd.oftn.l10n+json"/> -->
-    <link rel="stylesheet" href="/resources/demos/style.css">
+    <!-- <link rel="stylesheet" href="/resources/demos/style.css"> -->
      <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     
 
@@ -198,11 +198,12 @@
             <img id="nubologo"  src="images/logo.png" />
             <span id="passcodeErrMsg"  ></span>
             <span id="passcodeErrMsg2"  ></span>
+            <span id="passwordExpired">
+                <img id="passwordExpiredImg" src="images/umbrella_ic.png"/>
+                <p id="passwordExpiredMsg" localize-text="expiredPasscode" />
+            </span>
             <span id="selectPasscodeTitle" localize-text="selectPasscode" ></span>
-            <!-- <input id="selectPasscode" class="alignText" type="hidden" readonly="readonly" type="password"/> -->
             <input id="selectPasscode" class="alignText" type="password" placeholder="Select Passcode" readonly="readonly" />
-            <!-- <img id="setPasscodeImg" src="images/passcodeText0.png" class="alignText" />    -->
-
             <div class="passcodediv">
             <span id="btn1" class="numbutton" /><span id="key1" class="numKey" localize-text="key1" />
             <span id="btn2" class="numbutton" /><span id="key2" class="numKey" localize-text="key2" />
@@ -227,10 +228,17 @@
             <img id="nubologo" src="images/logo.png" />
             <span id="passcodeErrMsg"></span>
             <span id="passcodeErrMsg2"></span>
+            <span id="passwordExpired">
+                <img id="passwordExpiredImg" src="images/umbrella_ic.png"/>
+                <p id="passwordExpiredMsg" localize-text="expiredPassword" />
+            </span>
+            <span id="passwordTitle" localize-text="enterPassword"/>
             <span id="enterPasswordOKBtn" class="appbutton" localize-text="ok"/>
-            <input id="enterPassword" class="alignText" type="password" placeholder="Enter Password"
+            <input id="enterPassword" class="alignText" type="password" placeholder="Enter Your Nubo Password"
                                             autofocus="autofocus" value="<%- passwordStr %>" />
             <span id="forgotBtn" class="cleanbutton" localize-text="forgetPassword"/>
+            <br/>
+            <span id="passwordRequired" class="passwordRequired" localize-text="passwordRequired"/>
             </div>
             </div>
         </script>
@@ -278,8 +286,8 @@
         <script type="text/template" id="passcodelock_template">
             <div class="subdiv">
             <img id="nubologo"  src="images/logo.png" />
-            <span id="lockMsg" localize-text="lockmessage"></span>
-            <span id="unlockMsg" localize-text="opendyouremail" ></span>
+            <span id="lockMsg" localize-text="userPasscodeLock"></span>
+            <span id="unlockMsg" localize-text="unlockPasscode" ></span>
             <span id="resendMailBtn" class="appbutton" localize-text="resendMail" />
             </div>
         </script>

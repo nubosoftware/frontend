@@ -194,6 +194,7 @@ var clientProperties = [];
 var uploadExternalWallpaper = true;
 var passcodeType = 0;   // 0-passcode; 1-password
 var passcodeMinChars = 6;
+var oldPassword = "";
 var pendingValidation = false;
 var getJSON, jsonError;
 
@@ -296,10 +297,16 @@ function formatPage() {
     $("#toolbardiv").css('background-color', '#58585A');
 
     $("#maindiv").css('background-color', wallpaperColor);
-    $("#maindiv").css('background-image', "url(" + wallpaperImage + ")");
-
     $("#datadiv").css('background-color', wallpaperColor);
-    $("#datadiv").css('background-image', "url(" + wallpaperImage + ")");
+    if (wallpaperImage) {
+        $("#maindiv").css('background-image', "url(" + wallpaperImage + ")");
+        $("#datadiv").css('background-image', "url(" + wallpaperImage + ")");
+
+        $("#maindiv").css('background-size', 'cover');
+        $("#maindiv").css('background-repeat', 'no-repeat');
+        $("#datadiv").css('background-size', 'cover');
+        $("#datadiv").css('background-repeat', 'no-repeat');
+    }
 }
 
 var mobilecheck = function() {
@@ -402,24 +409,6 @@ $(function() {
             return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows());
         }
     };
-
-    var newLoginToken = function() {
-        var url = mgmtURL + "validate?deviceid=" + encodeURIComponent(settings.get("deviceID")) +
-        "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion;
-
-        console.log("newLoginToken. url: " + url);
-        getJSON(url, function(data) {
-            console.log("newLoginToken. data: " + JSON.stringify(data, null, 4));
-            if (data.status == 1) {
-                loginToken = data.loginToken;
-                if (passcodeView != null) {
-                    passcodeView.checkPasscode();
-                }
-            } else {
-                window.location.hash = "validation";
-            }
-        });
-    }
 
     var DownloadView = Backbone.View.extend({
         el : $("#maindiv"),
@@ -597,6 +586,7 @@ $(function() {
                     authenticationRequired = data.authenticationRequired;
                     passcodeType = data.passcodetype;
                     passcodeMinChars = data.passcodeminchars;
+                    var passcodetypeChange = data.passcodetypechange;
 
                     uploadExternalWallpaper = settings.get("uploadExternalWallpaper");
                     if (uploadExternalWallpaper == null || uploadExternalWallpaper) {
@@ -622,9 +612,14 @@ $(function() {
                     });
                     settings.save();
 
+                    var pType = passcodeType;
+                    if (passcodeActivationRequired == false && passcodetypeChange == 1) {
+                        pType = passcodeType == 0 ? 1 : 0;
+                    }
+
                     if (authenticationRequired) {
                         window.location.hash = "auth";
-                    } else if (passcodeType == 1) {
+                    } else if (pType == 1) {
                         window.location.hash = "enterPassword";
                     } else if (passcodeActivationRequired) {
                         window.location.hash = "passcodeActivation";
@@ -846,15 +841,18 @@ $(function() {
                     });
                     this.$el.html(template);
                     formatPage();
-                    // $("#passcodeLinkTxt").text(l("resetPasscodeText")+" "+this.resetDeviceType);
+
+                    console.log("ResetPasscodeLinkView.render passcodeType: " + passcodeType);
+                    if (passcodeType == 1) {
+                        $("#resetPasscodeTxt").text(l("resetPasswordText"));
+                    } else {
+                        $("#resetPasscodeTxt").text(l("resetPasscodeText"));
+                    }
                 } else {
                     var vars = settings.attributes;
                     template = _.template($("#activation_err_template").html(), vars);
                     this.$el.html(template);
                     formatPage();
-                    // if (this.resetDeviceType!="Web") {
-                    // $("#activationErrorText").text(l("activationExpired")+" "+l("openApp") );
-                    // }
                     $("#resetPasscodeTxt").text(l("activationExpired") + " " + l("openApp"));
                 }
 
@@ -1493,6 +1491,7 @@ $(function() {
 
             $('#passcodeErrMsg').css("visibility", "hidden");
             $('#passcodeErrMsg2').css("visibility", "hidden");
+            $('#passwordExpired').css("visibility", "hidden");
 
             if (code >= 48 && code <= 57) {// 1-9
                 enterPasscode = enterPasscode + String.fromCharCode(code);
@@ -1536,6 +1535,7 @@ $(function() {
 
             $('#passcodeErrMsg').css("visibility", "hidden");
             $('#passcodeErrMsg2').css("visibility", "hidden");
+            $('#passwordExpired').css("visibility", "hidden");
 
             var id = event.target.id;
             // var passcode = ($('#enterPasscode').val()==l("enterPasscode").trim() ? "" : $('#enterPasscode').val());
@@ -1556,16 +1556,11 @@ $(function() {
                 return;
             }
 
-            // $('#enterPasscode').val(passcode);
-            // $('#enterPasscode').trigger('input');
             enterPasscode = passcode;
 
             if (passcode.length == 0) {
-                // document.getElementById("passcodeImg").src = "images/passcodeText0.png";
                 $('#enterPasscode').val("");
             } else if (passcode.length <= 8) {
-                // var imageName = "".concat("images/passcodeText", passcode.length, ".png");
-                // document.getElementById("passcodeImg").src = imageName;
                 $('#enterPasscode').val(enterPasscode);
             } else {
                 $('#passcodeErrMsg').text(l('noMatchPasscode4'));
@@ -1606,11 +1601,25 @@ $(function() {
             if (enterPasscode.length >= 1) {
                 enterPasscode = enterPasscode.substr(0, enterPasscode.length - 1);
                 console.log("passcodeView.deleteChar  enterPasscode: " + enterPasscode);
-
-                // var imageName = "".concat("images/passcodeText", enterPasscode.length, ".png");
-                // document.getElementById("passcodeImg").src = imageName;
                 $('#enterPasscode').val(enterPasscode);
             }
+        },
+
+       newLoginToken : function() {
+            var url = mgmtURL + "validate?deviceid=" + encodeURIComponent(settings.get("deviceID")) +
+            "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion +
+            "&username=" + encodeURIComponent(settings.get("workEmail"));
+
+            console.log("PasscodeView.newLoginToken. url: " + url);
+            getJSON(url, function(data) {
+                console.log("PasscodeView.newLoginToken. data: " + JSON.stringify(data, null, 4));
+                if (data.status == 1) {
+                    loginToken = data.loginToken;
+                    passcodeView.checkPasscode();
+                } else {
+                    window.location.hash = "validation";
+                }
+            });
         },
 
         checkPasscode : function() {
@@ -1634,7 +1643,7 @@ $(function() {
 
                 } else if (data.status == 2) {          // expired login token
                     console.log("expired login token");
-                    newLoginToken();
+                    passcodeView.newLoginToken();
                     // window.location.hash = "validation";
 
                 } else if (data.status == 4) {          // passcode lock
@@ -1644,11 +1653,16 @@ $(function() {
                 } else if (data.status == 7) {          // passcode expired
                     console.log("passcode expired");
                     passcodeExpired = true;
-                    window.location.hash = "setpasscode";
+                    if (passcodeType == 1) {
+                        passcodeActivationRequired = true;
+                        oldPassword = enterPasscode;
+                        window.location.hash = "enterPassword";
+                    } else {
+                        window.location.hash = "setpasscode";
+                    }
                 }
             });
         }
-
     });
 
     var SetPasscodeView = Backbone.View.extend({
@@ -1677,8 +1691,9 @@ $(function() {
 
             if (passcodeExpired) {
                 passcodeExpired = false;
-                $('#passcodeErrMsg').css("visibility", "visible");
-                $('#passcodeErrMsg').text("your passcode expired");
+                $('#passwordExpired').css("visibility", "visible");
+            } else {
+               $('#passwordExpired').css("visibility", "hidden");
             }
         },
         events : {
@@ -1712,6 +1727,7 @@ $(function() {
 
             $('#passcodeErrMsg').css("visibility", "hidden");
             $('#passcodeErrMsg2').css("visibility", "hidden");
+            $('#passwordExpired').css("visibility", "hidden");
 
             console.log("setPasscodeView.on_keypress code: " + code + " event.type: " + event.type);
 
@@ -1757,6 +1773,7 @@ $(function() {
 
             $('#passcodeErrMsg').css("visibility", "hidden");
             $('#passcodeErrMsg2').css("visibility", "hidden");
+            $('#passwordExpired').css("visibility", "hidden");
 
             var id = event.target.id;
             var passcode = enterPasscode;
@@ -1909,7 +1926,6 @@ $(function() {
 
                 enterPasscode = "";
                 $('#selectPasscode').val("");
-                // document.getElementById("setPasscodeImg").src = "images/passcodeText0.png";
                 return;
             }
 
@@ -1920,7 +1936,6 @@ $(function() {
 
                 enterPasscode = "";
                 $('#selectPasscode').val("");
-                // document.getElementById("setPasscodeImg").src = "images/passcodeText0.png";
                 return;
             }
         },
@@ -1966,7 +1981,7 @@ $(function() {
         }
     });
 
-    var oldPassword = "";
+    var enterPasswordView = null;
 
     var EnterPasswordView = Backbone.View.extend({
         el : $("#maindiv"),
@@ -1975,7 +1990,7 @@ $(function() {
         isPasswordValid : false,
 
         initialize : function() {
-
+            enterPasswordView = this;
         },
         render : function() {
             var imgURL = mgmtURL + "html/player/";
@@ -1986,13 +2001,30 @@ $(function() {
             this.$el.html(template);
             formatPage();
 
-            oldPassword = "";
-            if (passcodeActivationRequired) {
-                $('#enterPassword').attr('placeholder','Select Password');
-                $('#forgotBtn').css("visibility", "hidden");
+            if (passcodeExpired) {
+                $('#passwordExpired').css("visibility", "visible");
             } else {
-                $('#enterPassword').attr('placeholder','Enter Password');
+                $('#passwordExpired').css("visibility", "hidden");
+            }
+
+            var passwordRequired = l('passwordRequired');
+            passwordRequired = passwordRequired.replace("N1", passcodeMinChars);
+            passwordRequired = passwordRequired.replace("\n", "<br/>");
+            passwordRequired = passwordRequired.replace("\n", "<br/>");
+            passwordRequired = passwordRequired.replace("\n", "<br/>");
+            $('#passwordRequired').html(passwordRequired);
+
+            if (passcodeActivationRequired) {
+                $('#passwordTitle').text(l('selectPassword'));
+                $('#enterPassword').attr('placeholder', l('selectPassword'));
+                $('#forgotBtn').css("visibility", "hidden");
+                $('#passwordRequired').css("visibility", "visible");
+            } else {
+                oldPassword = "";
+                $('#passwordTitle').text(l('enterPassword'));
+                $('#enterPassword').attr('placeholder', l('enterPassword'));
                 $('#forgotBtn').css("visibility", "visible");
+                $('#passwordRequired').css("visibility", "hidden");
             }
         },
         events : {
@@ -2013,6 +2045,7 @@ $(function() {
             $('#passcodeErrMsg').text("");
             $('#passcodeErrMsg').css("visibility", "hidden");
             $('#passcodeErrMsg2').css("visibility", "hidden");
+            $('#passwordExpired').css("visibility", "hidden");
         },
         clickForgotPassword : function(event) {
             // console.log("EnterPasswordView. clickForgotPassword");
@@ -2022,15 +2055,17 @@ $(function() {
             var password = ($('#enterPassword').val() == l("passwordStr").trim() ? "" : $('#enterPassword').val());
 
             if (passcodeActivationRequired) {   // setPassword
-                this.passwordValidate();
-                if (this.isPasswordValid == false) {
-                    this.savedPassword = "";
-                    return;
-                } else if (this.state == 0) {
-                    this.state += 1;
-                    this.savedPassword = password;
-                    $('#enterPassword').attr('placeholder','Re-Enter Password');
-                    $('#enterPassword').val("");
+                if (this.state == 0) {
+                    this.passwordValidate();
+                    if (this.isPasswordValid == false) {
+                        this.savedPassword = "";
+                    } else {
+                        this.state += 1;
+                        this.savedPassword = password;
+                        $('#passwordTitle').text(l('renterPassword'));
+                        $('#enterPassword').attr('placeholder', l('renterPassword')); // ('placeholder','Re-Enter Password');
+                        $('#enterPassword').val("");
+                    }
                     return;
                 } else if (this.state == 1) {
                     if (this.savedPassword.localeCompare(password) != 0) {
@@ -2038,7 +2073,8 @@ $(function() {
                         this.savedPassword = "";
                         $('#passcodeErrMsg').html(l('noMatchPasscode1'));
                         $('#passcodeErrMsg').css("visibility", "visible");
-                        $('#enterPassword').attr('placeholder','Select Password');
+                        $('#passwordTitle').text(l('selectPassword'));
+                        $('#enterPassword').attr('placeholder',l('selectPassword'));
                         $('#enterPassword').val("");
                         return;
                     }
@@ -2105,14 +2141,19 @@ $(function() {
 
         newLoginToken : function() {
             var url = mgmtURL + "validate?deviceid=" + encodeURIComponent(settings.get("deviceID")) +
-            "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion;
+            "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion +
+            "&username=" + encodeURIComponent(settings.get("workEmail"));
 
             console.log("EnterPasswordView.newLoginToken. url: " + url);
             getJSON(url, function(data) {
                 console.log("EnterPasswordView.newLoginToken. data: " + JSON.stringify(data, null, 4));
                 if (data.status == 1) {
                     loginToken = data.loginToken;
-                    this.checkPasscode();
+                    if (passcodeActivationRequired == true) {
+                        enterPasswordView.setPassword();
+                    } else {
+                        enterPasswordView.checkPassword();
+                    }
                 } else {
                     window.location.hash = "validation";
                 }
@@ -2139,8 +2180,8 @@ $(function() {
                     window.location.hash = "player";
 
                 } else if (data.status == 2) {          // expired login token
-                    console.log("expired login token");
-                    this.newLoginToken();
+                    console.log("EnterPasswordView.expired login token");
+                    enterPasswordView.newLoginToken();
 
                 } else if (data.status == 4) {          // passcode lock
                     console.log("passcodelock");
@@ -2148,15 +2189,22 @@ $(function() {
 
                 } else if (data.status == 7) {          // passcode expired
                     console.log("passcode expired");
-                    passcodeActivationRequired = true;
-                    oldPassword = password;
-                    this.state = 0;
-                    this.savePassword = "";
-                    $('#passcodeErrMsg').text(l('passwordExpired'));
-                    $('#passcodeErrMsg').css("visibility", "visible");
-                    $('#enterPassword').val("");
-                    $('#enterPassword').attr('placeholder','Select Password');
-                    $('#forgotBtn').css("visibility", "hidden");
+
+                    if (passcodeType == 0) {
+                        passcodeExpired = true;
+                        enterPasscode = password;
+                        window.location.hash = "setpasscode";
+                    } else {
+                        passcodeActivationRequired = true;
+                        oldPassword = password;
+                        this.state = 0;
+                        this.savePassword = "";
+                        $('#passwordExpired').css("visibility", "visible");
+                        $('#enterPassword').val("");
+                        $('#passwordTitle').text(l('selectPassword'));
+                        $('#enterPassword').attr('placeholder',l('selectPassword'));
+                        $('#forgotBtn').css("visibility", "hidden");
+                    }
                 }
             });
         },
@@ -2176,14 +2224,17 @@ $(function() {
                 console.log(JSON.stringify(data, null, 4));
 
                 if (data.status == 0) {         // failed
-                    $('#passcodeErrMsg').text(data.message);
+                    $('#passcodeErrMsg').text(l('errorChangePassword'));   //data.message
                     $('#passcodeErrMsg').css("visibility", "visible");
+                    $('#passcodeErrMsg2').css("visibility", "visible");
                     this.savePassword = "";
                     $('#enterPassword').val("");
+                    $('#enterPassword').attr('placeholder', l('selectPassword'));
+                    $('#passwordTitle').text(l('selectPassword'));
                     this.state = 0;
                 }
                 else if (data.status == 2) {    // expired login token
-                    this.newLoginToken();
+                    enterPasswordView.newLoginToken();
                     return;
 
                 } else if (data.status == 1) {  // success
@@ -2354,13 +2405,18 @@ $(function() {
             var template = _.template($("#resetpasscode_template").html(), { });
             this.$el.html(template);
             formatPage();
+
+            if (passcodeType == 1) {
+                $('#resetPasscodeTitle').text(l('resetPassword'));
+            } else {
+                $('#resetPasscodeTitle').text(l('resetPasscode'));
+            }
         },
         events : {
             "click #resetOKBtn" : "resetOKBtnClick",
             "touchend #resetOKBtn" : "resetOKBtnClick",
             "click #resetCancelBtn" : "clickResetCancelBtn",
             "touchend #resetCancelBtn" : "clickResetCancelBtn"
-
         },
         resetOKBtnClick : function(event) {
 
@@ -2411,6 +2467,15 @@ $(function() {
             var template = _.template($("#passcodelock_template").html(), { });
             this.$el.html(template);
             formatPage();
+
+            if (passcodeType == 1) {
+                $('#lockMsg').text(l('userPasswordLock'));
+                $('#unlockMsg').text(l('unlockPassword'));
+            } else {
+                $('#lockMsg').text(l('userPasscodeLock'));
+                $('#unlockMsg').text(l('unlockPasscode'));
+            }
+
             this.timeoutId = setTimeout(this.checkUnlock, 2000);
         },
         events : {

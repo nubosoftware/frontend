@@ -4,7 +4,6 @@ var NuboOutputStreamMgr = (function(window, undefined) {
     var psConnected = 2, psInit = 1;
     var instance = null;
     var mUxip = null;
-    var WITH_SERVICE = false;
     var isPlayerLoginCmd = false;
 
     var lastMouseDownTouchTime;
@@ -65,16 +64,11 @@ var NuboOutputStreamMgr = (function(window, undefined) {
             isPlayerLoginCmd = isPlayerLogin;
         }
 
-        function getWithService() {
-            return WITH_SERVICE;
-        }
-
         return {
             sendCmd : sendCmd,
             createSocket : createSocket,
             getIsPlayerLogin : getIsPlayerLogin,
-            setIsPlayerLogin : setIsPlayerLogin,
-            getWithService : getWithService
+            setIsPlayerLogin : setIsPlayerLogin
         };
     }
 

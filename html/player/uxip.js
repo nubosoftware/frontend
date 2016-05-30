@@ -651,7 +651,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         }
 
         var playerLogin;
-        if (NuboOutputStreamMgr.getInstance().getWithService()) {
+        if (Common.withService) {
             playerLogin = UXIPself.nuboByte(PlayerCmd.playerLogin);
         } else {
             playerLogin = PlayerCmd.playerLogin;

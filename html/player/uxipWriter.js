@@ -19,7 +19,7 @@ function UXIPWriter(callback) {
             Log.d(DEBUG_PROTOCOL_NETWORK_STR, "uxipwriter:: Flush " + offset + " bytes");
         }
         /////////////////////
-        if (NuboOutputStreamMgr.getInstance().getWithService() || !NuboOutputStreamMgr.getInstance().getIsPlayerLogin()) {
+        if (Common.withService || !NuboOutputStreamMgr.getInstance().getIsPlayerLogin()) {
             var zLibBuffer = new ArrayBuffer(offset+COMPRESSION_HEADER_SIZE);
             var zLibDv = new DataView(zLibBuffer, 0);
             zLibDv.setInt8(0, 0);
@@ -164,13 +164,13 @@ function UXIPWriter(callback) {
 
     this.startNuboCmd = function() {
         offset = 0;
-        if (NuboOutputStreamMgr.getInstance().getWithService() || !NuboOutputStreamMgr.getInstance().getIsPlayerLogin()) {
+        if (Common.withService || !NuboOutputStreamMgr.getInstance().getIsPlayerLogin()) {
             this.writeInt(0); //save place for command size
         }
     };
 
     this.endNuboCmd = function() {
-        if (NuboOutputStreamMgr.getInstance().getWithService() || !NuboOutputStreamMgr.getInstance().getIsPlayerLogin()) {
+        if (Common.withService || !NuboOutputStreamMgr.getInstance().getIsPlayerLogin()) {
             dv.setInt32(0, offset);
         }
     };

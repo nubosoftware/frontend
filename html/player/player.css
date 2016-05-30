@@ -641,6 +641,19 @@ span#authMsg {
     font-size: 20px;
     text-align: center;
 }
+
+span#passwordTitle {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 309px;
+
+    font-family: NuboRoboto;
+    font-style: normal;
+    font-size: 20px;
+    text-align: center;
+    padding-top: 5px;
+}
 span#enterPasswordOKBtn {
     display: block;
     margin-left: auto;
@@ -723,9 +736,6 @@ span#authPasswordErr {
     height: 26px;
 }
 span#passcodeErrMsg {
-    /*position: absolute;
-    left: 333px;
-    top: 197px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -743,13 +753,9 @@ span#passcodeErrMsg {
     box-sizing: border-box;
 }
 span#passcodeErrMsg2 {
-    /*position: absolute;
-    left: 333px;
-    top: 205px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
-   
     width: 359px;
     height: 25px;
     background-color: #941914;
@@ -762,9 +768,6 @@ span#passcodeErrMsg2 {
     box-sizing: border-box;
 }
 input#enterPasscode {
-    /*position: absolute;
-    left: 360px;
-    top: 238px;*/
     display: block;
     margin-left: auto;
     margin-right: auto; 
@@ -806,9 +809,6 @@ div#loginContent {
     height: 500px;
 }
 img#passcodeImg {
-    /*position: absolute;
-    left: 360px;
-    top: 238px;*/
     display: block;
     margin-left: auto;
     margin-right: auto; 
@@ -818,9 +818,6 @@ img#passcodeImg {
     height: 49px;
 }
 span#forgotBtn {
-    /*position: absolute;
-    left: 455px;
-    top: 303px;*/
     display: block;
     margin-left: auto;
     margin-right: auto; 
@@ -831,6 +828,28 @@ span#forgotBtn {
     padding-top: 10px;
     font-size: 16px;
 }
+
+span#passwordRequired {
+    display: inline-block;
+    text-align: left;
+    font-family: NuboRoboto;
+    width: 510px;
+    font-size: 16px;
+    margin-top: 5px;
+}
+span#passwordExpired {
+    position: absolute;
+    text-align: center;
+    font-family: NuboRoboto;
+    top: 80px;
+    width: 500px;
+    height: 50px;
+    font-size: 18px;
+}
+img#passwordExpiredImg {
+    float: left;
+}
+
 span.numbutton {
     background-color: #FFFFFF;
     /*
@@ -1068,8 +1087,8 @@ input#selectPasscode {
     /*font-family: NuboRobotoBold;
     font-style: normal;
     font-size: 26px;*/
-    background-color: white;
-    opacity: 0.70;
+    /*background-color: white;*/
+    /*opacity: 0.70;*/
     filter: alpha(opacity=70); /* For IE8 and earlier */
 }
 
@@ -1965,7 +1984,7 @@ div.spinner {
     span#tryAgainBtn, span#conerrMsg, span#expiredCreateBtn, span#signInBtn, input#authUserName, span#authUserNameErr,
     input#authPassword, span#authPasswordErr, span#unlockPasscodeTxt, span#resetPasscodeTxt,  input#enterPasswordcode,
     span#lockMsg, span#unlockMsg, span#resendMailBtn, img#passcodeImg, img#setPasscodeImg, span#enterPasswordOKBtn,
-    span#selectPasscodeTitle, input#enterPasscode, input#selectPasscode {
+    span#selectPasscodeTitle, input#enterPasscode, input#selectPasscode, input#enterPassword, span#passwordTitle {
         width: 450px; 
     }      
     
@@ -1994,7 +2013,7 @@ div.spinner {
     span#create, span#signin, span#demo, span#create_create, input#edFirstName, input#edLastName, input#edJobTitle,
     input#edWorkEmail, span#sendMeActivationBtn, input#workEmailSend, span#changeBtn, span#signInBtn, span#enterPasswordOKBtn,
     input#authUserName, input#authPassword, span#expiredCreateBtn, span#resendMailBtn, span#tryAgainBtn, 
-    span#resetOKBtn, span#resetCancelBtn, input#enterPasswordcode {
+    span#resetOKBtn, span#resetCancelBtn, input#enterPasswordcode, input#enterPassword, span#passwordTitle {
         height: 60px;
         font-size: 30px;
         padding-top: 10px;
@@ -2108,4 +2127,15 @@ div.spinner {
         font-size: 30px;
         padding-top: 4px;
     }
+    span#passwordExpired {
+        width: 100%;
+        top: 140px;
+        font-size: 22px;
+        text-align: left;
+    }
+    img#passwordExpiredImg {
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+}
 }

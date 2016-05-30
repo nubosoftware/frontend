@@ -6,11 +6,7 @@ var async = require('async');
 var util = require('util');
 var exec = require('child_process').exec;
 
-var Session,getSessionOfUserDevice,getUserPlatforms,getSessionsOfUser,setUserDeviceLock,releaseUserDeviceLock,getSessionFromPlatformReference;
-var gatewayModule = require('./Gateway.js');
-
-
-
+var Session,getSessionOfUserDevice,getSessionsOfUser,setUserDeviceLock,releaseUserDeviceLock,getSessionFromPlatformReference;
 
 var Session = function (sessid, opts, callback) {
     if(typeof opts === "function") {
@@ -331,53 +327,6 @@ getSessionsOfUser = function(email,callback) {
     }); // Common.redisClient.get
 }; //getSessionsOfUser
 
-// in params:
-// email - user's email
-// userIdInPlatforms - empty array
-//
-// out:
-// platforms - array of Platforms
-// uniquePlatforms - array of Platforms
-// userIdInPlatforms - array of localid in each platform (same length as platforms)
-getUserPlatforms = function(email, callback) {
-    var platforms = [];
-    var uniquePlatforms = [];
-    var userIdInPlatforms = [];
-    var foundPlatIds = [];
-    var deviceIds = [];
-    var j = 0;
-    getSessionsOfUser(email, function(sessArray){
-        var i = 0;
-        async.eachSeries(sessArray, function(session, callback) {
-            var Platform = require('./platform.js').Platform;
-            new Platform(session.params.platid, '', function(err,obj) {
-                if (err) {
-                    console.log("Error: "+err);
-                } else {
-                    platforms.push(obj);
-                    // Save user id for later
-                    userIdInPlatforms[i] = session.params.localid;
-                    i++;
-                    if (!foundPlatIds[session.params.platid]) {
-                        foundPlatIds[session.params.platid] = true;
-                        uniquePlatforms[j] = obj;
-                        j++;
-                    }
-                }
-                callback(null);
-            }); // new Session
-            }, function(err) {
-                if (err) {
-                    logger.info(err);
-                }
-                for (var k = 0; k < sessArray.length; ++k) {
-                    deviceIds[k] = sessArray[k].params.deviceid;
-                }
-                callback(null, platforms, uniquePlatforms, userIdInPlatforms, deviceIds); // Exit function without error
-         });
-    });
-};
-
 getSessionFromPlatformReference = function(platid,localid,callback) {
 	
   Common.redisClient.get('platsess_'+platid+'_'+localid,function (err,reply) {
@@ -481,6 +430,5 @@ module.exports = {Session: Session,
   getSessionsOfUser:getSessionsOfUser,
   setUserDeviceLock: setUserDeviceLock,
   releaseUserDeviceLock: releaseUserDeviceLock,
-  getSessionFromPlatformReference: getSessionFromPlatformReference,
-  getUserPlatforms : getUserPlatforms
+  getSessionFromPlatformReference: getSessionFromPlatformReference
   };

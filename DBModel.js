@@ -4,7 +4,6 @@ var Common = require('./common.js');
 var logger = Common.logger;
 var sessionModule = require('./session.js');
 var Session = sessionModule.Session;
-var setting = require('./settings.js');
 var Login = require('./login.js');
 var Sequelize = Common.sequelizeModule;
 

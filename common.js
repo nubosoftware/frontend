@@ -145,7 +145,8 @@ var Common = {
             "password" : 1
         }
     },
-    encryptConf: false
+    encryptConf: false,
+    exitJobs: []
 };
 
 try {

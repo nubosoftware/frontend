@@ -5,6 +5,7 @@ var NuboOutputStreamMgr = (function(window, undefined) {
     var instance = null;
     var mUxip = null;
     var isPlayerLoginCmd = false;
+    var mSessionId;
 
     var lastMouseDownTouchTime;
     var lastTouchX;
@@ -24,8 +25,39 @@ var NuboOutputStreamMgr = (function(window, undefined) {
                 console.log('NuboOutStreamMgr, socket is not connected');
                 return;
             }
+
+            if (arguments.length <= 0) {
+                console.log('NuboOutStreamMgr, Illegal number of arguments: '+arguments.length);
+                return;
+            }
+
             writer.startNuboCmd();
-            for (var i = 0; i < arguments.length; i++) {
+
+            //write cmdCode
+            var cmdCode = arguments[0];
+            if ( typeof cmdCode === 'number') {
+                writer.writeInt(cmdCode);
+            } else if (typeof cmdCode === 'object' &&
+                        cmdCode.name === 'nuboByte') {
+                writer.writeByte(cmdCode.val);
+            } else {
+                console.log('NuboOutStreamMgr, Illegal type of cmdCode (not a number or nuboByte). Aborting command: '+cmdCode);
+                writer.endNuboCmd();
+                return;
+            }
+
+            //write sessionId
+            if (Common.withService || cmdCode != PlayerCmd.playerLogin) {
+                if (typeof mSessionId === 'string') {
+                    writer.writeString(mSessionId);
+                } else {
+                    console.log('NuboOutStreamMgr, Illegal type of mSessionId (not a string). Aborting command: '+cmdCode);
+                    writer.endNuboCmd();
+                    return;
+                }
+            }
+
+            for (var i = 1; i < arguments.length; i++) {
 
                 var arg = arguments[i];
 
@@ -64,11 +96,16 @@ var NuboOutputStreamMgr = (function(window, undefined) {
             isPlayerLoginCmd = isPlayerLogin;
         }
 
+        function setSessionId(sessionId) {
+            mSessionId = sessionId;
+        }
+
         return {
             sendCmd : sendCmd,
             createSocket : createSocket,
             getIsPlayerLogin : getIsPlayerLogin,
-            setIsPlayerLogin : setIsPlayerLogin
+            setIsPlayerLogin : setIsPlayerLogin,
+            setSessionId : setSessionId
         };
     }
 

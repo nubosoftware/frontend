@@ -334,6 +334,52 @@ function getUserDomain(email, callback) {
 
 }
 
+function getUserNotificationsStatusForAllApps(userName, callback) {
+    var resCnt = 0;
+    
+    Common.db.UserApplicationNotifs.findAll({
+        attributes : ['appname','maindomain','email','sendnotif'],
+        where : {
+            email      : userName
+        },
+    }).complete(function(err, results) {
+
+        if (!!err) {
+            callback(err);
+            return;
+        }
+        var buffer = '{"status":"1","appsNotifStatus":[';
+        results.forEach(function(row) {
+
+            
+            // get all values of current row
+            var appName = row.appname != null ? row.appname : '';
+            var sendNotif = row.sendnotif != null ? row.sendnotif : '';
+
+            var jsonNotifApp = {
+                    appName : appName,
+                    sendNotif : sendNotif
+            };
+
+            // separates every jsonUser
+            if (resCnt > 0) {
+                buffer += ',';
+            }
+            
+            resCnt += 1;
+            
+            buffer += JSON.stringify(jsonNotifApp);
+            
+        });
+        
+        buffer += ']}';
+        console.log('APPS NAMES:' + buffer);
+        callback(null,buffer);
+        return;
+    });
+    
+}
+
 var User = {
     setUserDetails : setUserDetails,
     getUserDetails : getUserDetails,
@@ -348,7 +394,8 @@ var User = {
     getUserDataCenter: getUserDataCenter,
     getUserDomain : getUserDomain,
     getUserDeviceDataFolderObj: getUserDeviceDataFolderObj,
-    getUserStorageFolderObj: getUserStorageFolderObj
+    getUserStorageFolderObj: getUserStorageFolderObj,
+    getUserNotificationsStatusForAllApps: getUserNotificationsStatusForAllApps
 };
 
 module.exports = User;

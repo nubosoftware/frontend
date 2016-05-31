@@ -1,4 +1,4 @@
-{
+var filter = {
   "permittedMode": true,
   "rules" : [
     {
@@ -68,4 +68,7 @@
       "regex": true
     }
   ]
-}
+};
+
+module.exports = filter;
+

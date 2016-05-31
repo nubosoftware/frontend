@@ -656,13 +656,15 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         } else {
             playerLogin = PlayerCmd.playerLogin;
         }
+
         NuboOutputStreamMgr.getInstance().setIsPlayerLogin(true);
+        NuboOutputStreamMgr.getInstance().setSessionId(sessID);
         NuboOutputStreamMgr.getInstance().sendCmd(playerLogin, 123456, sessID, // write int int string
             mWidth, mHeight, mDensityDpi, // write all int
             mXDpi, mYDpi, mScaledDensity, // write all float
             mRotation, mNavBarHeightPortrait, mNavBarHeightLandscape, mNavBarWidth, romClientType, 17, // write all int
-            'web', '1.2.0.55', '1.2', // write all string
-            55, (4 * mHeight * mWidth), -1, ""); // write int, int, int , dataIntent withservice
+            'web', '1.2.0.81', '1.2', // write all string
+            81, (4 * mHeight * mWidth), -1, ""); // write int, int, int , dataIntent withservice
         NuboOutputStreamMgr.getInstance().setIsPlayerLogin(false);
 
         //ws.send(buffer2);

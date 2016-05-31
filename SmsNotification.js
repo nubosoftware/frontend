@@ -4,6 +4,7 @@ var Common = require('./common.js');
 var util = require('util');
 var request = require('request');
 var querystring = require('querystring');
+var async = require('async');
 var logger = Common.logger;
 
 var SmsNotification = {
@@ -109,15 +110,30 @@ function sendSmsNotificationFromRemoteServer(req, res) {
         status = 0;
     }
 
-    if (status == 1) {
-        sendSms(toPhone, body);
-        msg = "Sms queued";
-    }
-
-    res.send({
-        status : status,
-        msg : msg
-    });
+    async.series(
+        [
+            function(callback) {
+                if(status == 1) {
+                    sendSmsNotificationInternal(toPhone, body, function(err) {
+                        if(err) {
+                            status = 0;
+                            msg = err;
+                        } else {
+                            msg = "Sms queued";
+                        }
+                        callback(null);
+                    });
+                } else {
+                    callback(null);
+                }
+            }
+        ], function(err) {
+            res.send({
+                status : status,
+                msg : msg
+            });
+        }
+    );
 }
 
 function sendSms(toPhone, body) {
@@ -128,7 +144,7 @@ function sendSms(toPhone, body) {
             console.log("e: ", e);
             logger.error("Cannot send sms, exception: " + JSON.stringify(e));
         }
-    } else {
+    } else if(Common.smsOptions) {
         // Twilio logic to send SMS
         var accountSid = Common.smsOptions.accountSid;
         var authToken = Common.smsOptions.authToken;
@@ -146,6 +162,8 @@ function sendSms(toPhone, body) {
             }
 
         });
+    } else {
+        logger.error("SMS notification has not been configured\nMissed Common.smsOptions");
     }
 }
 

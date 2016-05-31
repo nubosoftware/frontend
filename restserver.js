@@ -25,6 +25,8 @@ var ActivationLink = require('./activationLink.js');
 var Upload = require('./upload.js');
 var authFilterExcludes = require('./authFilterExcludes.js');
 var authFilterValidator = require('./authFilterValidator.js');
+var Notifications = require('./Notifications.js');
+var SmsNotification = require('./SmsNotification.js');
 
 var port = 8443;
 if (process.argv.length >= 3) {
@@ -404,6 +406,10 @@ function buildServerObject(server) {
     server.get('/activationLink', ActivationLink.func);
     server.get('/unlockPassword', unlockPassword.unlockPassword);
     server.post('/file/uploadToSession', Upload.uploadToSession);
+    //server.get('/SmsNotification/sendSmsNotification', SmsNotification.sendSmsNotification);  //unprotected request, should accept request only from internal network
+    server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
+    //server.get('/Notifications/pushNotification', Notifications.pushNotification);            //unprotected request, should accept request only from internal network
+    server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
     server.opts('/.*/', optionsHandler);
     
     function optionsHandler(req, res) {

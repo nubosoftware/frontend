@@ -14,13 +14,13 @@ function sessionIdFilter(req, excludeList, callback) {
     var session = req.params.session;
     var sessIdExclude = excludeList['SESSID'];
 
-    if (!session) {
-        callback("missing session ID");
-        return;
-    }
-
     if (sessIdExclude && sessIdExclude[reqPath]) {
         callback(null);
+        return;
+    }
+    
+    if (!session) {
+        callback("missing session ID");
         return;
     }
 

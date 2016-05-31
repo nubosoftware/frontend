@@ -394,6 +394,7 @@ function buildServerObject(server) {
     server.get('/resetPasscode', resetPasscode.func);
     server.get('/activate', Activate.func);
     server.get('/validate', Validate.func);
+    server.get('/registerOrg', Activate.registerOrg);
     server.get('/startsession', StartSession.func);
     server.get('/getResourceListByDevice', getResourceListByDevice);
     server.get('/sendEmailForUnknownJobTitle', SendEmailForUnknownJobTitle.func);

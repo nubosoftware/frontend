@@ -5,6 +5,9 @@ var tls = require('tls');
 var url = require("url");
 var querystring = require("querystring");
 var accesslog = require('accesslog');
+var async = require("async");
+var fs = require("fs");
+var restify = require("restify");
 
 var Common = require('./common.js');
 var logger = Common.logger;
@@ -147,52 +150,103 @@ var mainFunction = function(err, firstTimeLoad) {
 
     };
 
-    var serverExt = null;
+    var initPortListener = function(listenAddress, callback) {
+        async.waterfall(
+            [
+                function(callback) {
+                    var urlObj = url.parse(listenAddress);
+                    // logger.info("protocol: "+urlObj.protocol+", hostname:"+urlObj.hostname+", port: "+urlObj.port);
+                    var isSSL = urlObj.protocol === "https:";
+                    var port = urlObj.port;
+                    if(!port)
+                        port = ( isSSL ? 443 : 80);
+                    var host = urlObj.hostname;
+                    callback(null, host, port, isSSL);
+                },
+                function(host, port, isSSL, callback) {
+                    if(isSSL) {
+                        readCerts(function(err, opts) {
+                            if(err) {
+                                callback(err);
+                                return;
+                            } else {
+                                //opts.requestCert = true;
+                                callback(null, host, port, opts);
+                            }
+                        });
+                    } else {
+                        callback(null, host, port, null);
+                    }
+                },
+                function(host, port, server_options, callback) {
+                    var myserver = restify.createServer(server_options);
+                    buildServerObject(myserver);
+                    myserver.listen(port, host, function() {
+                        logger.info('%s listening at %s', myserver.name, myserver.url);
+                        callback(null);
+                    });
+                    var closeListener = function(callback) {
+                        myserver.close(callback);
+                    };
+                    Common.exitJobs.push(closeListener);
+                    var wsServer = new WebSocketServer({
+                        httpServer : myserver,
+                        autoAcceptConnections : false
+                    });
 
-    var listenFunc = function(server, port, host) {
-        server.listen(port, host, function() {
-            logger.info('%s listening at %s', server.name, server.url);
-        });
+                    wsServer.on('request', webSocketRequest);
+                }
+            ], function(err) {
+                if(err) {
+                    logger.error("Cannot open listener for " + listenAddress + ", err: " + err);
+                }
+                if(typeof callback === "function") callback(err);
+            }
+        );
+    };
+    var readCerts = function(callback) {
+        if(!Common.sslCerts) {
+            Common.sslCerts = {
+                key: "../cert/server.key",
+                certificate: "../cert/server.cert",
+                ca: "../cert/server.ca"
+            };
+        }
+        console.log("Common.sslCerts: " + JSON.stringify(Common.sslCerts));
+        if(!Common.sslCerts || !Common.sslCerts.ca || !Common.sslCerts.certificate || !Common.sslCerts.key) return callback("bad parameter Common.sslCerts");
+        var sslCerts = {};
+        async.forEachOf(
+            Common.sslCerts,
+            function(item, key, callback) {
+                fs.readFile(item, function(err, data) {
+                    if(err) {
+                        logger.error("Cannot read " + item + " file, err: " + err);
+                    } else {
+                        sslCerts[key] = data;
+                    }
+                    callback(err);
+                });
+            },
+            function(err) {
+                callback(err, sslCerts);
+            }
+        );
     };
 
-    for (var i = 0; i < Common.listenAddresses.length; i++) {
-        // logger.info("address: "+Common.listenAddresses[i]);
-        var urlObj = url.parse(Common.listenAddresses[i]);
-        // logger.info("protocol: "+urlObj.protocol+", hostname:
-        // "+urlObj.hostname+", port: "+urlObj.port);
-        var isSSL = urlObj.protocol === "https:";
-        var port = urlObj.port;
-        if (!port)
-            port = ( isSSL ? 443 : 80);
-        var host = urlObj.hostname;
-        // if (!host)
-
-        var server_options;
-        if(isSSL) {
-            server_options = {
-                key : Common.fs.readFileSync('../cert/server.key'),
-                certificate : Common.fs.readFileSync('../cert/server.cert'),
-                ca : Common.fs.readFileSync('../cert/server.ca')
-            };
-        } else {
-            server_options = null;
+    async.series(
+        [
+            function(callback) {
+                async.each(
+                    Common.listenAddresses,
+                    initPortListener,
+                    function(err) {
+                        callback(null);
+                    }
+                );
+            }
+        ], function(err) {
         }
-
-        var myserver = Common.restify.createServer(server_options);
-        buildServerObject(myserver);
-
-        listenFunc(myserver, port, host);
-        // if (i==0) serverExt = myserver;
-
-        var wsServer = new WebSocketServer({
-            httpServer : myserver,
-            autoAcceptConnections : false
-        });
-
-        wsServer.on('request', webSocketRequest);
-
-    }
-
+    );
 };
 
 function returnInternalError(err, res) {

@@ -1,6 +1,5 @@
 var async = require('async');
 var Login = require('./login.js');
-var setting = require('./settings.js');
 var sessionModule = require('./session.js');
 var Session = sessionModule.Session;
 
@@ -45,8 +44,25 @@ function isAdminFilter(req, excludeList, callback) {
         return;
     }
 
-    setting.loadAdminParamsFromSession(req, null, function(err, login) {
-        callback(err);
+    var session = req.nubodata.session;
+    if(session == undefined){
+        callback("missing session data");
+        return;
+    }
+
+    var loginToken = session.params.loginToken;
+
+    new Login(loginToken, function(err, login) {
+        if (err) {
+            callback(err);
+            return;
+        }
+
+        if (login && login.loginParams.isAdmin != 1) {
+            callback("user is not admin");
+        } else {
+            callback(null);
+        }
     });
 }
 

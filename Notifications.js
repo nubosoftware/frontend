@@ -11,9 +11,9 @@ var apn = require('apn');
 var util = require('util');
 var request = require('./request.js');
 var querystring = require('querystring');
-var settings = require('./settings.js');
 var ThreadedLogger = require('./ThreadedLogger.js');
 var Entities = require('html-entities').XmlEntities;
+var userModule = require('./user.js');
 
 var Notifications = {
     'notifyClient' : notifyClient,
@@ -548,9 +548,9 @@ function pushNotification(req, res) {
 
         async.eachSeries(email, function(emailItem, callback) {
             if (appName == "0" || appName == "1" || appName == "2") {
-                settings.getNotificationsStatusForAllAppsInternal(emailItem, function(errorMessage, appsNotifResponse) {
+                userModule.getUserNotificationsStatusForAllApps(emailItem, function(errorMessage, appsNotifResponse) {
                     if (errorMessage) {
-                        logger.error('pushNotification::getNotificationsStatusForAllAppsInternaludp failed!!!');
+                        logger.error('pushNotification::getUserNotificationsStatusForAllApps failed!!!');
                         callback(null);
                     } else {
                         var data = JSON.parse(appsNotifResponse.toString());

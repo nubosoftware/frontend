@@ -13,6 +13,7 @@ var Track = require('./track.js');
 var ThreadedLogger = require('./ThreadedLogger.js');
 var eventLog = require('./eventLog.js');
 var smsNotification = require('./SmsNotification.js');
+var internalRequests = require('./internalRequests.js');
 
 // Event log Const
 var EV_CONST = eventLog.EV_CONST;
@@ -94,7 +95,7 @@ function registerOrg(req, res, next) {
         });
         return;
     }
-    User.createDomainForUser(domain, logger, function(err) {
+    internalRequests.createDomainForUser(domain, logger, function(err) {
         if (err) {
             status = 1;
             msg = "Internal error: " + err;

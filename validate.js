@@ -5,6 +5,7 @@ var User = require('./user.js');
 var Geo = require('./geo.js');
 var ThreadedLogger = require('./ThreadedLogger.js');
 var async = require('async');
+var internalRequests = require('./internalRequests.js');
 
 Validate = {
     func: validate
@@ -242,7 +243,7 @@ function checkIfNeedRedirection(playerVersion, activationKey, clientIP, logger, 
                 return;
             }
 
-            User.createOrReturnUserAndDomain(activationData.email, logger, function(err, user, userObj, orgObj) {
+            internalRequests.createOrReturnUserAndDomain(activationData.email, logger, function(err, user, userObj, orgObj) {
                 if (err) {
                     response = {
                         status: 0,
@@ -432,7 +433,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
 
                 logger.info("Added activation " + activationKey);
 
-                User.createOrReturnUserAndDomain(email, logger, function(err, obj) {
+                internalRequests.createOrReturnUserAndDomain(email, logger, function(err, obj) {
                     if (err) {
                         returnInternalError(err);
                         return;
@@ -539,7 +540,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                 if (userData) {
                     callback(null);
                 } else {
-                    User.createOrReturnUserAndDomain(activationData.email, logger, function(err, resObj, userObj, orgObj) {
+                    internalRequests.createOrReturnUserAndDomain(activationData.email, logger, function(err, resObj, userObj, orgObj) {
                         if (err) {
                             response = {
                                 status: 0,
@@ -724,7 +725,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                             settings['setAccount'] = setAccountValues;
                             logger.info("Save settings to device: " + deviceID);
                             logger.info("Save Settings ", settings);
-                            User.saveSettingsUpdateFile(settings, email, deviceID, function(err) {
+                            internalRequests.saveSettingsUpdateFile(settings, email, deviceID, function(err) {
                                 if (err) {
                                     logger.error("Error saveSettingsUpdateFile : " + err);
                                     return;

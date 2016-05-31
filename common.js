@@ -75,7 +75,7 @@ var Common = {
     geoipLicense : '',
     externalMountsSrc : '',
     netDnsSearch : 'nubosoftware.com',
-    listenAddresses : ["https://", "https://:8443", "http://"],
+    listenAddresses : ["https://", "http://"],
     activationTimeoutPeriod : 48,
     nuboMask : '24',
     platformParams : {

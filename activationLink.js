@@ -6,6 +6,7 @@ var User = require('./user.js');
 var Notifications = require('./Notifications.js');
 var Track = require('./track.js');
 var ThreadedLogger = require('./ThreadedLogger.js');
+var internalRequests = require('./internalRequests.js');
 var reg;
 var status;
 var msg;
@@ -119,7 +120,7 @@ function activationLink(req, res, next) {
                 });
 
                 //1. create user in db (if necessary)
-                User.createOrReturnUserAndDomain(email, logger, function(err, obj) {
+                internalRequests.createOrReturnUserAndDomain(email, logger, function(err, obj) {
                     if (err) {
                         returnInternalError(err);
                         return;
@@ -272,7 +273,7 @@ function activationLink(req, res, next) {
                         }
 
                         // create the user folder so we can write settings on it
-                        User.createUserFolders(email, deviceid, false, new Date().getTime(), process.hrtime()[1], function(err) {
+                        internalRequests.createUserFolders(email, deviceid, false, new Date().getTime(), process.hrtime()[1], function(err) {
 
                         }, false);
                         // Send push notification to this device

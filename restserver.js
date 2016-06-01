@@ -552,7 +552,7 @@ function buildServerObject(server) {
         var pathname = urlObj.pathname;
 
         //handle apps resoureces
-        if (pathname.indexOf("/html/player/extres/") === 0) {
+        if (pathname.indexOf("/html/player/extres/") === 0 || pathname.indexOf("//html/player/extres/") === 0) {
             resourcesfile.serve(req, res, function(err, result) {
                 if (err) { 
                     logger.error("Error serving " + req.url + " - " + err.message);

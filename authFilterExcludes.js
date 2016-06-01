@@ -6,7 +6,8 @@ var webClientList = {
 var noFilterList = {
     '/validate': 1,
     '/activationLink': 1,
-    '/activate': 1
+    '/activate': 1,
+    '/resendUnlockPasswordLink': 1
 }
 
 var settingsList = {
@@ -29,7 +30,8 @@ var excludeList = {
         '/cp/getSecurityPasscode': 1
     },
     'LOGINTOKEN': {
-        '/startsession': 1
+        '/startsession': 1,
+        '/file/uploadToSession': 1
     }
 
 }

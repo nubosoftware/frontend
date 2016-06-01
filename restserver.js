@@ -30,6 +30,7 @@ var authFilterExcludes = require('./authFilterExcludes.js');
 var authFilterValidator = require('./authFilterValidator.js');
 var Notifications = require('./Notifications.js');
 var SmsNotification = require('./SmsNotification.js');
+var getResource = require('./getResource.js');
 
 var port = 8443;
 if (process.argv.length >= 3) {
@@ -485,6 +486,7 @@ function buildServerObject(server) {
     server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
     //server.get('/Notifications/pushNotification', Notifications.pushNotification);            //unprotected request, should accept request only from internal network
     server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
+    server.get('/getResource', getResource.getResource);
     server.opts('/.*/', optionsHandler);
     
     function optionsHandler(req, res) {

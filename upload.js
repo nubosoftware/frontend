@@ -20,7 +20,7 @@ function uploadToSession(req, res, next) {
     options.method = req.method;
     options.agent = false;
     options.host = internalurl.hostname;
-    options.port = internalurl.port;
+    options.port = Number(internalurl.port);
 
     var connector = http.request(options, function(serverResponse) {
         serverResponse.pause();

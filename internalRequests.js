@@ -9,7 +9,7 @@ function getOptions() {
 
     var options = {
         host: urlObj.hostname,
-        port: urlObj.port,
+        port: Number(urlObj.port),
     };
 
     return options;

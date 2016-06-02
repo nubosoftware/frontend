@@ -24,7 +24,7 @@ function startSession(req, res, next) {
 
     var options = {
         host: urlObj.hostname,
-        port: urlObj.port,
+        port: Number(urlObj.port),
         path: req.url
     };
 

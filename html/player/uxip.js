@@ -1684,6 +1684,18 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
      DrawBitmapType.webView = 2;
      */
 
+    var getJSON = function(url, success, jsonError, timeout) {
+        if (timeout == null)
+            timeout = 10000;
+        $.ajax({
+            dataType : "json",
+            url : url,
+            success : success,
+            error : jsonError,
+            'timeout' : timeout
+        });
+    };
+
     drawBitmapIntoCanvas = function(processId, wndId, bm, src, dst, matrix, p, bitmap, left, top, chunk, drawBitmapType) {
         var img = document.createElement("img");
         if (PRINT_DRAW_COMMANDS) {
@@ -1784,7 +1796,21 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
         if (bitmap.bitmapType == "res") {
             img.crossOrigin = "Anonymous";
-            img.setAttribute("src", resourceURL + bitmap.path);
+            getJSON(bitmap.path, function(data) {
+                console.log("getJSON: "+JSON.stringify(data,null,2));
+                if (data.status == 0) {
+                  var fileContent = data.fileContent;
+                  img.setAttribute("src", 'data:image/png;base64,' + fileContent);
+                } else {
+                    waitForDraw = false;
+                    moreData();
+                }
+            },function(){
+                console.log("getJSON: ERROR");
+                waitForDraw = false;
+                moreData();
+            });
+            //img.setAttribute("src", resourceURL + bitmap.path);
             //Log.v(TAG, "bitmap.path: " + bitmap.path);
         } else {
             var u8 = new Uint8Array(bitmap.data);

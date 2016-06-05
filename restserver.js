@@ -482,6 +482,7 @@ function buildServerObject(server) {
     server.get('/activationLink', ActivationLink.func);
     server.get('/unlockPassword', unlockPassword.unlockPassword);
     server.post('/file/uploadToSession', Upload.uploadToSession);
+    server.get('/download', downloadFunc);
     //server.get('/SmsNotification/sendSmsNotification', SmsNotification.sendSmsNotification);  //unprotected request, should accept request only from internal network
     server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
     //server.get('/Notifications/pushNotification', Notifications.pushNotification);            //unprotected request, should accept request only from internal network
@@ -607,6 +608,25 @@ function userConnectionStatics(req, pathname) {
         }
     }
 }
+
+function downloadFunc(req, res, next) {
+    var dtype = req.params.dtype;
+    var destURL = Common.urlToAPK;
+    if (dtype === "IOS1")
+        destURL = Common.urlToIOS1;
+    else if (dtype === "IOS2") {
+        var qs = querystring.stringify({
+            url : Common.urlToIOS2
+        });
+        destURL = "itms-services://?action=download-manifest&amp;;;;" + qs;
+    }
+
+    res.writeHead(303, {
+        Location : destURL
+    });
+    res.end();
+}
+
 
 Common.loadCallback = mainFunction;
 if (module) {

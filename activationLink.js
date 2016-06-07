@@ -95,8 +95,6 @@ function activationLink(req, res, next) {
                 var deviceType = row.devicetype != null ? row.devicetype : '';
                 logger.user(email);
 
-                logger.info("Validate activation. DeviceID: " + deviceid + ", activation key: " + oldActivationKey);
-
                 var clientIP = req.connection.remoteAddress;
 
                 var appid = deviceid + "_" + oldActivationKey;

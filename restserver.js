@@ -210,7 +210,7 @@ var mainFunction = function(err, firstTimeLoad) {
             Common.sslCerts = {
                 key: "../cert/server.key",
                 certificate: "../cert/server.cert",
-                ca: "../cert/server.ca"
+                ca: "../cert/root.crt"
             };
         }
         console.log("Common.sslCerts: " + JSON.stringify(Common.sslCerts));
@@ -481,8 +481,9 @@ function buildServerObject(server) {
     server.get('/html/player/common.js', require('./webCommon.js'));
     server.get('/activationLink', ActivationLink.func);
     server.get('/unlockPassword', unlockPassword.unlockPassword);
-    server.post('/file/uploadToSession', Upload.uploadToSession);
     server.get('/download', downloadFunc);
+    server.post('/file/uploadToSession', Upload.upload);
+    server.post('/file/uploadToLoginToken', Upload.upload);
     //server.get('/SmsNotification/sendSmsNotification', SmsNotification.sendSmsNotification);  //unprotected request, should accept request only from internal network
     server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
     //server.get('/Notifications/pushNotification', Notifications.pushNotification);            //unprotected request, should accept request only from internal network

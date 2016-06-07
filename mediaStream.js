@@ -27,7 +27,6 @@ var LIVE_STREAM = 4;
 */
 function createStream(req, res) {
     // https://login.nubosoftware.com/createStream?platId=[]&userId=[]url=[]&outputfile=[]
-    logger.info(req.url)
     res.contentType = 'json';
     var url = req.params.url;
     var outputFileNoPath = req.params.outputfile;

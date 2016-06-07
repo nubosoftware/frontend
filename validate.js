@@ -51,7 +51,6 @@ function validate(req, res, next) {
             status: 1,
             message: "Invalid username"
         });
-        logger.error("validate: invalid username, URL: " + req.url);
         return;    
     }
 
@@ -60,7 +59,6 @@ function validate(req, res, next) {
             status: 1,
             message: "Invalid activationKey"
         });
-        logger.error("validate: invalid activationKey, URL: " + req.url);
         return;
     }
 
@@ -113,7 +111,7 @@ function validate(req, res, next) {
         }
     ], function(err) {
         if (error) {
-            logger.error("validate: error handling request: " + req.url);
+            logger.error("validate: error handling validate request");
         }
 
         if (!response) {

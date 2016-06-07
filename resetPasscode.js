@@ -33,7 +33,7 @@ function resetPasscode(req, res, next) {
     //unknown
     var statusEmail = 100;
     isFirstTime = "";
-    logger.info("resetPasscode: " + req.url);
+
     //read and validate params
     var loginToken = req.params.loginToken;
     if (loginToken == undefined || loginToken.length < 5) {

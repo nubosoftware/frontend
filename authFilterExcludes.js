@@ -24,7 +24,8 @@ var settingsList = {
 var excludeList = {
     'SESSID': {
         '/checkPasscode': 1,
-        '/startsession': 1
+        '/startsession': 1,
+        '/file/uploadToLoginToken' : 1
     },
     'ISADMIN': {
         '/cp/getSecurityPasscode': 1

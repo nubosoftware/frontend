@@ -5,6 +5,7 @@ var Common = require('./common.js');
 var logger = Common.logger;
 var http = require('./http.js');
 var url = require("url");
+var internalRequests = require('./internalRequests.js');
 
 module.exports = {
     getResource: getResource
@@ -19,33 +20,16 @@ function getResource(req, res, next) {
         status: 0,
         message: 'Internal error. Please contact administrator.',
     };
-    var urlObj = url.parse(Common.internalurl);
 
-    var options = {
-        host: urlObj.hostname,
-        port: Number(urlObj.port),
-        path: req.url
-    };
-
-    //forward request to backend server
-    http.doGetRequest(options, function(err, resData) {
+    internalRequests.forwardGetRequest(req.url, function(err, resObj) {
         if (err) {
             res.send(errRes);
             logger.error("getResource: " + err);
             return;
         }
 
-        var resObj;
-        try {
-            resObj = JSON.parse(resData);
-        } catch (e) {
-            res.send(errRes);
-            logger.error("getResource: " + e);
-            return;
-        }
-
         res.send(resObj);
-        return;
     });
-}
 
+
+}

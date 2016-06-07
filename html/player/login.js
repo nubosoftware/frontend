@@ -46,10 +46,10 @@ function AppController() {
 $.fn.localize = function(isWatermark) {
     $(this).each(function(index) {
         if (!isWatermark) {
-            console.log(index + ": " + $(this).attr("localize-text"));
+            // console.log(index + ": " + $(this).attr("localize-text"));
             $(this).text(l($(this).attr("localize-text")));
         } else {
-            console.log(index + ": " + $(this).attr("watermark"));
+            // console.log(index + ": " + $(this).attr("watermark"));
             $(this).Watermark(l($(this).attr("watermark")).trim());
         }
 
@@ -180,6 +180,7 @@ var WallpaperImageList = [{
     "image" : "images/ILove.jpg"
 }];
 
+var DEBUG = false;
 var mgmtURL;
 var clickbgColor = '#828282';
 var bgColor = '#5B5B5B';
@@ -211,7 +212,7 @@ var playbackFile;
 var playbackStartTime;
 var passcodeExpired = false;
 
-console.log("Starting login.js");
+// console.log("Starting login.js");
 $(function() {
 
     // prevent scroll
@@ -264,7 +265,7 @@ function get_browser_version() {
 function formatPage() {
     // change alignement to all text
     var alignText = l("alignText");
-    console.log("alignText=" + alignText);
+    // console.log("alignText=" + alignText);
     if (alignText != null && alignText != "")
         $('.alignText').css('text-align', alignText);
     else
@@ -293,7 +294,7 @@ function formatPage() {
         }
     });
 
-    console.log("formatPage. wallpaperColor: " + wallpaperColor + ", wallpaperImage: " + wallpaperImage);
+    // console.log("formatPage. wallpaperColor: " + wallpaperColor + ", wallpaperImage: " + wallpaperImage);
     $("#toolbardiv").css('background-color', '#58585A');
 
     $("#maindiv").css('background-color', wallpaperColor);
@@ -323,7 +324,9 @@ $(function() {
     //String.locale = "he-IL";
 
     mgmtURL = location.protocol + '//' + location.host + "/";
-    console.log("mgmtURL: " + mgmtURL);
+    if (DEBUG) {
+        console.log("mgmtURL: " + mgmtURL);
+    }
 
     var Settings = Backbone.Model.extend({
 
@@ -373,19 +376,19 @@ $(function() {
 
         },
         sync : function(method, model) {
-            console.log("model.sync. " + method + ": " + JSON.stringify(model));
+            // console.log("model.sync. " + method + ": " + JSON.stringify(model));
             try {
                 if (method == "read") {
                     if (localStorage.loginSettings != null) {
                         var vars = obj = JSON.parse(localStorage.loginSettings);
                         this.set(vars);
-                        console.log("localStorage.loginSettings:" + JSON.stringify(vars));
+                        // console.log("localStorage.loginSettings:" + JSON.stringify(vars));
                     }
                 } else if (method == "update") {
                     localStorage.loginSettings = JSON.stringify(this.attributes);
                 }
             } catch (err) {
-                console.log("Error in sync: " + err.message);
+                 console.log("Error in sync: " + err.message);
             }
         }
     });
@@ -492,16 +495,20 @@ $(function() {
             var url = mgmtURL + "validate?username=" + encodeURIComponent(settings.get("workEmail")) + "&deviceid=" + deviceID + "&activationKey=" + activationKey;
             // var url = mgmtURL + "validate?deviceid=" + encodeURIComponent(settings.get("deviceID")) + "&activationKey=" + activationKey;
 
-            console.log("DEMO. url: " + url);
+            if (DEBUG) {
+                console.log("DEMO. " + url);
+            }
 
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
                 if (data.status == 1) {
                     loginToken = data.loginToken;
                     settings.set({
                         activationKey : activationKey
                     });
-                    console.log("DEMO. loginToken: " + loginToken);
+
                     demoActivation = true;
                     loggedIn = true;
                     window.location.hash = "player";
@@ -574,7 +581,9 @@ $(function() {
         checkValidation : function() {
             var url = mgmtURL + "validate?username=" + encodeURIComponent(settings.get("workEmail")) + "&deviceid=" + encodeURIComponent(settings.get("deviceID")) + "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion;
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
 
                 if (data.status == 1) {
                     this.timeoutId = 0;
@@ -592,7 +601,9 @@ $(function() {
                     if (uploadExternalWallpaper == null || uploadExternalWallpaper) {
                         var clientProperties = data.clientProperties;
                         for (var key in clientProperties) {
-                            console.log(key + " : " + clientProperties[key]);
+                            if (DEBUG) {
+                                console.log(key + " : " + clientProperties[key]);
+                            }
                             if (key.localeCompare("wallpaper") == 0) {
                                 wallpaperColor = "";
                                 wallpaperImage = mgmtURL + clientProperties[key];
@@ -627,7 +638,9 @@ $(function() {
                         window.location.hash = "passcode";
                     }
                 } else if (data.status == 0) {//Pending
-                    console.log("pending...");
+                    if (DEBUG) {
+                        console.log("pending...");
+                    }
                     pendingValidation = true;
                     if (validationView == null)
                         return;
@@ -640,7 +653,9 @@ $(function() {
                     if (mgmtURL.substr(mgmtURL.length - 1) != '/') {
                             mgmtURL = mgmtURL + '/';
                     }
-                    console.log("checkValidation. status=301, mgmtURL: " + mgmtURL);                    
+                    if (DEBUG) {
+                        console.log("checkValidation. status=301, mgmtURL: " + mgmtURL);
+                    }
                     pendingValidation = true;
                     if (validationView == null)
                         return;
@@ -666,14 +681,11 @@ $(function() {
                 } else if (data.status == 4) {
                     this.timeoutId = 0;
                     pendingValidation = false;
-
-                    console.log("passcodelock");
                     window.location.hash = "passcodelock";
 
                 } else if (data.status == 5) {
                     this.timeoutId = 0;
                     pendingValidation = false;
-                    console.log("disableUserDevice");
                     settings.set({
                         'errorType' : data.status,
                         'adminName' : data.adminName,
@@ -686,7 +698,6 @@ $(function() {
                 } else if (data.status == 6) {
                     this.timeoutId = 0;
                     pendingValidation = false;
-                    console.log("disableUserDevice");
 
                     settings.set({
                         'errorType' : data.status,
@@ -789,9 +800,14 @@ $(function() {
         },
         checkActivationLink : function() {
             var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token) + "&cloneActivation=" + encodeURIComponent(this.cloneActivation);
-
+            if (DEBUG) {
+                console.log("activationLink. " + url);
+            }
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
+
                 activationLinkView.afterValidation = true;
                 if (data.status == 0) {
                     activationLinkView.activationDeviceType = data.deviceType;
@@ -842,7 +858,9 @@ $(function() {
                     this.$el.html(template);
                     formatPage();
 
-                    console.log("ResetPasscodeLinkView.render passcodeType: " + passcodeType);
+                    if (DEBUG) {
+                        console.log("ResetPasscodeLinkView.render passcodeType: " + passcodeType);
+                    }
                     if (passcodeType == 1) {
                         $("#resetPasscodeTxt").text(l("resetPasswordText"));
                     } else {
@@ -863,16 +881,20 @@ $(function() {
         checkResetLink : function() {
             var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token) + "&cloneActivation=" + encodeURIComponent(this.cloneActivation);
 
-            console.log("checkResetLink. url: " + url);
+            if (DEBUG) {
+                console.log("checkResetLink. " + url);
+            }
 
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
+
                 resetPasscodeLinkView.afterValidation = true;
                 if (data.status == 0) {
                     resetPasscodeLinkView.resetDeviceType = data.deviceType;
                     resetPasscodeLinkView.successReset = true;
                     window.userEmail = data.email;
-
                     resetPasscodeLinkView.render();
 
                 } else {
@@ -909,7 +931,10 @@ $(function() {
                     this.$el.html(template);
                     formatPage();
                 } else {
-                    console.log("UnlockPasscodeLinkView. activation_err");
+                    if (DEBUG) {
+                        console.log("UnlockPasscodeLinkView. activation_err");
+                    }
+
                     var vars = settings.attributes;
                     template = _.template($("#activation_err_template").html(), vars);
                     this.$el.html(template);
@@ -924,11 +949,14 @@ $(function() {
         },
         checkUnlockLink : function() {
             var url = mgmtURL + "unlockPassword?loginemailtoken=" + encodeURIComponent(this.token) + "&email=" + encodeURIComponent(this.email);
-
-            console.log("checkUnlockLink. url: " + url);
+            if (DEBUG) {
+                console.log("checkUnlockLink. " + url);
+            }
 
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
                 unlockPasscodeLinkView.afterValidation = true;
                 if (data.status == 1) {
                     unlockPasscodeLinkView.successUnlock = true;
@@ -972,7 +1000,7 @@ $(function() {
             "keydown input" : "keyDown"
         },
         keyDown : function(event) {
-            console.log("keyDown " + event.keyCode);
+            // console.log("keyDown " + event.keyCode);
             if (event.keyCode == 13) {
                 var id = event.target.id;
                 var focusable = $("#maindiv").find('input,a,select,button,textarea').filter(':visible');
@@ -989,7 +1017,7 @@ $(function() {
         },
         resetError : function(event) {
             var id = event.target.id;
-            console.log("event.target.id=" + event.target.id);
+            // console.log("event.target.id=" + event.target.id);
             $('#' + id).removeClass("error");
             var errID = '#' + id.substring(2) + 'Err';
             $(errID).text('');
@@ -997,10 +1025,8 @@ $(function() {
         },
         jobKey : function(event) {
             var txt = $('#edJobTitle').val();
-            console.log("input. #edJobTitle=" + txt);
-
+            // console.log("input. #edJobTitle=" + txt);
             this.openSuggestList(txt);
-
         },
         hideSuggestionList : function() {
             for (var i = 0; i < 4; i++) {
@@ -1010,7 +1036,7 @@ $(function() {
         },
         clickSuggestion : function(event) {
             var id = event.target.id;
-            console.log("event.target.id=" + event.target.id);
+            // console.log("event.target.id=" + event.target.id);
             $('#edJobTitle').val($('#' + id).text());
 
         },
@@ -1020,7 +1046,9 @@ $(function() {
                 var thisObj = this;
                 var url = mgmtURL + "html/player/jobs_list.json";
                 getJSON(url, function(data) {
-                    console.log(JSON.stringify(data, null, 4));
+                    if (DEBUG) {
+                        console.log(JSON.stringify(data, null, 4));
+                    }
                     jobList = data;
                     thisObj.openSuggestList(txt);
                 });
@@ -1039,7 +1067,7 @@ $(function() {
                 if (jobList[i].substr(0, txt.length).toLowerCase() == txt.toLowerCase())
                     suggestions.push(jobList[i]);
             }
-            console.log("openSuggestList. suggestions.length=" + suggestions.length);
+            // console.log("openSuggestList. suggestions.length=" + suggestions.length);
             for (var i = 0; i < suggestions.length; i++) {
                 var spanname = '#drop' + (i + 1);
                 $(spanname).text(suggestions[i]);
@@ -1047,7 +1075,7 @@ $(function() {
                     $(spanname).addClass("roundDrop");
                 else
                     $(spanname).removeClass("roundDrop");
-                console.log("spanname=" + spanname);
+                // console.log("spanname=" + spanname);
                 $(spanname).css('visibility', 'visible');
             }
 
@@ -1131,12 +1159,14 @@ $(function() {
 
             var plain = settings.get("workEmail") + '_' + settings.get("deviceID");
             var signature = CryptoJS.HmacSHA1(plain, "1981abe0d32d93967648319b013b03f05a119c9f619cc98f");
-            console.log("signature=" + signature);
+            // console.log("signature=" + signature);
 
             var url = mgmtURL + "activate?deviceid=" + encodeURIComponent(settings.get("deviceID")) + "&email=" + encodeURIComponent(settings.get("workEmail")) + "&first=" + encodeURIComponent(settings.get("firstName")) + "&last=" + encodeURIComponent(settings.get("lastName")) + "&title=" + encodeURIComponent(settings.get("jobTitle")) + "&signature=" + encodeURIComponent(signature) + "&regid=none&deviceType=Web&deviceName=Web";
 
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
                 if (data.status == 0) {
                     settings.set({
                         'activationKey' : data.activationKey
@@ -1162,7 +1192,7 @@ $(function() {
                     if (mgmtURL.substr(mgmtURL.length - 1) != '/') {
                         mgmgtURL = mgmtURL + '/';
                     }
-                    console.log("CreatePlayerView.activatePlayer. status=301, mgmtURL: " + mgmtURL);
+                    // console.log("CreatePlayerView.activatePlayer. status=301, mgmtURL: " + mgmtURL);
                     setTimeout(createplayerView.activatePlayer, 1000);
                 }
 
@@ -1200,7 +1230,7 @@ $(function() {
         },
         resetError : function(event) {
             var id = event.target.id;
-            console.log("event.target.id=" + event.target.id);
+            // console.log("event.target.id=" + event.target.id);
             $('#' + id).removeClass("error");
             var errID = '#' + id + 'Err';
             $(errID).text('');
@@ -1249,14 +1279,18 @@ $(function() {
 
             var plain = settings.get("workEmail") + '_' + settings.get("deviceID");
             var signature = CryptoJS.HmacSHA1(plain, "1981abe0d32d93967648319b013b03f05a119c9f619cc98f");
-            console.log("signature=" + signature);
+            // console.log("signature=" + signature);
 
             var url = mgmtURL + "activate?deviceid=" + encodeURIComponent(settings.get("deviceID")) + "&email=" + encodeURIComponent(settings.get("workEmail")) + "&signature=" + encodeURIComponent(signature) + "&regid=none&alreadyUser=Y&deviceType=Web&deviceName=Web";
 
-            console.log("url=" + url);
+            if (DEBUG) {
+                console.log("activatePlayer. " + url);
+            }
 
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
                 if (data.status == 0) {
                     settings.set({
                         'activationKey' : data.activationKey
@@ -1282,7 +1316,7 @@ $(function() {
                     if (mgmtURL.substr(mgmtURL.length - 1) != '/') {
                         mgmgtURL = mgmtURL + '/';
                     }
-                    console.log("AlreadyUserView.activatePlayer. status=301, mgmtURL: " + mgmtURL);
+                    // console.log("AlreadyUserView.activatePlayer. status=301, mgmtURL: " + mgmtURL);
                     setTimeout(alreadyUserView.activatePlayer, 1000);
                 }
             });
@@ -1311,7 +1345,7 @@ $(function() {
             "keydown input" : "keyDown"
         },
         keyDown : function(event) {
-            console.log("keyDown " + event.keyCode);
+            // console.log("keyDown " + event.keyCode);
 
             var viewName = location.hash;
             if (viewName.localeCompare("#auth") == -1) {
@@ -1334,7 +1368,7 @@ $(function() {
         },
         resetError : function(event) {
             var id = event.target.id;
-            console.log("event.target.id=" + event.target.id);
+            // console.log("event.target.id=" + event.target.id);
             $('#' + id).removeClass("error");
             var errID = '#' + id + 'Err';
             $(errID).text('');
@@ -1362,7 +1396,7 @@ $(function() {
             var authPassword = ($('#authPassword').val() == l("passwordStr").trim() ? "" : $('#authPassword').val());
             var errInForm = false;
 
-            console.log("authUserName=" + authUserName);
+            // console.log("authUserName=" + authUserName);
             if (authUserName == "") {
                 errInForm = true;
                 $('#authUserNameErr').text(l("emptyField"));
@@ -1385,7 +1419,9 @@ $(function() {
             var url = mgmtURL + "authenticateUser?loginToken=" + encodeURIComponent(loginToken) + "&user=" + encodeURIComponent($('#authUserName').val()) + "&password=" + encodeURIComponent($('#authPassword').val());
 
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
 
                 $('#spinner').hide();
                 document.getElementById('signInBtn').disabled = false;
@@ -1452,7 +1488,6 @@ $(function() {
 
         render : function() {
             var imgURL = mgmtURL + "html/player/";
-            console.log("Called PasscodeView");
             var template = _.template($("#passcode_template").html(), { });
             document.getElementById('playerCSS').href = imgURL + "player.css";
             this.$el.html(template);
@@ -1472,7 +1507,7 @@ $(function() {
 
         on_keydown : function(event) {
             var code = event.keyCode || event.which;
-            console.log("PasscodeView.on_keydown  code: " + code + ", enterPasscode: " + enterPasscode);
+            // console.log("PasscodeView.on_keydown  code: " + code + ", enterPasscode: " + enterPasscode);
 
             var viewName = location.hash;
             if (viewName.indexOf("passcode") == -1) {
@@ -1487,7 +1522,7 @@ $(function() {
 
         on_keypress : function(event) {
             var code = event.keyCode|| event.which;
-            console.log("PasscodeView.on_keypress code: " + code + " event.type: " + event.type);
+            // console.log("PasscodeView.on_keypress code: " + code + " event.type: " + event.type);
 
             $('#passcodeErrMsg').css("visibility", "hidden");
             $('#passcodeErrMsg2').css("visibility", "hidden");
@@ -1495,7 +1530,7 @@ $(function() {
 
             if (code >= 48 && code <= 57) {// 1-9
                 enterPasscode = enterPasscode + String.fromCharCode(code);
-                console.log("PasscodeView. passcode: " + enterPasscode);
+                // console.log("PasscodeView. passcode: " + enterPasscode);
 
                 if (enterPasscode.length > 8) {
                     $('#passcodeErrMsg').text(l('noMatchPasscode4'));
@@ -1504,11 +1539,8 @@ $(function() {
                     $('#passcodeErrMsg2').text(l('noMatchPasscode5'));
                     $('#passcodeErrMsg2').css("visibility", "visible");
                     enterPasscode = "";
-                    // document.getElementById("passcodeImg").src = "images/passcodeText0.png";
 
                 } else {
-                    // var imageName = "".concat("images/passcodeText", enterPasscode.length, ".png");
-                    // document.getElementById("passcodeImg").src = imageName;
                     $('#enterPasscode').val(enterPasscode);
                 }
 
@@ -1521,12 +1553,12 @@ $(function() {
 
         },
         clickForgotBtn : function(event) {
-            console.log("PasscodeView. click: " + event.target.id + " type: " + event.type);
+            // console.log("PasscodeView. click: " + event.target.id + " type: " + event.type);
             enterPasscode = "";
             window.location.hash = "resetpasscode";
         },
         click : function(event) {
-            console.log("PasscodeView. click: " + event.target.id + " type: " + event.type);
+            // console.log("PasscodeView. click: " + event.target.id + " type: " + event.type);
 
             if (isMobile.any() == true && event.type == "click") {
                 console.log("PasscodeView mobile");
@@ -1570,12 +1602,10 @@ $(function() {
                 $('#passcodeErrMsg2').css("visibility", "visible");
                 enterPasscode = "";
                 $('#enterPasscode').val("");
-                // document.getElementById("passcodeImg").src = "images/passcodeText0.png";
             }
 
         },
         mousedown : function(event) {
-            console.log("mousedown");
             var id = event.target.id;
             if (id == "keyok") {
                 return;
@@ -1597,7 +1627,7 @@ $(function() {
         },
 
         deleteChar : function() {
-            console.log("passcodeView.deleteChar  enterPasscode: " + enterPasscode);
+            // console.log("passcodeView.deleteChar  enterPasscode: " + enterPasscode);
             if (enterPasscode.length >= 1) {
                 enterPasscode = enterPasscode.substr(0, enterPasscode.length - 1);
                 console.log("passcodeView.deleteChar  enterPasscode: " + enterPasscode);
@@ -1610,9 +1640,13 @@ $(function() {
             "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion +
             "&username=" + encodeURIComponent(settings.get("workEmail"));
 
-            console.log("PasscodeView.newLoginToken. url: " + url);
+            if (DEBUG) {
+                console.log("newLoginToken. " + url);
+            }
             getJSON(url, function(data) {
-                console.log("PasscodeView.newLoginToken. data: " + JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
                 if (data.status == 1) {
                     loginToken = data.loginToken;
                     passcodeView.checkPasscode();
@@ -1623,18 +1657,21 @@ $(function() {
         },
 
         checkPasscode : function() {
-            console.log("passcodeView.checkPasscode  enterPasscode: " + enterPasscode);
 
             var url = mgmtURL + "checkPasscode?loginToken=" + encodeURIComponent(loginToken) + "&passcode=" + encodeURIComponent(enterPasscode);
+            if (DEBUG) {
+                console.log("checkPasscode. " + url);
+            }
 
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
 
                 if (data.status == 0) {                 // failed
                     $('#passcodeErrMsg').text(l('wrongPassCode1') + "      " + l('wrongPassCode2'));
                     $('#passcodeErrMsg').css("visibility", "visible");
                     enterPasscode = "";
-                    // document.getElementById("passcodeImg").src = "images/passcodeText0.png";
                     $('#enterPasscode').val("");
 
                 } else if (data.status == 1) {          // success
@@ -1642,16 +1679,13 @@ $(function() {
                     window.location.hash = "player";
 
                 } else if (data.status == 2) {          // expired login token
-                    console.log("expired login token");
                     passcodeView.newLoginToken();
                     // window.location.hash = "validation";
 
                 } else if (data.status == 4) {          // passcode lock
-                    console.log("passcodelock");
                     window.location.hash = "passcodelock";
 
                 } else if (data.status == 7) {          // passcode expired
-                    console.log("passcode expired");
                     passcodeExpired = true;
                     if (passcodeType == 1) {
                         passcodeActivationRequired = true;
@@ -1684,7 +1718,6 @@ $(function() {
         },
 
         render : function() {
-            console.log("Called render");
             var template = _.template($("#setpasscode_template").html(), { });
             this.$el.html(template);
             formatPage();
@@ -1708,7 +1741,7 @@ $(function() {
 
         on_keydown : function(event) {
             var code = event.keyCode || event.which;
-            console.log("SetPasscodeView.on_keydown  code: " + code + ", enterPasscode: " + enterPasscode);
+            // console.log("SetPasscodeView.on_keydown  code: " + code + ", enterPasscode: " + enterPasscode);
 
             var viewName = location.hash;
             if (viewName.indexOf("passcode") == -1) {
@@ -1729,11 +1762,10 @@ $(function() {
             $('#passcodeErrMsg2').css("visibility", "hidden");
             $('#passwordExpired').css("visibility", "hidden");
 
-            console.log("setPasscodeView.on_keypress code: " + code + " event.type: " + event.type);
+            // console.log("setPasscodeView.on_keypress code: " + code + " event.type: " + event.type);
 
             if (code >= 48 && code <= 57) {// 1-9
                 enterPasscode = enterPasscode + String.fromCharCode(code);
-                console.log("setPasscodeView. passcode: " + enterPasscode);
 
                 if (enterPasscode.length > 8) {
                     $('#passcodeErrMsg').text(l('noMatchPasscode4'));
@@ -1742,20 +1774,15 @@ $(function() {
                     $('#passcodeErrMsg2').text(l('noMatchPasscode5'));
                     $('#passcodeErrMsg2').css("visibility", "visible");
                     enterPasscode = "";
-                    // document.getElementById("setPasscodeImg").src = "images/passcodeText0.png";
                     $('#selectPasscode').val("");
 
                 } else {
-                    // var imageName = "".concat("images/passcodeText", enterPasscode.length, ".png");
-                    // document.getElementById("setPasscodeImg").src = imageName;
                     $('#selectPasscode').val(enterPasscode);
                 }
 
             } else if (code == 8 || code == 127) {// delete
                 this.deleteChar();
-                // var imageName = "".concat("images/passcodeText", enterPasscode.length, ".png");
-                // document.getElementById("setPasscodeImg").src = imageName;
-                $('#selectPasscode').val(enterPasscode);
+                 $('#selectPasscode').val(enterPasscode);
 
             } else if (code == 13) {// enter/ok
                 this.okButton();
@@ -1764,10 +1791,9 @@ $(function() {
 
         click : function(event) {
 
-            console.log("SetPasscodeView. click: " + event.target.id + " type: " + event.type);
+            // console.log("SetPasscodeView. click: " + event.target.id + " type: " + event.type);
 
             if (isMobile.any() == true && event.type == "click") {
-                console.log("PasscodeView mobile");
                 return;
             }
 
@@ -1792,22 +1818,15 @@ $(function() {
                 return;
             }
 
-            console.log("setPasscodeView.click   enterPasscode: " + enterPasscode + ", passcode: " + passcode);
             enterPasscode = passcode;
             //$('#selectPasscode').val(passcode);
             $('#selectPasscode').trigger('input');
 
             if (passcode.length == 0) {
-                // document.getElementById("setPasscodeImg").src = "images/passcodeText0.png";
-                $('#selectPasscode').val("");
-
+                 $('#selectPasscode').val("");
             } else if (passcode.length <= 8) {
-                // var imageName = "".concat("images/passcodeText", passcode.length, ".png");
-                // document.getElementById("setPasscodeImg").src = imageName;
-                $('#selectPasscode').val(enterPasscode);
-
+                 $('#selectPasscode').val(enterPasscode);
             } else {
-
                 $('#passcodeErrMsg').text(l('noMatchPasscode4'));
                 $('#passcodeErrMsg').css({
                     "visibility" : "visible"
@@ -1816,8 +1835,7 @@ $(function() {
                 $('#passcodeErrMsg2').text(l('noMatchPasscode5'));
                 $('#passcodeErrMsg2').css("visibility", "visible");
                 enterPasscode = "";
-                // document.getElementById("setPasscodeImg").src = "images/passcodeText0.png";
-                $('#selectPasscode').val("");
+                 $('#selectPasscode').val("");
             }
 
         },
@@ -1843,7 +1861,7 @@ $(function() {
         },
 
         okButton : function() {
-            console.log("SetPasscodeView.okButton  this.state: " + this.state);
+            // console.log("SetPasscodeView.okButton  this.state: " + this.state);
 
             if (this.state == 0) {// first passcode
 
@@ -1857,13 +1875,11 @@ $(function() {
                     $('#passcodeErrMsg2').css("visibility", "visible");
 
                     enterPasscode = "";
-                    // document.getElementById("setPasscodeImg").src = "images/passcodeText0.png";
                     $('#selectPasscode').val("");
                     return;
                 }
 
                 this.passcodeValidate();
-                console.log("SetPasscodeView.okButton  enterPasscode: " + enterPasscode);
                 if (enterPasscode.length == 0) {
                     return;
                 }
@@ -1872,7 +1888,6 @@ $(function() {
                 $('#selectPasscodeTitle').text(l('reEnterPasscode'));
                 this.state = 1;
                 enterPasscode = "";
-                // document.getElementById("setPasscodeImg").src = "images/passcodeText0.png";
                 $('#selectPasscode').val("");
 
             } else {    //re-enter the passcopde
@@ -1892,7 +1907,6 @@ $(function() {
         },
 
         passcodeValidate : function() {
-            console.log("SetPasscodeView.passcodeValidate");
             var tmpPasscode = enterPasscode;
             var minimumChars = '';
 
@@ -1903,7 +1917,6 @@ $(function() {
             var isConsecutive = true;
 
             for (var i = 0; i < enterPasscode.length - 1; i++) {
-
                 current = enterPasscode.substring(i, i + 1);
                 currentPlus = parseInt(enterPasscode.substring(i, i + 1)) + 1;
                 next = parseInt(tmpPasscode.substring(i + 1, i + 2));
@@ -1911,7 +1924,6 @@ $(function() {
                 if (currentPlus != next) {
                     isConsecutive = false;
                 }
-
                 if (minimumChars.indexOf(current) == -1) {
                     minimumChars = minimumChars + current;
                 }
@@ -1947,10 +1959,14 @@ $(function() {
             if (this.oldPasscode != null && this.oldPasscode.length > 0) {
                 url += "&oldpasscode=" + encodeURIComponent(this.oldPasscode);
             }
-            console.log(url);
+            if (DEBUG) {
+                console.log("setPasscode. " + url);
+            }
 
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
 
                 if (data.status == 0) {         // failed
                     $('#passcodeErrMsg').text(data.message);
@@ -1973,7 +1989,6 @@ $(function() {
         },
 
         deleteChar : function() {
-            console.log("SetPasscodeView.deleteChar  enterPasscode: " + enterPasscode);
             if (enterPasscode.length >= 1) {
                 enterPasscode = enterPasscode.substr(0, enterPasscode.length - 1);
                 console.log("SetPasscodeView.deleteChar  enterPasscode: " + enterPasscode);
@@ -2034,22 +2049,19 @@ $(function() {
             "keydown input" : "keyDown"
         },
         keyDown : function(event) {
-            // console.log("EnterPasswordView.on_keydown  event.keyCode: " + event.keyCode);
             if (event.keyCode == 13) {          // ENTER
                 this.clickEnterPassword();
                 return false;
             }
         },
         resetError : function(event) {
-            // console.log("EnterPasswordView. resetError");
             $('#passcodeErrMsg').text("");
             $('#passcodeErrMsg').css("visibility", "hidden");
             $('#passcodeErrMsg2').css("visibility", "hidden");
             $('#passwordExpired').css("visibility", "hidden");
         },
         clickForgotPassword : function(event) {
-            // console.log("EnterPasswordView. clickForgotPassword");
-            window.location.hash = "resetpasscode";
+             window.location.hash = "resetpasscode";
         },
         clickEnterPassword : function(event) {
             var password = ($('#enterPassword').val() == l("passwordStr").trim() ? "" : $('#enterPassword').val());
@@ -2079,7 +2091,6 @@ $(function() {
                         return;
                     }
                 }
-                console.log("EnterPasswordView.clickEnterPassword  setPassword");
                 this.setPassword();
 
             } else {            // checkPassword
@@ -2144,9 +2155,13 @@ $(function() {
             "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion +
             "&username=" + encodeURIComponent(settings.get("workEmail"));
 
-            console.log("EnterPasswordView.newLoginToken. url: " + url);
+            if (DEBUG) {
+                console.log("newLoginToken. " + url);
+            }
             getJSON(url, function(data) {
-                console.log("EnterPasswordView.newLoginToken. data: " + JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
                 if (data.status == 1) {
                     loginToken = data.loginToken;
                     if (passcodeActivationRequired == true) {
@@ -2161,14 +2176,17 @@ $(function() {
         },
 
         checkPassword : function() {
-            console.log("EnterPasswordView.checkPassword  oldPassword: " + oldPassword);
             var password = ($('#enterPassword').val() == l("passwordStr").trim() ? "" : $('#enterPassword').val());
             var url = mgmtURL + "checkPasscode?loginToken=" + encodeURIComponent(loginToken) +
                                 "&passcode=" + encodeURIComponent(password);
 
-            console.log("EnterPasswordView.checkPassword  url: " + url);
+            if (DEBUG) {
+                console.log("checkPassword.  " + url);
+            }
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
 
                 if (data.status == 0) {                 // failed
                     $('#passcodeErrMsg').text(l('wrongPassCode1') + "      " + l('wrongPassCode2'));
@@ -2180,16 +2198,12 @@ $(function() {
                     window.location.hash = "player";
 
                 } else if (data.status == 2) {          // expired login token
-                    console.log("EnterPasswordView.expired login token");
                     enterPasswordView.newLoginToken();
 
                 } else if (data.status == 4) {          // passcode lock
-                    console.log("passcodelock");
                     window.location.hash = "passcodelock";
 
                 } else if (data.status == 7) {          // passcode expired
-                    console.log("passcode expired");
-
                     if (passcodeType == 0) {
                         passcodeExpired = true;
                         enterPasscode = password;
@@ -2218,10 +2232,14 @@ $(function() {
             if (oldPassword != null && oldPassword.length > 0) {
                 url += "&oldpasscode=" + encodeURIComponent(oldPassword);
             }
-            console.log("EnterPasswordView.setPassword  url: " + url);
+            if (DEBUG) {
+                console.log("setPassword.  " + url);
+            }
 
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
 
                 if (data.status == 0) {         // failed
                     $('#passcodeErrMsg').text(l('errorChangePassword'));   //data.message
@@ -2258,7 +2276,10 @@ $(function() {
             data: []
         },
         render : function() {
-            console.log("Called render");
+            if (DEBUG) {
+                console.log("Called render");
+            }
+
             var template = _.template($("#recordings_template").html(), this.params);
             this.$el.html(template);
             formatPage();
@@ -2272,7 +2293,6 @@ $(function() {
         },
         
         homeEvent : function(event) {
-            
             window.location.hash = "validation";
         },
 
@@ -2354,7 +2374,9 @@ $(function() {
                         + "&to=" +encodeURIComponent(fullToDate);
 
             getJSON(url, function(results) {
-                console.log(JSON.stringify(results, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(results, null, 4));
+                }
                 view.params.data = [];
 
                 if (results.status == 0) {          // failed
@@ -2401,7 +2423,7 @@ $(function() {
             
         },
         render : function() {
-            console.log("Called render");
+            // console.log("Called render");
             var template = _.template($("#resetpasscode_template").html(), { });
             this.$el.html(template);
             formatPage();
@@ -2423,8 +2445,14 @@ $(function() {
             //https://login.nubosoftware.com/resetPasscode?loginToken=[]
             var url = mgmtURL + "resetPasscode?loginToken=" + encodeURIComponent(loginToken);
 
+            if (DEBUG) {
+                console.log("resetPasscode. " + url);
+            }
+
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
                 if (data.status == 0) {
                     if (passcodeType == 1) {
                         window.location.hash = "enetrPassword";
@@ -2442,7 +2470,7 @@ $(function() {
 
         },
         clickResetCancelBtn : function(event) {
-            console.log("ResetPasscodeView. click: " + event.target.id + " type: " + event.type);
+            // console.log("ResetPasscodeView. click: " + event.target.id + " type: " + event.type);
             if (passcodeType == 1) {
                 window.location.hash = "enetrPassword";
             } else {
@@ -2463,7 +2491,6 @@ $(function() {
         },
         timeoutId : 0,
         render : function() {
-            console.log("PasscodeLockView.Called render");
             var template = _.template($("#passcodelock_template").html(), { });
             this.$el.html(template);
             formatPage();
@@ -2485,9 +2512,14 @@ $(function() {
 
             // var resendUrl = location.protocol+'//'+location.host+"/"+"resendUnlockPasswordLink?activationKey="+encodeURIComponent(settings.get("activationKey"));
             var resendUrl = mgmtURL + "resendUnlockPasswordLink?activationKey=" + encodeURIComponent(settings.get("activationKey"));
+            if (DEBUG) {
+                console.log("resendUnlockPasswordLink. " + resendUrl);
+            }
 
             getJSON(resendUrl, function(data) {
-                console.log("PasscodeLockView. resendUnlockPassword: " + resendUrl + " status: " + data.status);
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
 
                 if (data.status == 1) {
                     this.timeoutId = setTimeout(this.checkUnlock, 2000);
@@ -2500,9 +2532,13 @@ $(function() {
         checkUnlock : function() {
 
             var url = mgmtURL + "validate?deviceid=" + encodeURIComponent(settings.get("deviceID")) + "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion;
-
+            if (DEBUG) {
+                console.log("checkUnlock. " + url);
+            }
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
                 if (data.status == 1) {
                     this.timeoutId = 0;
                     loginToken = data.loginToken;
@@ -2527,15 +2563,16 @@ $(function() {
                         window.location.hash = "passcode";
                     }
                 } else if (data.status == 0 || data.status == 4 || data.status == 301) {//Pending
-                    console.log("Unlock pending...");
-
+                    if (DEBUG) {
+                        onsole.log("Unlock pending...");
+                    }
                     if (data.status == 301) {
                         var mgmtURL = data.mgmtURL;
 
                         if (mgmtURL.substr(mgmtURL.length - 1) != '/') {
                             mgmgtURL = mgmtURL + '/';
                         }
-                        console.log("checkUnlock. status=301, mgmtURL: " + mgmtURL);
+                        // console.log("checkUnlock. status=301, mgmtURL: " + mgmtURL);
                     }
 
                     if (passcodeLockView == null)
@@ -2571,7 +2608,6 @@ $(function() {
         },
         timeoutId : 0,
         render : function() {
-            console.log("DisableUserDeviceView.Called render");
             var template = _.template($("#disableUserDevice_template").html(), { });
             this.$el.html(template);
             formatPage();
@@ -2611,7 +2647,7 @@ $(function() {
         },
         timeoutId : 0,
         render : function() {
-            console.log("browserVerErrView.Called render");
+            // console.log("browserVerErrView.Called render");
             var template = _.template($("#browser_version_error_template").html(), { });
             this.$el.html(template);
             formatPage();
@@ -2675,8 +2711,6 @@ $(function() {
         //uxip: null,
         render : function() {
             var imgURL = mgmtURL + "html/player/";
-            console.log("PlayerView imgURL: " + imgURL);
-            console.log("PlayerView");
             var template = _.template($("#player_template").html(), {imgURL : imgURL});
             this.$el.html(template);
             formatPage();
@@ -2684,16 +2718,19 @@ $(function() {
             var datadiv = document.getElementById('datadiv');                
             var width = datadiv.offsetWidth;
             var height = datadiv.offsetHeight + (mobilecheck() ? 90 : 45);
-            console.log("width: " + width + ", height: " + height);
+            // console.log("width: " + width + ", height: " + height);
             uxip = new UXIP(datadiv, width, height);
             uxip.PlayerView = this;
 
             var url = mgmtURL + "startsession?loginToken=" + encodeURIComponent(loginToken);
-
-            console.log("PlayerView. url: " + url);
+            if (DEBUG) {
+                console.log("PlayerView. " + url);
+            }
 
             getJSON(url, function(data) {
-                console.log(JSON.stringify(data, null, 4));
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
                 if (data.status == 1) {
                     var parser = document.createElement('a');
                     parser.href = mgmtURL;
@@ -2719,7 +2756,7 @@ $(function() {
                     ed.on("keydown",uxip.virtualKeyboardEvent);
                     ed.on("keyup",uxip.virtualKeyboardEvent);
                 } else if (data.status == 2) {// expired login token
-                    console.log("PlayerView. expired login token");
+                    // console.log("PlayerView. expired login token");
                     window.location.hash = "validation";
 
                 } else if (data.status == 0) {// failed
@@ -2752,12 +2789,12 @@ $(function() {
             uxip.clickSearch();
         },
 		clickMobileBack : function (event) {
-			console.log("PlayerView. clickMobileBack");	
+			// console.log("PlayerView. clickMobileBack");
 		   	uxip.clickMobileBack();
 		},
 
         setWallpaper : function(type, res) {
-            console.log("setWallpaper. type: " + type + ", res: " + res);
+            // console.log("setWallpaper. type: " + type + ", res: " + res);
 
             var newWallpaperColor;
             var newWallpaperImage;
@@ -2803,7 +2840,7 @@ $(function() {
         },
         //uxip: null,
         render : function() {
-            console.log("PlaybackView");
+            // console.log("PlaybackView");
             var template = _.template($("#playback_template").html(), { });
             this.$el.html(template);
             formatPage();
@@ -2814,7 +2851,7 @@ $(function() {
             $("div#recordingTimeLbl").css("font-size", 20 / playbackScale + "px");
             $("div#recordingTimeLbl").css("width",300 / playbackScale + "px");
             $("div#recordingTimeLbl").css("top",playbackHeight - Math.round(30 / playbackScale) );
-            console.log("width: " + width + ", height: " + height);
+            // console.log("width: " + width + ", height: " + height);
             uxip = new UXIP(datadiv, width, height, true);
             uxip.PlayerView = this;
 
@@ -2837,9 +2874,6 @@ $(function() {
             var wsURL = protocol + host + port + "/gatewayProxy?playbackMode=Y&fileName=" + encodeURIComponent(playbackFile)+
                 "&loginToken=" + encodeURIComponent(loginToken);
             uxip.connect(wsURL, "NA");
-            
-                
-
         },
         events : {
             // "click #linkvolcano" : "clickHome"            
@@ -2907,7 +2941,7 @@ $(function() {
     });
 
     app_router.on('route:getDownloadApp', function(domain) {
-        console.log("route:getDownloadApp. ");
+        // console.log("route:getDownloadApp. ");
         resetValidationEvent();
         var download_view = new DownloadView();
         download_view.domain = domain;
@@ -2916,7 +2950,9 @@ $(function() {
     });
 
     app_router.on('route:getActivationLink', function(token, email) {
-        console.log("route:getActivationLink. token:" + token + ", email:" + email);
+        if (DEBUG) {
+            console.log("route:getActivationLink. token:" + token + ", email:" + email);
+        }
         resetValidationEvent();
         var activation_link_view = new ActivationLinkView();
         activation_link_view.token = token;
@@ -2926,7 +2962,7 @@ $(function() {
     });
 
     app_router.on('route:getResetPasscodeLink', function(token, email) {
-        console.log("route:getResetPasscodeLink. token:" + token + ", email:" + email);
+        // console.log("route:getResetPasscodeLink. token:" + token + ", email:" + email);
         resetValidationEvent();
         var resetPasscode_link_view = new ResetPasscodeLinkView();
         resetPasscode_link_view.token = token;
@@ -2936,7 +2972,7 @@ $(function() {
     });
 
     app_router.on('route:getUnlockPassword', function(token, email) {
-        console.log("route:getUnlockPassword. token:" + token + ", email:" + email);
+        // console.log("route:getUnlockPassword. token:" + token + ", email:" + email);
         resetValidationEvent();
         var unlockPasscode_link_view = new UnlockPasscodeLinkView();
         unlockPasscode_link_view.token = token;
@@ -2946,15 +2982,17 @@ $(function() {
     });
 
     app_router.on('route:defaultRoute', function(actions) {
-
-        console.log("route:defaultRoute. actions:" + actions);
-
+        if (DEBUG) {
+            console.log("route:defaultRoute. actions:" + actions);
+        }
         /// check browser version
         var version = get_browser_version();
         var versionError = false;
 
         if ((browserType == "firefox" && version < 28) || (browserType == "chrome" && version < 35) || (browserType == "ie" && version < 11)) {
-            console.log("browser type: " + browserType + ", browser version: " + version);
+            if (DEBUG) {
+                console.log("browser type: " + browserType + ", browser version: " + version);
+            }
             var browserVerErr_view = new BrowserVerErrView();
             appController.showView(browserVerErr_view);
             return;
@@ -2964,7 +3002,7 @@ $(function() {
         var activationKey = settings.get("activationKey");
 
         if (actions == "resetActivation") {
-            console.log("resetActivation.*****");
+            console.log("resetActivation.");
             wallpaperColor = "#58585A";
             wallpaperImage = "";
             settings.set({
@@ -3030,7 +3068,7 @@ $(function() {
 
         if (actions == "validation") {
             if (demoActivation) {
-                console.log("DEMO.  actions: greeting");
+                // console.log("DEMO.  actions: greeting");
                 settings.set({
                     "activationKey" : "",
                 });
@@ -3047,7 +3085,7 @@ $(function() {
         if (loginToken == null) {
             if (actions && actions.startsWith("playback/") == true) {
                 var sp = actions.split("/");
-                console.log("playback actions :"+sp);
+                // console.log("playback actions :"+sp);
                 loginToken = sp[1];
                 var w = Number(sp[2]);
                 var h = Number(sp[3]);                
@@ -3057,7 +3095,7 @@ $(function() {
                 playbackScale = scaleN;
                 playbackFile = sp[5];
                 playbackStartTime = Date.parse(sp[6]);
-                console.log("width: "+w+"px")
+                // console.log("width: "+w+"px")
                 $("div#maindiv").css("width", w+"px");                
                 $("div#maindiv").css("height", h+"px");
                 $("div#maindiv").css("-webkit-transform", "scale("+scaleN+")");

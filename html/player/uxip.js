@@ -93,7 +93,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         }*/
 
         sessID = sessionID;
-        console.log("connecting to " + url + ", sessID: " + sessID);
+        Log.d("connecting to " + url + ", sessID: " + sessID);
         var parser = document.createElement('a');
         parser.href = url;
         var host = parser.hostname;
@@ -179,9 +179,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 }
                 msg += ")";
             }
-            //if (DEBUG_PROTOCOL_NETWORK) {
+            if (DEBUG_PROTOCOL_NETWORK) {
                 Log.e(TAG + DEBUG_PROTOCOL_NETWORK_STR, "WebSocket on-close event " + msg);
-            //}
+            }
             clearTimer(timeoutid);
             protocolState = psDisconnect;
             if (!mPlaybackMode) {
@@ -211,7 +211,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var d = new Date();
         var currTime = d.getTime();
         var diff = currTime - lastTimeReceiveData;
-        console.log("checkTimeOut");
+        if (PRINT_NETWORK_COMMANDS) {
+            Log.d("checkTimeOut.");
+        }
 
         if (diff > WRITE_TRANSACTION_TIMEOUT) {
             Log.e(TAG + " WRITE_TRANSACTION_TIMEOUT");
@@ -245,16 +247,16 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         if (eventt.type == "keypress") {
             var chr = getChar(eventt);
             if (isMobile) {
-                var newText = $("#edVirtualKeyboard").val();
-                console.log("newText: \""+newText+"\" , oldInputText: \""+oldInputText+"\"");
+                var newText = $("#edVirtualKeyboard").val();                
+                // Log.d("newText: \""+newText+"\" , oldInputText: \""+oldInputText+"\"");
                 if ( chr==" " && (newText.length-oldInputText.length) > 1) {
                     chr = newText.substr(oldInputText.length);
                 }
                 oldInputText = newText;
-                console.log("#edVirtualKeyboard: "+newText+", chr: "+chr);
+                // Log.d("#edVirtualKeyboard: "+newText+", chr: "+chr);
             }
             if (chr != null) {
-                console.log("chr: "+chr);
+                // Log.d("chr: "+chr);
                 handleKeyEvent(processId, wndId, {
                     name : "KeyEvent",
                     action : KeyEvent.ACTION_MULTIPLE,
@@ -266,7 +268,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         } else {
             var specialKey = -1;
             var key = eventt.which == null ? eventt.keyCode : eventt.which;
-            console.log("key: "+key);
+            // console.log("key: "+key);
             switch(key) {
             case 8:
                 //backspace
@@ -361,7 +363,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 break;
             }
             if (specialKey > 0) {
-                console.log("specialKey: "+specialKey);
+                // Log.d("specialKey: "+specialKey);
                 eventt.preventDefault();
                 var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
                 handleKeyEvent(processId, wndId, {
@@ -384,14 +386,14 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     this.mouseEvent = function(eventt) {
 
         var lastMouseDownTouchTime = eventt.lastMouseDownTouchTime;
-        Log.d(TAG, "mouseEvent. event.type = " + eventt.type + " lastMouseDownTouchTime=" + lastMouseDownTouchTime);
+        // Log.d(TAG, "mouseEvent. event.type = " + eventt.type + " lastMouseDownTouchTime=" + lastMouseDownTouchTime);
 
         var src = eventt.src;
         var rect = src.getBoundingClientRect();
 
         var left = eventt.clientX - rect.left - src.clientLeft + src.scrollLeft;
         var top = eventt.clientY - rect.top - src.clientTop + src.scrollTop;
-        Log.v(TAG, "mouseEvent.  type=" + eventt.type + ", timeStamp=" + eventt.timeStamp + ", left=" + left + ", top=" + top);
+        // Log.v(TAG, "mouseEvent.  type=" + eventt.type + ", timeStamp=" + eventt.timeStamp + ", left=" + left + ", top=" + top);
 
         writer.writeBoolean(false);
         //not null
@@ -505,7 +507,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         };
         writer.writeLong(timevar);
         writer.writeLong(timevar);
-        console.log("eventt.touches.length: "+eventt.touches.length+", eventt.changedTouches: "+eventt.changedTouches.length);
+        // Log.d("eventt.touches.length: "+eventt.touches.length+", eventt.changedTouches: "+eventt.changedTouches.length);
         writer.writeInt(eventt.changedTouches.length); // number of touches
         var action;
 
@@ -527,7 +529,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
         for (var i=0; i < eventt.changedTouches.length; i++) {
             var touch =  eventt.changedTouches[i];
-            console.log("touch.identifier: "+touch.identifier);
+            // Log.d("touch.identifier: "+touch.identifier);
             writer.writeInt(/*touch.identifier*/i);
             //properties.id
             writer.writeInt(1);
@@ -586,7 +588,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             writer.writeFloat(velocityY);
         }
 
-        console.log("WRITE OLD");
+        // Log.d("WRITE OLD");
         //writer.flush();
         return true;
     };
@@ -621,7 +623,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
     initProtocol = function() {
         protocolState = psInit;
-        console.log("sessid=" + sessID);
+        // Log.d("sessid=" + sessID);
 
         var baseDpi = getNuboFloat(163);
         if (isMobile) {
@@ -681,7 +683,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         switch (protocolState) {
         case psDisconnect:
                 if (!mPlaybackMode) {
-                    console.log("Got data while disconnect or error");
+                    Log.e("Got data while disconnect or error");
                 } else {
                     if (reader.canReadBytes(4)) {
                         //console.log("Got data while disconnect but in playback mode!!!");
@@ -692,14 +694,14 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                             //wm.killAll();
                         }
                     } else {
-                        console.log("Got data while disconnect playback mode but finished all data!!!!");
+                        Log.d("Got data while disconnect playback mode but finished all data!!!!");
                         wm.killAll();
                     }
                 }
                 break;
         case psDisconnecting:
         case psError:
-            console.log("Got data while disconnect or error");
+            Log.e("Got data while disconnect or error");
             break;
         case psConnected:
             if (getDrawCommand() && reader.canReadBytes(4)) {
@@ -1075,7 +1077,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                         }
                         // after successful buffer read we can compact buffer
                         if (writeToDrawCmdLog) {
-                            console.log(DumpObject(drawCmdLog).dump);
+                            Log.d(DumpObject(drawCmdLog).dump);
 
                         }
                         return true;
@@ -1197,7 +1199,6 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             return false;
         var saveFlags = reader.readByte();
         // Log.e(TAG, "saveLayer. processId=" + processId + ", wndId=" + wndId + ", saveFlags=" + saveFlags);
-        Log.e("AsiM", "saveLayer. processId=" + processId + ", wndId=" + wndId + ", saveFlags=" + saveFlags);
         wm.saveLayerAlpha(processId, wndId, 255);
         if (writeToDrawCmdLog) {
             drawCmdLog.paintRes = paintRes;
@@ -1383,8 +1384,8 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             drawCmdLog.y = y;
             drawCmdLog.paint = paint;
         }
-        //Log.e(TAG, "drawText. txt: "+textRes+", p: " + JSON.stringify(paint));
-        //Log.e(TAG,"Draw text. textRes:"+textRes+", x:"+x+", y:"+y+", paint.fontFamilyName:"+paint.fontFamilyName+", paint.typefaceStyle:"+paint.typefaceStyle);
+        //Log.d(TAG, "drawText. txt: "+textRes+", p: " + JSON.stringify(paint));
+        //Log.d(TAG,"Draw text. textRes:"+textRes+", x:"+x+", y:"+y+", paint.fontFamilyName:"+paint.fontFamilyName+", paint.typefaceStyle:"+paint.typefaceStyle);
         //result.p.fontFamilyNam
         var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
         if (ctx == null)
@@ -1504,7 +1505,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 return false;
             rx = reader.readFloat();
             ry = reader.readFloat();
-            Log.e("drawRoundRect. rx:" + rx + ", ry:" + ry);
+            // Log.d("drawRoundRect. rx:" + rx + ", ry:" + ry);
         }
 
         var pres = reader.readPaint(processId);
@@ -1572,7 +1573,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                     y0 = p.shader.x0 * ma[1] + p.shader.y0 * ma[4] + ma[5];
                     x1 = p.shader.x1 * ma[0] + p.shader.y1 * ma[3] + ma[2];
                     y1 = p.shader.x1 * ma[1] + p.shader.y1 * ma[4] + ma[5];
-                    Log.e("LinearGradient with localMatrix: " + x0 + "," + y0 + "," + x1 + ",", y1);
+                    // Log.d("LinearGradient with localMatrix: " + x0 + "," + y0 + "," + x1 + ",", y1);
                 }
 
                 /*
@@ -1672,7 +1673,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var bm = reader.readBoundsAndMatrix();
         if (!bm.canRead)
             return false;
-        Log.e("drawWebView. bm=" + JSON.stringify(bm));
+        // Log.d("drawWebView. bm=" + JSON.stringify(bm));
         drawBitmapIntoCanvas(processId, wndId, bm, null, null, null, null, pictureBitmap, 0, 0, null, DrawBitmapType.webView);
         return true;
 
@@ -1797,7 +1798,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         if (bitmap.bitmapType == "res") {
             img.crossOrigin = "Anonymous";
             getJSON(bitmap.path, function(data) {
-                console.log("getJSON: "+JSON.stringify(data,null,2));
+                // Log.d("getJSON: "+JSON.stringify(data,null,2));
                 if (data.status == 0) {
                   var fileContent = data.fileContent;
                   img.setAttribute("src", 'data:image/png;base64,' + fileContent);
@@ -1806,7 +1807,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                     moreData();
                 }
             },function(){
-                console.log("getJSON: ERROR");
+                Log.e("getJSON: ERROR");
                 waitForDraw = false;
                 moreData();
             });
@@ -1973,12 +1974,12 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     };
 
     drawRect1 = function(processId, wndId) {
-        Log.e(TAG, "drawRect1. processId=" + processId + ", wndId=" + wndId);
+        Log.d(TAG, "drawRect1. processId=" + processId + ", wndId=" + wndId);
         return true;
     };
 
     drawRoundRect = function(processId, wndId) {
-        Log.e(TAG, "drawRoundRect. processId=" + processId + ", wndId=" + wndId);
+        Log.d(TAG, "drawRoundRect. processId=" + processId + ", wndId=" + wndId);
         return true;
     };
 
@@ -2710,7 +2711,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         if (show) {
             Log.e(TAG,"open edVirtualKeyboard");
             $( window ).scroll(function() {
-                console.log("$( window ).scrollTop(): "+$( window ).scrollTop());
+                Log.d("$( window ).scrollTop(): "+$( window ).scrollTop());
             });
             $("#edVirtualKeyboard").css({top: lastTouchY, left: lastTouchX, position:'fixed'});
             var input = document.querySelector('#edVirtualKeyboard');
@@ -2724,7 +2725,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 input = clone;*/
                 window.setTimeout(function() {
                     input.value = input.value || "";
-                    console.log("input focus");
+                    // console.log("input focus");
                     input.focus();
                     //var evObj = document.createEvent('Events');
                     //evObj.initEvent('click', true, false);
@@ -2736,7 +2737,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             // check if need to pass currentProcessId instead
             NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.setKeyboardHeight), processId, mHeight/2);
         } else {
-            console.log("Hide soft keyboard");
+            if (DEBUG_PROTOCOL_NETWORK) {
+                Log.d("Hide soft keyboard");
+            }
             $("#edVirtualKeyboard").blur();
         }
         return true;
@@ -2772,8 +2775,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         }
         var type = reader.readInt();
         var res = reader.readInt();
-
-        Log.v(TAG, "setWallpaperByID.  type=" + type + ", res=" + res);
+        if (DEBUG_PROTOCOL_NETWORK) {
+            Log.v(TAG, "setWallpaperByID.  type=" + type + ", res=" + res);
+        }
         publicinterface.PlayerView.setWallpaper(type, res);
         return true;
     };
@@ -2897,7 +2901,6 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     var oldInputText = "";
 
     prepKeyboardLayout = function(processId, wndId) {
-        Log.e(TAG, "prepKeyboardLayout.");
         if (PRINT_DRAW_COMMANDS) {
             Log.d(TAG, "prepKeyboardLayout. processId=" + processId + ", wndId=" + wndId);
         }
@@ -2923,7 +2926,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             return false;
         }
         if (isMobile) {
-            console.log("prepKeyboardLayout. text: "+text.value);
+            if (PRINT_DRAW_COMMANDS) {
+                Log.d("prepKeyboardLayout. text: "+text.value);
+            }
             $("#edVirtualKeyboard").val(text.value);
             $("#edVirtualKeyboard").setCursorPosition(text.value.length);
             oldInputText = text.value;
@@ -2967,7 +2972,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var decorHeight = reader.readInt();
         var decorWidth = reader.readInt();
 
-        Log.e(TAG, "initPopupContentView. onScreenX=" + onScreenX + ", onScreenY=" + onScreenY + ", decorHeight=" + decorHeight + ", decorWidth=" + decorWidth);
+        // Log.d(TAG, "initPopupContentView. onScreenX=" + onScreenX + ", onScreenY=" + onScreenY + ", decorHeight=" + decorHeight + ", decorWidth=" + decorWidth);
         // platform doesn't clean popup's window.
         wm.clearPopupCanvas(processId, wndId, onScreenX, onScreenY);
         //wm.updateWinLocation(processId,wndId,onScreenX,onScreenY,decorWidth,decorHeight);
@@ -2982,13 +2987,13 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var decorHeight = reader.readInt();
         var decorWidth = reader.readInt();
         var force = reader.readBoolean();
-        Log.e(TAG, "updatePopWindow. onScreenX=" + onScreenX + ", onScreenY=" + onScreenY + ", decorHeight=" + decorHeight + ", decorWidth=" + decorWidth + ", force:" + force);
+        // Log.d(TAG, "updatePopWindow. onScreenX=" + onScreenX + ", onScreenY=" + onScreenY + ", decorHeight=" + decorHeight + ", decorWidth=" + decorWidth + ", force:" + force);
         //wm.updateWinLocation(processId,wndId,onScreenX,onScreenY,decorWidth,decorHeight);
         return true;
     };
 
     removeProcess = function(processId, keyEvent) {
-        Log.e(TAG, "removeProcess. processId=" + processId + ", keyEvent=" + keyEvent);
+        // Log.d(TAG, "removeProcess. processId=" + processId + ", keyEvent=" + keyEvent);
         wm.removeProcess(processId);
         var lastProcessId = wm.getLastNotKeyboardProcessIdOnStack(keyboardProcessID);
         if (!isNaN(lastProcessId) && lastProcessId != 0) {
@@ -3000,7 +3005,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     };
 
     dispatchKeyEvent = function(processId, keyEvent) {
-        Log.e(TAG, "dispatchKeyEvent. processId=" + processId + ", keyEvent=" + keyEvent + ", protocolState: " + protocolState);
+        // Log.e(TAG, "dispatchKeyEvent. processId=" + processId + ", keyEvent=" + keyEvent + ", protocolState: " + protocolState);
         if (protocolState != psConnected)
             return;
         NuboOutputStreamMgr.getInstance().sendCmd(keyEvent, processId);
@@ -3010,7 +3015,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         ws.close();
     };
     publicinterface.clickHome = function() {
-    	console.log("clickHome.");
+        // Log.d("clickHome.");
         if (protocolState != psConnected)
             return;
         dispatchKeyEvent(currentProcessId, UXIPself.nuboByte(PlayerCmd.homeKeyEvent));
@@ -3020,7 +3025,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             if (mPackageNameList[i].packName != "com.nubo.launcher") {
                 var ws = wm.getWindow(mPackageNameList[i].processId, 0);
                 if (ws != null) {
-                    console.log("clickHome. wndId: " + ws.wndId);
+                    // Log.d("clickHome. wndId: " + ws.wndId);
                     HideWindow(mPackageNameList[i].processId, ws.wndId);
                 }
             }
@@ -3028,14 +3033,18 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     };
 
     publicinterface.clickSearch = function() {
-        console.log("clickSearch.");
+        if (PRINT_NETWORK_COMMANDS) {
+            Log.d("clickSearch.");
+        }
         if (protocolState != psConnected)
             return;
         dispatchKeyEvent(currentProcessId, UXIPself.nuboByte(PlayerCmd.searchKeyEvent));
     };
 
 	publicinterface.clickMobileBack = function() {
-        console.log("clickMobileBack.");
+	    if (PRINT_NETWORK_COMMANDS) {
+            Log.Date("clickMobileBack.");
+        }
         
         if (protocolState != psConnected)
             return;
@@ -3059,7 +3068,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     };
 
     this.clickBack = function() {
-        console.log("clickBack.");
+        if (PRINT_NETWORK_COMMANDS) {
+            Log.d("clickBack.");
+        }
         if (protocolState != psConnected)
             return;
         var sn = wm.getWindow(currentProcessId, 0);
@@ -3110,7 +3121,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     };
 
     handleKeyEvent = function(processId, wndId, event) {
-        Log.e(TAG, "handleKeyEvent. processId=" + processId + ", wndId=" + wndId);
+        // Log.d(TAG, "handleKeyEvent. processId=" + processId + ", wndId=" + wndId);
         if (protocolState != psConnected)
             return;
 
@@ -3206,7 +3217,6 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             return false;
 
         var packName = (rsRet.value == null) ? "" : rsRet.value;
-        // console.log("****setPackageName.  processId: " + processId + ", packName: " + packName);
         if (packName.length > 0) {
             var line = {processId: processId, packName:packName};
             mPackageNameList.push(line);
@@ -3241,7 +3251,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             return false;
         }
         var orientation = reader.readByte();
-        Log.e(TAG, "resizeWindow. Should have rotated window");
+        // Log.e(TAG, "resizeWindow. Should have rotated window");
         var sn = wm.getWindow(processId, wndId);
         if (sn == null) {
             Log.e(TAG, "resizeWindow. processId = " + processId + " dosent exist im wm");

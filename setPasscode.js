@@ -89,9 +89,8 @@ function setPasscode(req, res, next) {
     //unknown
     var statusEmail = 100;
     isFirstTime = "";
-    logger.info(req.url);
-    //read and validate params
 
+    //read and validate params
     var loginToken = req.params.loginToken;
     if (loginToken == undefined || loginToken.length < 5) {
         status = 2;

@@ -40,7 +40,7 @@ function checkPasscode(req, res, next) {
     // unknown
     var statusEmail = 100;
     isFirstTime = "";
-    logger.info(req.url);
+
     // read and validate params
     logger.info("check passcode...");
 

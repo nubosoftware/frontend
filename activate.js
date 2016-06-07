@@ -97,8 +97,9 @@ function registerOrg(req, res, next) {
     }
     internalRequests.createDomainForUser(domain, logger, function(err) {
         if (err) {
+        	logger.error("Internal error, error is: " + err);
             status = 1;
-            msg = "Internal error: " + err;
+            msg = "Internal error;
             res.send({
                 status : status,
                 message : msg
@@ -152,8 +153,6 @@ function activate(req, res, next) {
     // https://login.nubosoftware.com/activate?deviceid=[deviceid]&email=[email]&first=[first]&last=[last]&title=[title]&signature=[signature]
     var logger = new ThreadedLogger();
     res.contentType = 'json';
-    //unknown
-    logger.info(req.url);
 
     var emailReq = req.params.email;
     if (Common.withService) {

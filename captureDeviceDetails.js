@@ -8,7 +8,6 @@ var async = require('async');
 function captureDeviceDetails(req, res, next) {
     // https://login.nubosoftware.com/captureDeviceDetails?activationKey
     var logger = new ThreadedLogger();
-    logger.info(req.url);
     
     res.contentType = 'json';
     var msg = "";

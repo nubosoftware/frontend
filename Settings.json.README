@@ -99,4 +99,9 @@
     }
  },
  encryptConf: false                            # if set to true paramters will be encrypted 
+ "internalServerCredentials": {                # credentials for internal server requests in https
+    "key": "../cert/management.key",
+    "cert": "../cert/managementFull.crt"
+ },
+"authValidatorPermittedMode": true             # if set to true authrization filter validator will allow all requests
 

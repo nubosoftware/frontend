@@ -385,18 +385,29 @@ function yescache(req, res, next) {
   next();
 }
 
+var validator;
 
-var validator = new authFilterValidator(['LOGINTOKEN'], authFilterExcludes);
+function getValidator(){
+    if (!(validator instanceof authFilterValidator)) {
+        validator =  new authFilterValidator(['LOGINTOKEN'], authFilterExcludes, Common.authValidatorPermittedMode);
+    }
 
-function authValidate(req, res, next){
+    return validator;
+}
+
+function authValidate(req, res, next) {
     req.nubodata = {};
-    validator.validate(req, function(err){
-        if(err){
-            logger.error("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$authorization validatation failed: " + err + " ::: " + req.path(req.url));
-            next();
+    getValidator().validate(req, function(err) {
+        if (err) {
+            logger.error("authValidate: " + err);
+
+            res.header('Cache-Control', 'no-cache');
+            res.header('Connection', 'close');
+            res.header('Content-Type', 'text/html');
+            res.statusCode = 400;
+            res.end("<html><body><h1>403 Forbidden</h1>Your browser sent an invalid request.</body></html>");
             return;
-        }
-        else {
+        } else {
             next();
             return;
         }

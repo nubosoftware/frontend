@@ -151,7 +151,8 @@ var Common = {
         }
     },
     encryptConf: false,
-    exitJobs: []
+    exitJobs: [],
+    authValidatorPermittedMode: false
 };
 
 try {

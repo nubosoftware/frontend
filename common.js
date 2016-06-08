@@ -4,6 +4,7 @@ var winston = require('winston');
 var crypto = require('crypto');
 var poolModule = require('generic-pool');
 var dataEncryptor = require('./dataEncryptor.js');
+var url = require('url');
 var async = require('async');
 var _ = require('underscore');
 
@@ -35,6 +36,10 @@ var Common = {
         host: "127.0.0.1",
         port: 6379,
         db: 0
+    },
+    internalServerCredentials: {
+        key: "",
+        cert: ""
     },
     platfromPortStart : 5560,
     platformIPPrefix : "192.168.122.",
@@ -235,20 +240,23 @@ function load_settings(callback) {
                 try {
                     settings = JSON.parse(rawSettings);
 
-                    callback(null);
                 } catch (err) {
                     callback(err + ", while parsing Settings.json");
+                    return;
                 }
+
+                callback(null);
             });
         },
         // decrypt fields
         function(callback) {
             try {
                 decryptedSettings = dataEncryptor.parseParameters('dec', settings, Common.encryptedParameters, Common.dec);
-                callback(null);
             } catch (err) {
                 callback("decrypting " + err);
+                return;
             }
+            callback(null);
         },
         // encrypt fields in case some value changed
         function(callback) {
@@ -259,12 +267,11 @@ function load_settings(callback) {
                         var newSettingsToFile = JSON.stringify(encryptedSettings, null, 4);
                         Common.fs.writeFile('Settings.json', newSettingsToFile, callback);
                     }
-                    else{
-                        callback(null);
-                    }
                 } catch (err) {
                     callback("encrypting " + err);
+                    return;
                 }
+                callback(null);
             } else {
                 callback(null);
             }
@@ -302,6 +309,18 @@ function parse_configs() {
 
         Common.serverurl = Common.publicurl;
         Common.dcURL = Common.serverurl;
+
+        var internalUrlObj = url.parse(Common.internalurl);
+        Common.internalServerCredentials.options = {};
+        Common.internalServerCredentials.options.host = internalUrlObj.hostname;
+        Common.internalServerCredentials.options.port = Number(internalUrlObj.port);
+        var isSSL = internalUrlObj.protocol === "https:";
+        if(isSSL){
+            Common.internalServerCredentials.options.key = Common.fs.readFileSync(Common.internalServerCredentials.key);
+            Common.internalServerCredentials.options.certificate = Common.fs.readFileSync(Common.internalServerCredentials.cert);
+            Common.internalServerCredentials.options.rejectUnauthorized = false;
+
+        }
 
         if(Common.platformpath) Common.imagesPath = Common.platformpath + "/out/target/product/x86_platform";
 

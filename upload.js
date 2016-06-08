@@ -2,27 +2,33 @@
 
 var Common = require('./common.js');
 var http = require('http');
+var https = require('https')
 var logger = Common.logger;
 var url = require('url');
+var _ = require('underscore');
 
 var Upload = {
-    'uploadToSession': uploadToSession
+    'upload': upload
 };
 module.exports = Upload;
 
 //pipe upload file to backend server
-function uploadToSession(req, res, next) {
-    logger.info("uploadToSession: uploading file from " + req.params.session);
+function upload(req, res, next) {
+
+    logger.info("upload: uploading file");
     req.pause();
-    var internalurl = url.parse(Common.internalurl);
+
     var options = url.parse(req.url);
     options.headers = req.headers;
     options.method = req.method;
     options.agent = false;
-    options.host = internalurl.hostname;
-    options.port = Number(internalurl.port);
+    _.extend(options, Common.internalServerCredentials.options);
 
-    var connector = http.request(options, function(serverResponse) {
+    var request;
+    if (options.key) request = https.request;
+    else request = http.request;
+    // TODO move pipe request to http module
+    var connector = request(options, function(serverResponse) {
         serverResponse.pause();
         res.writeHeader(serverResponse.statusCode, serverResponse.headers);
         serverResponse.pipe(res);

@@ -5,6 +5,7 @@ var Common = require('./common.js');
 var logger = Common.logger;
 var http = require('./http.js');
 var url = require("url");
+var internalRequests = require('./internalRequests.js');
 
 var StartSession = {
     func: startSession
@@ -13,40 +14,21 @@ var StartSession = {
 module.exports = StartSession;
 
 function startSession(req, res, next) {
-
     // https://login.nubosoftware.com/startsession?loginToken=[loginToken]?timeZone=[timeZome]
     res.contentType = 'json';
     var errRes = {
         status: 0,
         message: 'Internal error. Please contact administrator.',
     };
-    var urlObj = url.parse(Common.internalurl);
 
-    var options = {
-        host: urlObj.hostname,
-        port: Number(urlObj.port),
-        path: req.url
-    };
-
-    //forward request to backend server
-    http.doGetRequest(options, function(err, resData) {
+    internalRequests.forwardGetRequest(req.url, function(err, resObj){
         if (err) {
             res.send(errRes);
             logger.error("startSession: " + err);
             return;
         }
 
-        var resObj;
-        try {
-            resObj = JSON.parse(resData);
-        } catch (e) {
-            res.send(errRes);
-            logger.error("startSession: " + e);
-            return;
-        }
-
         res.send(resObj);
-        return;
     });
 }
 

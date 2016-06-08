@@ -99,7 +99,7 @@ function registerOrg(req, res, next) {
         if (err) {
         	logger.error("Internal error, error is: " + err);
             status = 1;
-            msg = "Internal error;
+            msg = "Internal error";
             res.send({
                 status : status,
                 message : msg

@@ -3,15 +3,12 @@ var querystring = require('querystring');
 var Common = require('./common.js');
 var url = require('url');
 var logger = Common.logger;
+var _ = require('underscore');
+
 
 function getOptions() {
-    var urlObj = url.parse(Common.internalurl);
-
-    var options = {
-        host: urlObj.hostname,
-        port: Number(urlObj.port),
-    };
-
+    var options = {};
+    _.extend(options, Common.internalServerCredentials.options);
     return options;
 }
 
@@ -261,12 +258,36 @@ function saveSettingsUpdateFile(settings, userName, deviceID, callback) {
     });
 }
 
+function forwardGetRequest(url, callback) {
+    var options = getOptions();
+    options.path = url;
 
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            callback(err);
+            return;
+        }
+
+        var resObjData;
+        try {
+            resObjData = JSON.parse(resData);
+        } catch (e) {
+            callback(err);
+            return;
+        }
+
+        callback(null, resObjData);
+
+        return;
+    });
+
+}
 module.exports = {
     createOrReturnUserAndDomain: createOrReturnUserAndDomain,
     createDomainForUser: createDomainForUser,
     updateUserAccount: updateUserAccount,
     validateAuthentication: validateAuthentication,
     createUserFolders: createUserFolders,
-    saveSettingsUpdateFile: saveSettingsUpdateFile
+    saveSettingsUpdateFile: saveSettingsUpdateFile,
+    forwardGetRequest: forwardGetRequest
 }

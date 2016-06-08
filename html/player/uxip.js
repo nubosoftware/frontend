@@ -23,6 +23,8 @@ var PRINT_DRAW_COMMANDS = false;
 var PRINT_NETWORK_COMMANDS = false;
 var writeToDrawCmdLog = false;
 
+var resCache = {};
+
 function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     "use strict";
 
@@ -1797,20 +1799,32 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
         if (bitmap.bitmapType == "res") {
             img.crossOrigin = "Anonymous";
-            getJSON(bitmap.path, function(data) {
-                // Log.d("getJSON: "+JSON.stringify(data,null,2));
-                if (data.status == 0) {
-                  var fileContent = data.fileContent;
-                  img.setAttribute("src", 'data:image/png;base64,' + fileContent);
-                } else {
+
+            var resData = resCache[bitmap.path];
+            if (resData == null) {
+                getJSON(bitmap.path, function(data) {
+                    // Log.d("getJSON: "+JSON.stringify(data,null,2));
+                    if (data.status == 0) {
+                      var fileContent = data.fileContent;
+                      img.setAttribute("src", 'data:image/png;base64,' + fileContent);
+
+                      // save data
+                      resData = {};
+                      resData.path = bitmap.path;
+                      resData.fileContent = fileContent;
+                      resCache[bitmap.path] = resData;
+                    } else {
+                        waitForDraw = false;
+                        moreData();
+                    }
+                },function(){
+                    Log.e("getJSON: ERROR");
                     waitForDraw = false;
                     moreData();
-                }
-            },function(){
-                Log.e("getJSON: ERROR");
-                waitForDraw = false;
-                moreData();
-            });
+                });
+            } else {
+                img.setAttribute("src", 'data:image/png;base64,' + resData.fileContent);
+            }
             //img.setAttribute("src", resourceURL + bitmap.path);
             //Log.v(TAG, "bitmap.path: " + bitmap.path);
         } else {

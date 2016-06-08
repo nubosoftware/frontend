@@ -1046,9 +1046,7 @@ $(function() {
                 var thisObj = this;
                 var url = mgmtURL + "html/player/jobs_list.json";
                 getJSON(url, function(data) {
-                    if (DEBUG) {
-                        console.log(JSON.stringify(data, null, 4));
-                    }
+                    // console.log(JSON.stringify(data, null, 4));
                     jobList = data;
                     thisObj.openSuggestList(txt);
                 });
@@ -1162,6 +1160,9 @@ $(function() {
             // console.log("signature=" + signature);
 
             var url = mgmtURL + "activate?deviceid=" + encodeURIComponent(settings.get("deviceID")) + "&email=" + encodeURIComponent(settings.get("workEmail")) + "&first=" + encodeURIComponent(settings.get("firstName")) + "&last=" + encodeURIComponent(settings.get("lastName")) + "&title=" + encodeURIComponent(settings.get("jobTitle")) + "&signature=" + encodeURIComponent(signature) + "&regid=none&deviceType=Web&deviceName=Web";
+            if (DEBUG) {
+                console.log("activatePlayer: " + url);
+            }
 
             getJSON(url, function(data) {
                 if (DEBUG) {

@@ -1504,13 +1504,14 @@ img#managerImg {
 }
 span#disableTitle {
     position: absolute;
-    left: 285px;
+    left: 358px;
     top: 241px;
     width: 480px;
     height: 46px;
-    text-align: center;
+    text-align: left;
     font-size: 23px;
     font-family: NuboRoboto;
+    margin-left: 50px;
 }
 span#disableMsg {
     position: absolute;
@@ -2136,6 +2137,9 @@ div.spinner {
     img#passwordExpiredImg {
       margin-left: 20px;
       margin-right: 20px;
+    }
+    img#managerImg, span#disableTitle, span#disableMsg {
+        left: 130px;
     }
 }
 }

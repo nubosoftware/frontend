@@ -1,54 +1,98 @@
+"use strict";
+var constraints = require("./validateConstraintsPredefine.js");
+var Common = require("./common.js");
+
+var userNameFormat;
+
+if (Common.withService) {
+    userNameFormat = {"presence": true,"format": "[a-zA-Z0-9.@_-]+","length": {"minimum": 1,"maximum": 255}};
+} else {
+    userNameFormat = {"email" : true,"presence" : true,"length": {"minimum": 1,"maximum": 255}};
+} 
+
+
 var filter = {
     "permittedMode": true,
     "rules": [{
         "path": "/favicon.ico"
     }, {
-        "path": "/sendEmailForUnknownJobTitle"
+        "path": "/sendEmailForUnknownJobTitle",
+	"constraints" : {
+	    "jobTitle" : constraints.requestedExcludeSpecialCharacters
+	}
     }, {
         "path": "/activate",
         "constraints": {
-            "email": {},
+            "email": {
+		"email" : true,
+		"presence" : true
+	    },
             "deviceid": {
                 "presence": true,
-                "format": "[a-zA-Z0-9\\_\\@\\-\\.]+",
+                "format": "[a-zA-Z0-9_-.@]+",
                 "length": {
-                    "minimum": 3,
+                    "minimum": 1,
                     "maximum": 255
                 }
             },
-            "imsi": {},
-            "deviceName": {},
-            "alreadyUser": {},
-            "first": {},
-            "last": {},
-            "title": {},
-            "deviceType": {},
+            "imsi": {
+		"presence": true,
+                "format": "[0-9]+",
+                "length": {
+                    "minimum": 1,
+                    "maximum": 15
+            	},
+		"numericality" : {
+                    "onlyInteger" : true
+                }
+	    },
+            "deviceName": constraints.excludeSpecialCharacters,
+            "alreadyUser": {
+		"presence" : false,
+                "inclusion" : ["Y", "N"]
+	    },
+            "first": constraints.excludeSpecialCharacters,
+            "last": constraints.excludeSpecialCharacters,
+            "title": constraints.excludeSpecialCharacters,
+            "deviceType": {
+		"presence" : false,
+                "inclusion" : ["iphone", "Web", "Android"]
+	    },
             "silentActivation": {
-                "format": "^[a-z]+$",
+                "presence": "false",
                 "inclusion": {
                     "within": ["true", "false"]
                 }
             },
-            "signature": {},
-            "regid": {}
+            "signature": {
+		"presence": "false",
+		"length": {
+                    "minimum": 1,
+                    "maximum": 255
+            	}
+	    },
+            "regid": {
+                "presence": false,
+		"format": "[a-zA-Z0-9_-.]+",
+		"length": {
+                    "minimum": 1,
+                    "maximum": 255
+            	}
+	    }
         }
     }, {
         "path": "/registerOrg",
         "constraints": {
-            "secret": {
-                "presence": true
-            },
-            "first": {
-                "presence": true
-            },
-            "last": {
-                "presence": true
-            },
+            "secret": constraints.excludeSpecialCharacters,
+            "first": constraints.excludeSpecialCharacters,
+            "last": constraints.excludeSpecialCharacters,
             "email": {
-                "presence": true
+                "presence": true,
+		"email" : true
             },
             "domain": {
-                "presence": true
+                "presence": true,
+		"format": "[a-zA-Z0-9_-.]+"
             }
         }
     }, {
@@ -71,17 +115,12 @@ var filter = {
     }, {
         "path": "/validate",
         "constraints": {
-            "username": {
-                "length": {
-                    "minimum": 3,
-                    "maximum": 255
-                }
-            },
+            "username": userNameFormat,
             "deviceid": {
                 "presence": true,
-                "format": "[a-zA-Z0-9\\_\\@\\-\\.]+",
+                "format": "[a-zA-Z0-9_-.@]+",
                 "length": {
-                    "minimum": 3,
+                    "minimum": 1,
                     "maximum": 255
                 }
             },
@@ -111,7 +150,6 @@ var filter = {
                 },
                 "format": "[a-f0-9]+"
             },
-            "timeZone": {}
         }
     }, {
         "path": "^/html/.*",
@@ -127,7 +165,12 @@ var filter = {
                 "format": "[a-f0-9]+"
             },
             "passcode": {
-                "presence": true
+                "presence": true,
+		"length": {
+                    "minimum": 6,
+                    "maximum": 25
+                }
+
             }
         }
     }, {
@@ -141,9 +184,20 @@ var filter = {
                 "format": "[a-f0-9]+"
             },
             "passcode": {
-                "presence": true
+                "presence": true,
+		"length": {
+                    "minimum": 6,
+                    "maximum": 25
+                }
             },
-            "oldpasscode": {}
+            "oldpasscode": {
+                "presence": true,
+		"length": {
+                    "minimum": 6,
+                    "maximum": 25
+                }
+
+	    }
         }
     }, {
         "path": "/resetPasscode",
@@ -166,14 +220,13 @@ var filter = {
                 },
                 "format": "[a-f0-9]+"
             },
-            "user": {
-                "length": {
-                    "minimum": 3,
-                    "maximum": 255
-                }
-            },
+            "user": userNameFormat,
             "password": {
-                "presence": true
+                "presence": true,
+		"length": {
+                    "minimum": 6,
+                    "maximum": 25
+                }
             }
         }
     }, {
@@ -197,7 +250,7 @@ var filter = {
                 },
                 "format": "[a-f0-9]+"
             },
-            "email": {}
+            "email": userNameFormat
         }
     }, {
         "path": "/file/uploadToSession",
@@ -214,16 +267,37 @@ var filter = {
         "path": '/SmsNotification/sendSmsNotificationFromRemoteServer',
         "constraints": {
             "toPhone": {
-                "presence": true
+                "presence": true,
+		"format": "[0-9-+]+",
+		"length": {
+                    "minimum": 9,
+                    "maximum": 36
+                }
             },
             "body": {
-                "presence": true
+                "presence": true,
+		"format": "[0-9a-zA_Z_.-]+",
+		"length": {
+                    "minimum": 1,
+                    "maximum": 255
+                }
             },
             "serverID": {
-                "presence": true
+                "presence": true,
+		"format": "[0-9a-zA_Z]+",
+		"length": {
+                    "minimum": 1,
+                    "maximum": 64
+                }
             },
             "serverAuthKey": {
-                "presence": true
+                "presence": true,
+		"format": "[0-9a-zA_Z_.-]+",
+		"length": {
+                    "minimum": 6,
+                    "maximum": 25
+                }
+
             }
         }
     }, {
@@ -232,37 +306,43 @@ var filter = {
             "type": {
                 "presence": true
             },
-            "notifyLocation": {
-                "presence": true
-            },
+            "notifyLocation": constraints.excludeSpecialCharacters,
             "serverID": {
-                "presence": true
+                "presence": true,
+		"format": "[0-9a-zA_Z]+",
+		"length": {
+                    "minimum": 1,
+                    "maximum": 64
+                }
             },
             "serverAuthKey": {
-                "presence": true
+                "presence": true,
+		"format": "[0-9a-zA_Z_.-]+",
+		"length": {
+                    "minimum": 6,
+                    "maximum": 25
+                }
             },
-            "notifyTime": {
-                "presence": true
-            },
-            "notifyTitle": {
-                "presence": true
-            },
+            "notifyTime": constraints.excludeSpecialCharacters,
+            "notifyTitle": constraints.excludeSpecialCharacters,
             "deviceType": {
-                "presence": true
+                "presence" : true,
+                "inclusion" : ["iphone", "Web", "Android"]
             },
             "pushRegID": {
-                "presence": true
+                "presence": false,
+		"format": "[a-zA-Z0-9_-.]+",
+		"length": {
+                    "minimum": 1,
+                    "maximum": 255
+            	}
             }
         }
     }, {
         "path": '/getResourceListByDevice',
         "constraints": {
-            "deviceName": {
-                "presence": true
-            },
-            "resolution": {
-                "presence": true
-            }
+            "deviceName": constraints.excludeSpecialCharacters,
+            "resolution": constraints.excludeSpecialCharacters
         }
     }, {
         "path": '/captureDeviceDetails',
@@ -275,7 +355,7 @@ var filter = {
                 "format": "[a-f0-9]+"
             },
             "actionType": {
-                "format": "^[a-z]+",
+                "presence" : false,
                 "inclusion": {
                     "within": ["get"]
                 }

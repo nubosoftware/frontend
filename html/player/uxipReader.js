@@ -794,8 +794,7 @@ function UXIPReader(nubocache) {
         try {
             var bitmapPackage = resPath.substr(0,resPath.indexOf("/"));
             var bitmapName = resPath.substr(resPath.indexOf("/res/")+1);
-            assetResName = assetResName + "packageName=" + bitmapPackage + "&deviceName=web&resolution=1024x768&fileName=" + bitmapName;
-            // console.log("bitmap.path: " + assetResName);
+            assetResName = assetResName + "packageName=" + bitmapPackage + "&fileName=" + bitmapName;
         } catch (e) {
                 console.log("hanan: " + e.message);
         }

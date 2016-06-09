@@ -121,7 +121,7 @@
     "unlockPasscodeText": "Your Nubo environment is now unlocked. \n Open Nubo to continue.",
     "resetPasscodeText": "Your passcode is successfully reset. \n Open Nubo to continue",
 
-    "contactTheManager": "Contact The Manager",
+    "deviceBlocked": "Device Blocked",
     "disableDeviceMsg": "This device has been deactivated. \n Please contact adminName at adminMail \n for more information",
     "disableUserMsg": "In order to enter the compName environment. \n Please contact adminName at adminMail \n for more information",
     "versionErrTitle": "You can run Nubo on:"

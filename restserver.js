@@ -494,9 +494,7 @@ function buildServerObject(server) {
     server.get('/download', downloadFunc);
     server.post('/file/uploadToSession', Upload.upload);
     server.post('/file/uploadToLoginToken', Upload.upload);
-    //server.get('/SmsNotification/sendSmsNotification', SmsNotification.sendSmsNotification);  //unprotected request, should accept request only from internal network
     server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
-    //server.get('/Notifications/pushNotification', Notifications.pushNotification);            //unprotected request, should accept request only from internal network
     server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
     server.get('/getResource', getResource.getResource);
     server.opts('/.*/', optionsHandler);
@@ -561,7 +559,6 @@ function buildServerObject(server) {
             return;
         }
 
-        var urlObj = url.parse(req.url);
         var urlObj = url.parse(req.url);
         var pathname = urlObj.pathname;
 

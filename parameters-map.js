@@ -371,6 +371,16 @@ var filter = {
                 }
             }
         }
+    }, {
+        "path": '/download',
+        "constraints": {
+            "dtype": {
+                "presence" : false,
+                "inclusion": {
+                    "within": ["IOS1","IOS2"]
+                }
+            }
+        }
     }]
 };
 

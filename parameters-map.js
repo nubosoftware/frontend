@@ -5,7 +5,7 @@ var Common = require("./common.js");
 var userNameFormat;
 
 if (Common.withService) {
-    userNameFormat = {"presence": true,"format": "[a-zA-Z0-9.@_-]+","length": {"minimum": 1,"maximum": 255}};
+    userNameFormat = {"presence": true,"format": "[a-zA-Z0-9\\.@_\\-]+","length": {"minimum": 1,"maximum": 255}};
 } else {
     userNameFormat = {"email" : true,"presence" : true,"length": {"minimum": 1,"maximum": 255}};
 } 
@@ -29,7 +29,7 @@ var filter = {
 	    },
             "deviceid": {
                 "presence": true,
-                "format": "[a-zA-Z0-9_-.@]+",
+                "format": "[a-zA-Z0-9_\\-\\.@]+",
                 "length": {
                     "minimum": 1,
                     "maximum": 255
@@ -73,7 +73,7 @@ var filter = {
 	    },
             "regid": {
                 "presence": false,
-		"format": "[a-zA-Z0-9_-.]+",
+		"format": "[a-zA-Z0-9_\\-\\.]+",
 		"length": {
                     "minimum": 1,
                     "maximum": 255
@@ -92,7 +92,7 @@ var filter = {
             },
             "domain": {
                 "presence": true,
-		"format": "[a-zA-Z0-9_-.]+"
+		"format": "[a-zA-Z0-9_\\-\\.]+"
             }
         }
     }, {
@@ -118,7 +118,7 @@ var filter = {
             "username": userNameFormat,
             "deviceid": {
                 "presence": true,
-                "format": "[a-zA-Z0-9_-.@]+",
+                "format": "[a-zA-Z0-9_\\-\\.@]+",
                 "length": {
                     "minimum": 1,
                     "maximum": 255
@@ -149,7 +149,7 @@ var filter = {
                     is: 96
                 },
                 "format": "[a-f0-9]+"
-            },
+            }
         }
     }, {
         "path": "^/html/.*",
@@ -276,7 +276,7 @@ var filter = {
             },
             "body": {
                 "presence": true,
-		"format": "[0-9a-zA_Z_.-]+",
+		"format": "[0-9a-zA_Z_\\.\\-]+",
 		"length": {
                     "minimum": 1,
                     "maximum": 255
@@ -292,7 +292,7 @@ var filter = {
             },
             "serverAuthKey": {
                 "presence": true,
-		"format": "[0-9a-zA_Z_.-]+",
+		"format": "[0-9a-zA_Z_\\.\\-]+",
 		"length": {
                     "minimum": 6,
                     "maximum": 25
@@ -317,7 +317,7 @@ var filter = {
             },
             "serverAuthKey": {
                 "presence": true,
-		"format": "[0-9a-zA_Z_.-]+",
+		"format": "[0-9a-zA_Z_\\.\\-]+",
 		"length": {
                     "minimum": 6,
                     "maximum": 25
@@ -331,7 +331,7 @@ var filter = {
             },
             "pushRegID": {
                 "presence": false,
-		"format": "[a-zA-Z0-9_-.]+",
+		"format": "[a-zA-Z0-9_\\-\\.]+",
 		"length": {
                     "minimum": 1,
                     "maximum": 255

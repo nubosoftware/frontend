@@ -168,26 +168,23 @@ function activate(req, res, next) {
                 },
             }).complete(function(err, results) {
 
-                if (!!err) {
-                    var msg = "activate. Error on get email from username: " + emailReq + ", err: "+err;
-                    logger.info(msg);
-                    returnInternalError(msg, res);
-                    return;
-                }
-
-                if (!results || results == "") {
-                    var msg = "activate. Error on get email from username. Could not find username: " + emailReq + ", err: "+err;
-                    logger.info(msg);
-                    returnInternalError(msg, res);
-                    return;
-                }
-
-                if (results.length > 1) {
-                    var msg = "activate. Error on get email from username. Found more than one username: " + emailReq + ", err: "+err;
-                    logger.info(msg);
-                    returnInternalError(msg, res);
-                    return;
-                }
+           	 	if (!!err) {
+           	 		logger.error("activate. Error on get email from username: " + emailReq + ", err: "+err);
+           	 		returnInternalError("Internal error, please contact administrator", res);
+           	 		return;
+           	 	}
+        		  
+           	 	if (!results || results == "") {
+           	 		logger.error("activate. Error on get email from username. Could not find username: " + emailReq + ", err: "+err);
+           	 		returnInternalError("Activation failed, wrong user name or activation details", res);
+           	 		return;
+           	 	}
+        		  
+           	 	if (results.length > 1) {
+           	 		logger.error("activate. Error on get email from username. Found more than one username: " + emailReq + ", err: "+err);
+           	 		returnInternalError("Activation failed, can not validate user details", res);
+           	 		return;
+           	 	}
 
                 results.forEach(function(row) {
                     execActivate(req, res, next, row.email, emailReq);

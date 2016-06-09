@@ -26,7 +26,7 @@ function createOrReturnUserAndDomain(email, logger, callback) {
         try {
             resObjData = JSON.parse(resData);
         } catch (e) {
-            callback(err);
+            callback(e);
             return;
         }
 
@@ -56,7 +56,7 @@ function createDomainForUser(domain, logger, callback) {
         try {
             resObjData = JSON.parse(resData);
         } catch (e) {
-            callback(err);
+            callback(e);
             return;
         }
 
@@ -108,7 +108,7 @@ function updateUserAccount(registrationEmail, orgEmail, authType, serverURL, dom
         try {
             resObjData = JSON.parse(resData);
         } catch (e) {
-            callback(err);
+            callback(e);
             return;
         }
 
@@ -155,7 +155,7 @@ function validateAuthentication(mainDomain, email, authType, serverURL, domain, 
         try {
             resObjData = JSON.parse(resData);
         } catch (e) {
-            callback(err);
+            callback(e);
             return;
         }
 
@@ -200,7 +200,7 @@ function createUserFolders(email, deviceid, overwrite, time, hrTime, callback, d
         try {
             resObjData = JSON.parse(resData);
         } catch (e) {
-            callback(err);
+            callback(e);
             return;
         }
 
@@ -242,7 +242,7 @@ function saveSettingsUpdateFile(settings, userName, deviceID, callback) {
         try {
             resObjData = JSON.parse(resData);
         } catch (e) {
-            callback(err);
+            callback(e);
             return;
         }
 
@@ -272,7 +272,7 @@ function forwardGetRequest(url, callback) {
         try {
             resObjData = JSON.parse(resData);
         } catch (e) {
-            callback(err);
+            callback(e);
             return;
         }
 

@@ -345,6 +345,16 @@ var filter = {
             "resolution": constraints.excludeSpecialCharacters
         }
     }, {
+        "path": '/getResource',
+        "constraints": {
+            "fileName": constraints.pathConstr,
+            "packageName": {
+                "presence": true,
+                "format": {"pattern": "[a-zA-Z0-9_\\.\\-]+"},
+                "length": {"minimum": 1, "maximum":128}
+            }
+        }
+      }, {
         "path": '/captureDeviceDetails',
         "constraints": {
             "activationKey": {

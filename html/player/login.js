@@ -197,6 +197,7 @@ var passcodeType = 0;   // 0-passcode; 1-password
 var passcodeMinChars = 6;
 var oldPassword = "";
 var pendingValidation = false;
+var isSplashTemplate = false;
 var getJSON, jsonError;
 
 var playerVersion = '1.2';
@@ -382,7 +383,9 @@ $(function() {
                     if (localStorage.loginSettings != null) {
                         var vars = obj = JSON.parse(localStorage.loginSettings);
                         this.set(vars);
-                        // console.log("localStorage.loginSettings:" + JSON.stringify(vars));
+                        if (DEBUG) {
+                            console.log("localStorage.loginSettings:" + JSON.stringify(vars));
+                        }
                     }
                 } else if (method == "update") {
                     localStorage.loginSettings = JSON.stringify(this.attributes);
@@ -552,18 +555,19 @@ $(function() {
         timeoutId : 0,
         render : function() {
             var template;
-            if (pendingValidation)
+            if (pendingValidation) {
+                isSplashTemplate = false;
                 template = _.template($("#validation_template").html(), {
                     activationEmail : settings.get("workEmail")
                 });
-            else {
+            } else {
+                isSplashTemplate = true;
                 var vars = settings.attributes;
                 template = _.template($("#splash_template").html(), vars);
             }
             this.$el.html(template);
             formatPage();
             this.timeoutId = setTimeout(this.checkValidation, 2000);
-
         },
         events : {
             "click #changeBtn" : "clickChange"
@@ -645,7 +649,12 @@ $(function() {
                     if (validationView == null)
                         return;
 
-                    this.timeoutId = setTimeout(validationView.checkValidation, 2000);
+                    // this.timeoutId = setTimeout(validationView.checkValidation, 2000);
+                    if (isSplashTemplate) {
+                        validationView.render();
+                    } else {
+                        this.timeoutId = setTimeout(validationView.checkValidation, 2000);
+                    }
 
                 } else if (data.status == 301) {
                     mgmtURL = data.mgmtURL;

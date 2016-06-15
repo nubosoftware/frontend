@@ -154,7 +154,7 @@ function unlockPassword(req, res, next) {
 
         } else {
             status = 0;
-            msg = "incorrect loginemailtoken. may be a hacking attempt";
+            msg = "Invalid access";
             res.send({
                 status : status,
                 message : msg

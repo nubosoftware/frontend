@@ -221,11 +221,18 @@ function checkPasscode(req, res, next) {
 
                         findUserNameSendEmail(login.getUserName());
 
-                        res.send({
-                            status : status,
-                            message : msg
+                        // remove login token from redis
+                        Common.redisClient.DEL('login_' + loginToken, function(err) {
+                            if (!!err) {
+                                logger.info("Failed to delete logintoken");
+                            }
+
+                            res.send({
+                                status : status,
+                                message : msg
+                            });
+                            sendTrack();
                         });
-                        sendTrack();
                         return;
                     } else {
                         status = 0;

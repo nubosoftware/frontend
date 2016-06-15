@@ -389,7 +389,7 @@ var validator;
 
 function getValidator(){
     if (!(validator instanceof authFilterValidator)) {
-        validator =  new authFilterValidator(['LOGINTOKEN'], authFilterExcludes, Common.authValidatorPermittedMode);
+        validator =  new authFilterValidator(['LOGINTOKEN'], authFilterExcludes.excludeList(), Common.authValidatorPermittedMode);
     }
 
     return validator;

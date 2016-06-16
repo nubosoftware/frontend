@@ -460,7 +460,7 @@ function buildServerObject(server) {
     server.use(Common.restify.queryParser());
     server.use(filterObj.useHandler);
     server.use(function(req, res, next) {
-        req.realIP = req.headers['x-real-ip'] || req.connection.remoteAddress;
+        req.realIP = (Common.proxyClientIpHeader && req.headers[Common.proxyClientIpHeader]) || req.connection.remoteAddress;
         next();
 
     });

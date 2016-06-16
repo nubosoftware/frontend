@@ -374,7 +374,6 @@ function getUserDeviceData(email, deviceID, logger, maindomain, callback) {
 function validateActivation(activationKey, deviceID, userdata, activationdata, url, clientUserName, logger, callback) {
 
     var finish = 'finish';
-    var demoActivation = false;
     var response = null;
     var error = null;
 
@@ -451,11 +450,6 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
         });
 
     } else {
-
-        if (activationKey == Common.demoActivationKey) {
-            demoActivation = true;
-            logger.info("DEMO Activation: " + activationKey);
-        }
 
         var activationData = activationdata;
         var userData = userdata;
@@ -683,7 +677,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                         return;
                     }
 
-                    if (Common.withService || demoActivation) {
+                    if (Common.withService) {
                         login.setAuthenticationRequired(false);
                         login.setPasscodeActivationRequired(false);
                         login.setValidLogin(true);
@@ -701,53 +695,6 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                         var resetPasscode = activationData.resetpasscode != null ? activationData.resetpasscode : 0;
                         login.setPasscodeActivationRequired(passcode == null || passcode == '' || resetPasscode == 1);
                     }
-
-                    //demo 
-                    if (Common.demoSystem == true) {
-                        if (authType == '0' && firstLogin == '1' && domain == "barclays.com") {
-                            // configure demo email account
-
-                            var setAccountValues = {
-                                'accountType': "1",
-                                'email': email,
-                                'orgEmail': email,
-                                'username': 'barclays',
-                                'password': 'IanHarris1',
-                                'serverName': "ex-test.nubo.co",
-                                'domain': "",
-                                'serverPort': '443',
-                                'secureSSL': "0",
-                                'signature': "- Sent from my Nubo work environment"
-                            };
-                            var settings = {};
-                            settings['setAccount'] = setAccountValues;
-                            logger.info("Save settings to device: " + deviceID);
-                            logger.info("Save Settings ", settings);
-                            internalRequests.saveSettingsUpdateFile(settings, email, deviceID, function(err) {
-                                if (err) {
-                                    logger.error("Error saveSettingsUpdateFile : " + err);
-                                    return;
-                                }
-                                logger.info("Updated settings for " + email + ", " + deviceID);
-                            });
-
-                            Common.db.Activation.update({
-                                firstlogin: '0'
-                            }, {
-                                where: {
-                                    activationkey: activationKey
-                                }
-                            }).then(function() {
-
-                            }).catch(function(err) {
-                                logger.info("Error in updateFirstLogin " + err);
-                                return;
-                            });
-
-                        }
-                    }
-
-                    login.loginParams.demoActivation = demoActivation;
 
                     login.setDeviceName(userDeviceData.devicename);
                     login.setDeviceID(userDeviceData.imei);

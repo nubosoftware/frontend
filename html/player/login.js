@@ -205,7 +205,6 @@ var wallpaperColor = "#58585A";
 var wallpaperImage = "";
 var browserType = "";
 var enterPasscode = "";
-var demoActivation = false;
 var playbackWidth;
 var playbackHeight;
 var playbackScale;
@@ -471,7 +470,7 @@ $(function() {
         el : $("#maindiv"),
         initialize : function() {
             //this.render();
-            demoActivation = false;
+//            demoActivation = false;
         },
 
         render : function() {
@@ -482,46 +481,13 @@ $(function() {
         },
         events : {
             "click #create" : "clickCreate",
-            "click #signin" : "clickAlready",
-            "click #demo" : "clickDemo"
+            "click #signin" : "clickAlready"
         },
         clickCreate : function(event) {
             window.location.hash = "createPlayer";
         },
         clickAlready : function(event) {
             window.location.hash = "already";
-        },
-        clickDemo : function(event) {
-
-            var activationKey = "5488884a97a98c0db8f863c074eff683ae3c5819a594e89fc6283772f9a2b26d64e7bb6fad21fc74d729c301d460000f";
-
-            var deviceID = Math.floor((Math.random() * 1000000) + 1);
-            var url = mgmtURL + "validate?username=" + encodeURIComponent(settings.get("workEmail")) + "&deviceid=" + deviceID + "&activationKey=" + activationKey;
-            // var url = mgmtURL + "validate?deviceid=" + encodeURIComponent(settings.get("deviceID")) + "&activationKey=" + activationKey;
-
-            if (DEBUG) {
-                console.log("DEMO. " + url);
-            }
-
-            getJSON(url, function(data) {
-                if (DEBUG) {
-                    console.log(JSON.stringify(data, null, 4));
-                }
-                if (data.status == 1) {
-                    loginToken = data.loginToken;
-                    settings.set({
-                        activationKey : activationKey
-                    });
-
-                    demoActivation = true;
-                    loggedIn = true;
-                    window.location.hash = "player";
-
-                } else {
-                    window.location.hash = "error";
-                }
-            });
-
         }
     });
 
@@ -2823,15 +2789,13 @@ $(function() {
             var activationKey = settings.get("activationKey");
             // console.log("setWallpaper. activationKey: " + activationKey);
 
-            if (!demoActivation) {
-                settings.set({
-                    "wallpaperColor" : newWallpaperColor
-                });
-                settings.set({
-                    "wallpaperImage" : newWallpaperImage
-                });
-                settings.save();
-            }
+            settings.set({
+                "wallpaperColor" : newWallpaperColor
+            });
+            settings.set({
+                "wallpaperImage" : newWallpaperImage
+            });
+            settings.save();
 
             document.getElementById("toolbardiv").style.backgroundColor = '#58585A';
             document.getElementById("datadiv").style.backgroundColor = newWallpaperColor;
@@ -3078,16 +3042,6 @@ $(function() {
         }
 
         if (actions == "validation") {
-            if (demoActivation) {
-                // console.log("DEMO.  actions: greeting");
-                settings.set({
-                    "activationKey" : "",
-                });
-                settings.save();
-                var greetings_view = new GreetingsView();
-                appController.showView(greetings_view);
-                return;
-            }
             var validation_view = new ValidationView();
             appController.showView(validation_view);
             return;

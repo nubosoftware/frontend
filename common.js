@@ -71,7 +71,6 @@ var Common = {
     iosPushUseSandbox : true,
     iosPushCertFile : "cert.pem",
     iosPushKeyFile : "key.pem",
-    demoActivationKey : "AAABBCCDD",
     dcName : "",
     dcURL : "",
     minPlayerVersion : "0.0",

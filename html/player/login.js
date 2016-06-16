@@ -397,6 +397,7 @@ $(function() {
     });
 
     var settings = new Settings();
+    globalSettings = settings;
 
     var isMobile = {
         Android : function() {
@@ -3159,3 +3160,8 @@ $(function() {
     }
 
 });
+
+var globalSettings;
+var getDeviceId = function() {
+	return encodeURIComponent(globalSettings.get("deviceID"));
+}

@@ -667,8 +667,8 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             mWidth, mHeight, mDensityDpi, // write all int
             mXDpi, mYDpi, mScaledDensity, // write all float
             mRotation, mNavBarHeightPortrait, mNavBarHeightLandscape, mNavBarWidth, romClientType, 17, // write all int
-            'web', '1.2.0.81', '1.2', // write all string
-            81, (4 * mHeight * mWidth), -1, ""); // write int, int, int , dataIntent withservice
+            'web', '1.2.0.82', '1.2', // write all string
+            82, (4 * mHeight * mWidth), -1, "",getDeviceId()); // write int, int, int , dataIntent withservice
         NuboOutputStreamMgr.getInstance().setIsPlayerLogin(false);
 
         //ws.send(buffer2);

@@ -62,7 +62,7 @@ function registerOrg(req, res, next) {
     var status = 0;
     //ok
     var secret = req.params.secret;
-    if (secret != "683ae3c5819a594e89f") {
+    if (secret != Common.registerOrgPassword) {
         status = 1;
         msg = "Invalid secret";
     }

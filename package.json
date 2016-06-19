@@ -15,7 +15,7 @@
     "node-gcm": "0.14.0",
     "node-static": "0.7.7",
     "nodemailer": "0.7.1",
-    "permission-parser": "http://nubolab.nubosoftware.com:4873/permission-parser/-/permission-parser-0.0.4.tgz",
+    "permission-parser": "https://nubolab.nubosoftware.com:4874/permission-parser/-/permission-parser-0.0.4.tgz",
     "querystring": "0.2.0",
     "redis": "2.6.0-1",
     "request": "2.72.0",
@@ -27,6 +27,7 @@
     "websocket": "1.0.8",
     "winston": "1.0.1",
     "winston-syslog": "0.2.5",
-    "xml2json": "0.5.1"
+    "xml2json": "0.5.1",
+    "nubo-validateConstraints":  "https://nubolab.nubosoftware.com:4874/nubo-validateConstraints/-/nubo-validateConstraints-0.0.0.tgz"
   }
 }

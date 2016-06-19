@@ -1,5 +1,5 @@
 "use strict";
-var constraints = require("./validateConstraintsPredefine.js");
+var constraints = require("nubo-validateConstraints");
 var Common = require("./common.js");
 
 var userNameFormat;

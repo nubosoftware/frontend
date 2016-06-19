@@ -236,7 +236,7 @@ function checkPasscode(req, res, next) {
                         return;
                     } else {
                         status = 0;
-                        msg = "Invalid passcode for user " + login.getUserName();
+                        msg = "Invalid passcode";
                         res.send({
                             status : status,
                             message : msg

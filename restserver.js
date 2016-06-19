@@ -249,12 +249,12 @@ var mainFunction = function(err, firstTimeLoad) {
                 if(Common.username) {
                     require('child_process').execFile("id", [Common.username], function(error, stdout, stderr) {
                         if(error) {
-                            logger.error("Cannot get uid/gid of " + user + "\nstderr:\n" + stderr + "\nerr:\n" + error);
+                            logger.error("Cannot get uid/gid of " + Common.username + "\nstderr:\n" + stderr + "\nerr:\n" + error);
                             callback(err);
                         } else {
                             var obj = /uid=(\d+)\(\w+\) gid=(\d+).+/.exec(stdout);
                             if(obj === null) {
-                                logger.error("Cannot get uid/gid of " + user + " bad input: " + stdout);
+                                logger.error("Cannot get uid/gid of " + Common.username + " bad input: " + stdout);
                             } else {
                                 logger.info("Run as " + obj[1] + ":" + obj[2]);
                                 process.setgid(Number(obj[2]));

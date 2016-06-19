@@ -3,13 +3,17 @@ var checkPasscode = require('./checkPasscode.js');
 var logger = Common.logger;
 
 function resendUnlockPasswordLink(req, res, next) {
+    var status = 1;
+    var msg = "";
+    var retErrorMsg = "Invalid resendUnlockPasswordLink access";
     var activationKey = req.params.activationKey;
     if (!activationKey || activationKey == "") {
+        logger.info("resendUnlockPasswordLink. Invalid activationKey.");
         status = 0;
         msg = "Invalid email";
         res.send({
             status : status,
-            message : msg
+            message : retErrorMsg
         });
         return;
     }
@@ -25,44 +29,41 @@ function resendUnlockPasswordLink(req, res, next) {
         if (!!err) {
             status = 0;
             msg = "Internal Error: " + err;
+            logger.info(msg);
             res.send({
                 status : status,
                 message : msg
             });
-            logger.info(err);
             return;
         }
 
         if (!results || results == "") {
+            logger.info("resendUnlockPasswordLink. Cannot find user to send unlock password email.");
             status = 0;
-            msg = "Cannot find userto send unlock password email";
             res.send({
                 status : status,
-                message : msg
+                message : retErrorMsg
             });
-            logger.info(msg);
             return;
         }
 
         var email = results[0].email != null ? results[0].email : '';
         var activation_status = results[0].status != null ? results[0].status : '';
         if (activation_status != 1 && activation_status != 4) {
+            logger.info("Inappropriate activation status: " + activation_status);
             status = 0;
-            msg = "Inappropriate activation status: " + activation_status;
             res.send({
                 status : status,
-                message : msg
+                message : retErrorMsg
             });
-            logger.info(msg);
             return;
         } else {
             logger.info("unlock passcode email is sent to :" + email);
             checkPasscode.findUserNameSendEmail(email);
             status = 1;
-            msg = "resent unlock email to : " + email;
             res.send({
                 status : status,
-                message : msg
+                message : "resent unlock email"
             });
             logger.info(msg);
             return;
@@ -74,16 +75,22 @@ function resendUnlockPasswordLink(req, res, next) {
 function unlockPassword(req, res, next) {
 
     var status = 1;
+    var msg = "";
+    var retErrorMsg = "Invalid unlockPassword access";
     var email = req.params.email;
     if (!email || email == "") {
+        logger.info("unlockPassword. Invalid email: " + email);
         status = 0;
-        msg = "Invalid email";
+        msg = retErrorMsg;
     }
 
-    var loginemailtoken = req.params.loginemailtoken;
-    if (!loginemailtoken || loginemailtoken == "") {
-        status = 0;
-        msg = "Invalid loginemailtoken";
+    if (status == 1) {
+        var loginemailtoken = req.params.loginemailtoken;
+        if (!loginemailtoken || loginemailtoken == "") {
+            logger.info("unlockPassword. Invalid loginemailtoken. email: " + email);
+            status = 0;
+            msg = retErrorMsg;
+        }
     }
 
     if (status == 0) {
@@ -102,9 +109,9 @@ function unlockPassword(req, res, next) {
     }).complete(function(err, results) {
 
         if (!!err) {
-            status = 0;
             msg = "Internal Error: " + err;
             logger.info("findUserNameSendEmail:" + msg);
+            status = 0;
             res.send({
                 status : status,
                 message : msg
@@ -113,12 +120,11 @@ function unlockPassword(req, res, next) {
         }
 
         if (!results || results == "") {
+            logger.info("unlockPassword. Cannot find user: " + email);
             status = 0;
-            msg = "Cannot find user " + email;
-            logger.info("findUserNameSendEmail:" + msg);
             res.send({
                 status : status,
-                message : msg
+                message : retErrorMsg
             });
             return;
         }
@@ -134,13 +140,12 @@ function unlockPassword(req, res, next) {
                     email : email
                 }
             }).then(function() {
+                logger.info("password of user " + email + " is successfully unlocked");
                 status = 1;
-                msg = "password of user " + email + " is successfully unlocked";
                 res.send({
                     status : status,
-                    message : msg
+                    message : "password is successfully unlocked"
                 });
-                logger.info(msg);
                 return;
             }).catch(function(err) {
                 status = 0;
@@ -153,11 +158,12 @@ function unlockPassword(req, res, next) {
             });
 
         } else {
+            logger.info("unlockPassword. invalid loginEmailToken. email: "+email);
             status = 0;
             msg = "Invalid access";
             res.send({
                 status : status,
-                message : msg
+                message : retErrorMsg
             });
             return;
         }

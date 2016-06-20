@@ -44,7 +44,9 @@ function excludeList() {
         '/html/player/images/dragdrop.png' : 1,
         '/html/player/images/medal.png' : 1,
         '/html/player/images/welcome.png' : 1,
-        '/html/player/images/nuboDefWallpaper.jpg' : 1
+        '/html/player/images/nuboDefWallpaper.jpg' : 1,
+        '/html/player/images/folder.png' : 1
+
     };
 
     if (production) {

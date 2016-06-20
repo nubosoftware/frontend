@@ -28,6 +28,6 @@
     "winston": "1.0.1",
     "winston-syslog": "0.2.5",
     "xml2json": "0.5.1",
-    "nubo-validateConstraints":  "https://nubolab.nubosoftware.com:4874/nubo-validateConstraints/-/nubo-validateConstraints-0.0.0.tgz"
+    "nubo-validateConstraints":  "https://nubolab.nubosoftware.com:4874/nubo-validateConstraints/-/nubo-validateConstraints-0.0.1.tgz"
   }
 }

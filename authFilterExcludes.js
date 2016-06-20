@@ -7,41 +7,44 @@ function excludeList() {
     var production = (Common.webCommon && Common.webCommon.production !== undefined) ? Common.webCommon.production : "true";
 
     var webClientList = {
-        '/resources/demos/style.css': 1,
-        '/favicon.ico': 1,
-        '/html/player/login.html': 1,
-        '/html/player/player.css': 1,
-        '/html/player/css/toast.css': 1,
-        '/html/player/jquery-1.12.2.min.js': 1,
-        '/html/player/watermark.js': 1,
-        '/html/player/underscore-min.js': 1,
-        '/html/player/backbone-min.js': 1,
-        '/html/player/l10n.js': 1,
-        '/html/player/hmac-sha1.js': 1,
-        '/html/player/utf8.js': 1,
-        '/html/player/base.js': 1,
-        '/html/player/long.js': 1,
-        '/html/player/js/modernizr.webp.test.js': 1,
-        '/html/player/js/canvas2image.js': 1,
-        '/html/player/js/toast.js': 1,
-        '/html/player/inflate.min.js': 1,
-        '/html/player/jquery-ui.js': 1,
-        '/html/player/common.js': 1,
-        '/html/player/dropzone.js': 1,
-        '/html/player/lang/en.json': 1,
-        '/html/player/deps.js': 1,
-        '/html/player/images/x.png': 1,
-        '/html/player/fonts/Roboto-Regular.ttf': 1,
-        '/html/player/fonts/Roboto-Light.ttf': 1,
-        '/html/player/images/logo.png': 1,
-        '/html/player/fonts/Roboto-Bold.ttf': 1,
-        '/html/player/images/del.png': 1,
-        '/html/player/images/volcano.png': 1,
-        '/html/player/images/settings.png': 1,
-        '/html/player/images/video_recording.png': 1,
-        '/html/player/images/search.png': 1,
-        '/html/player/images/back.png': 1,
-        '/html/player/images/dragdrop.png': 1
+        '/resources/demos/style.css' : 1,
+        '/favicon.ico' : 1,
+        '/html/player/login.html' : 1,
+        '/html/player/player.css' : 1,
+        '/html/player/css/toast.css' : 1,
+        '/html/player/jquery-1.12.2.min.js' : 1,
+        '/html/player/watermark.js' : 1,
+        '/html/player/underscore-min.js' : 1,
+        '/html/player/backbone-min.js' : 1,
+        '/html/player/l10n.js' : 1,
+        '/html/player/hmac-sha1.js' : 1,
+        '/html/player/utf8.js' : 1,
+        '/html/player/base.js' : 1,
+        '/html/player/long.js' : 1,
+        '/html/player/js/modernizr.webp.test.js' : 1,
+        '/html/player/js/canvas2image.js' : 1,
+        '/html/player/js/toast.js' : 1,
+        '/html/player/inflate.min.js' : 1,
+        '/html/player/jquery-ui.js' : 1,
+        '/html/player/common.js' : 1,
+        '/html/player/dropzone.js' : 1,
+        '/html/player/lang/en.json' : 1,
+        '/html/player/deps.js' : 1,
+        '/html/player/images/x.png' : 1,
+        '/html/player/fonts/Roboto-Regular.ttf' : 1,
+        '/html/player/fonts/Roboto-Light.ttf' : 1,
+        '/html/player/images/logo.png' : 1,
+        '/html/player/fonts/Roboto-Bold.ttf' : 1,
+        '/html/player/images/del.png' : 1,
+        '/html/player/images/volcano.png' : 1,
+        '/html/player/images/settings.png' : 1,
+        '/html/player/images/video_recording.png' : 1,
+        '/html/player/images/search.png' : 1,
+        '/html/player/images/back.png' : 1,
+        '/html/player/images/dragdrop.png' : 1,
+        '/html/player/images/medal.png' : 1,
+        '/html/player/images/welcome.png' : 1,
+        '/html/player/images/nuboDefWallpaper.jpg' : 1
     };
 
     if (production) {
@@ -58,35 +61,36 @@ function excludeList() {
     }
 
     var noFilterList = {
-        '/activate': 1,
-        '/validate': 1,
-        '/registerOrg': 1,
-        '/getResourceListByDevice': 1,
-        '/sendEmailForUnknownJobTitle': 1,
-        '/captureDeviceDetails': 1,
-        '/resendUnlockPasswordLink': 1,
-        '/activationLink': 1,
-        '/unlockPassword': 1,
-        '/download': 1,
-        '/SmsNotification/sendSmsNotificationFromRemoteServer': 1,
-        '/Notifications/sendNotificationFromRemoteServer': 1,
-        '/getResource': 1
+        '/activate' : 1,
+        '/validate' : 1,
+        '/registerOrg' : 1,
+        '/getResourceListByDevice' : 1,
+        '/sendEmailForUnknownJobTitle' : 1,
+        '/captureDeviceDetails' : 1,
+        '/resendUnlockPasswordLink' : 1,
+        '/activationLink' : 1,
+        '/unlockPassword' : 1,
+        '/download' : 1,
+        '/SmsNotification/sendSmsNotificationFromRemoteServer' : 1,
+        '/Notifications/sendNotificationFromRemoteServer' : 1,
+        '/getResource' : 1
     }
 
     var excludeList = {
-        'SESSID': {
-            '/authenticateUser': 1,
-            '/checkPasscode': 1,
-            '/setPasscode': 1,
-            '/resetPasscode': 1,
-            'startsession': 1,
-            '/file/uploadToLoginToken': 1
-
+        'SESSID' : {
+            '/authenticateUser' : 1,
+            '/checkPasscode' : 1,
+            '/setPasscode' : 1,
+            '/resetPasscode' : 1,
+            'startsession' : 1,
+            '/file/uploadToLoginToken' : 1
         },
-        'LOGINTOKEN': {
-            '/createStream': 1,
-            '/playPauseStream': 1,
-            '/file/uploadToSession': 1
+        'LOGINTOKEN' : {
+            '/createStream' : 1,
+            '/playPauseStream' : 1,
+            '/file/uploadToSession' : 1,
+            '/Notifications/pushNotification' : 1
+
         }
     }
 
@@ -104,5 +108,5 @@ function excludeList() {
 }
 
 module.exports = {
-    excludeList: excludeList
+    excludeList : excludeList
 }

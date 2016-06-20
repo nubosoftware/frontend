@@ -144,7 +144,7 @@ var filter = {
             },
             "playerVersion" : {
                 "presence" : true,
-                "format" : "^[0-9]+[\\.0-9a-z\\-]+",
+                "format" : "[a-zA-Z0-9\.\-]+",
                 "length" : {
                     "minimum" : 3,
                     "maximum" : 255
@@ -266,15 +266,21 @@ var filter = {
             "email" : userNameFormat
         }
     }, {
-        "path" : "/file/uploadToSession",
+        "path": "/file/uploadToSession",
+        "constraints": {
+            "session": constraints.requestedSessionIdConstr
+        }
+    }, {
+        "path" : "/file/uploadToLoginToken",
         "constraints" : {
-            "session" : {
-                "presence" : true,
-                "length" : {
-                    is : 96
-                },
-                "format" : "[a-f0-9]+"
-            }
+            "loginToken" : constraints.requestedLoginTokenConstr,
+            "dontChangeName" : {
+                "format" : "^[a-z]+$",
+                "inclusion" : {
+                    "within" : ["true", "false"]
+                }
+            },
+            "destPath" :  constraints.pathConstr
         }
     }, {
         "path" : '/SmsNotification/sendSmsNotificationFromRemoteServer',

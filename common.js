@@ -149,7 +149,8 @@ var Common = {
         "redisConf" : {
             "password" : 1
         },
-        "registerOrgPassword": 1
+        "registerOrgPassword": 1,
+        "RemoteServers" : "*"
     },
     encryptConf: false,
     exitJobs: [],

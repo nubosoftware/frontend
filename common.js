@@ -263,18 +263,24 @@ function load_settings(callback) {
         },
         // encrypt fields in case some value changed
         function(callback) {
+            var newSettingsToFile = null;
             if (settings.encryptConf) {
                 try {
                     encryptedSettings = dataEncryptor.parseParameters('enc', settings, Common.encryptedParameters, Common.enc);
                     if (!(_.isEqual(encryptedSettings, settings))) {
-                        var newSettingsToFile = JSON.stringify(encryptedSettings, null, 4);
-                        Common.fs.writeFile('Settings.json', newSettingsToFile, callback);
+                        newSettingsToFile = JSON.stringify(encryptedSettings, null, 4);
                     }
                 } catch (err) {
                     callback("encrypting " + err);
                     return;
                 }
-                callback(null);
+
+                if(newSettingsToFile){
+                    Common.fs.writeFile('Settings.json', newSettingsToFile, callback);
+                }
+                else{
+                    callback(null);
+                }
             } else {
                 callback(null);
             }
@@ -283,7 +289,9 @@ function load_settings(callback) {
         if (err) {
             logger.error("load_settings: " + err);
             callback(err);
+            return;
         }
+
         callback(null, decryptedSettings);
     });
 }

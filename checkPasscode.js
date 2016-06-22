@@ -148,12 +148,12 @@ function checkPasscode(req, res, next) {
             }
 
             Common.db.User.findAll({
-                attributes : ['passcode', 'loginattempts'],
+                attributes : ['isactive', 'passcode', 'loginattempts'],
                 where : {
+                    orgdomain : login.getMainDomain(),
                     email : login.getUserName()
                 },
             }).complete(function(err, results) {
-
                 if (!!err) {
                     status = 0;
                     msg = "Internal Error: " + err;
@@ -167,7 +167,7 @@ function checkPasscode(req, res, next) {
 
                 if (!results || results == "") {
                     status = 0;
-                    msg = "Cannot find user " + login.getUserName();
+                    msg = "Cannot find user or user is inactive " + login.getUserName();
                     res.send({
                         status : status,
                         message : msg
@@ -181,96 +181,186 @@ function checkPasscode(req, res, next) {
                 // there is no possibility that user has loginattempts = null.
                 // this can only be due to reasons such as alter table from old db
                 var loginattempts = results[0].loginattempts != null ? results[0].loginattempts : 0;
-                if (loginattempts == null) {
-                    // default loginattemps is 0
-                    loginattempts = 0;
-                }
-                if (dbPasscode != passcode) {
+                var isUserActive = results[0].isactive != null ? results[0].isactive : 0;
 
-                    // incorrect login. check for attempt no:
-                    // logger.info("get loginattempts from db %s", login.getUserName());
-
-                    Common.db.User.update({
-                        loginattempts : (loginattempts + 1)
-                    }, {
-                        where : {
-                            email : login.getUserName()
-                        }
-                    }).then(function() {
-
-                    }).catch(function(err) {
+                Common.db.UserDevices.findAll({
+                    attributes: ['active'],
+                    where: {
+                        email: login.getUserName(),
+                        imei: login.getDeviceID(),
+                        maindomain : login.getMainDomain()
+                    },
+                }).complete(function(err, results) {
+                    var retErrorMsg = "Checkpasscode failure";
+                    if (!!err) {
                         status = 0;
                         msg = "Internal Error: " + err;
-                        res.send({
-                            status : status,
-                            message : msg
-                        });
-                        return;
-                    });
-
-                    // if before the update loginattempts was already 2 (MAX_LOGIN_ATTEMPTS -1), then lock him
-                    logger.info("checking login attempts for user");
-                    if (loginattempts + 1 >= MAX_LOGIN_ATTEMPTS) {
-                        logger.info("login attempts failed");
-
-                        //user has had mistaken twice and this is the third time
-                        status = 4;
-                        // passcode lock
-                        msg = "You have incorrectly typed your passcode 3 times. An email was sent to you. Open your email to open your passcode.";
                         logger.info(msg);
-
-                        findUserNameSendEmail(login.getUserName());
-
-                        // remove login token from redis
-                        Common.redisClient.DEL('login_' + loginToken, function(err) {
-                            if (!!err) {
-                                logger.info("Failed to delete logintoken");
-                            }
-
-                            res.send({
-                                status : status,
-                                message : msg
-                            });
-                            sendTrack();
-                        });
-                        return;
-                    } else {
-                        status = 0;
-                        msg = "Invalid passcode";
                         res.send({
                             status : status,
-                            message : msg
+                            message : retErrorMsg
                         });
                         sendTrack();
                         return;
                     }
 
-                } else {
-                    if (loginattempts > 0) {
+                   if (!results || results == "") {
+                       status = 0;
+                       msg = "Cannot find device " + login.getDeviceID();
+                       logger.info(msg);
+                       res.send({
+                           status : status,
+                           message : retErrorMsg
+                       });
+                       sendTrack();
+                       return;
+                   }
 
-                        Common.db.User.update({
-                            loginattempts : '0'
-                        }, {
-                            where : {
-                                email : login.getUserName()
-                            }
-                        }).then(function() {
-                            loginUser(login, passcode, res);
-                        }).catch(function(err) {
-                            status = 0;
-                            msg = "Internal Error: " + err;
-                            res.send({
-                                status : status,
-                                message : msg
-                            });
-                            return;
-                        });
+                   var isDeviceActive = results[0].active != null ? results[0].active : 0;
 
-                    } else {
-                        loginUser(login, passcode, res);
-                    }
-                }
+                   if (isUserActive == 0 || isDeviceActive == 0) {
+                       // get admin data
+                       Common.db.User.findAll({
+                           attributes: ['email', 'firstname', 'lastname'],
+                           where: {
+                               orgdomain : login.getMainDomain(),
+                               isadmin : '1'
+                           },
+                       }).complete(function(err, results) {
+                           var adminName = "";
+                           var adminEmail = "";
+                           if (!!err) {
+                                status = 0;
+                                msg = "Internal Error: " + err;
+                                logger.info(msg);
+                           } else {
+                               if (results && results.length > 0) {
+                                   var row = results[0];
+                                   adminName = row.firstname + " " + row.lastname;
+                                   adminEmail = row.email;
+                               } 
+                           }
 
+	                       if (isUserActive == 0) {
+	                           status = 6;
+	                           msg = "User is inactive " + login.getUserName();
+	                           logger.info(msg);
+	                      } else {
+	                           //inactive device
+	                           status = 5;
+	                           msg = "Device is inactive " + login.getDeviceID();
+	                           logger.info(msg);
+	                      }
+
+	                      // remove login token from redis
+                          Common.redisClient.DEL('login_' + loginToken, function(err) {
+                              if (!!err) {
+                                  logger.info("Failed to delete logintoken");
+                              }
+                           });
+
+	                      res.send({
+	                          status : status,
+	                          message : retErrorMsg,
+	                          adminName : adminName,
+	                          adminEmail : adminEmail,
+	                          orgName : login.getMainDomain()
+	                      });
+	                      sendTrack();
+	                      return;
+                      });
+                   } else {
+                       if (loginattempts == null) {
+                           // default loginattemps is 0
+                           loginattempts = 0;
+                       }
+                       if (dbPasscode != passcode) {
+
+                           // incorrect login. check for attempt no:
+                           // logger.info("get loginattempts from db %s", login.getUserName());
+
+                           Common.db.User.update({
+                               loginattempts : (loginattempts + 1)
+                           }, {
+                               where : {
+                                   email : login.getUserName()
+                               }
+                           }).then(function() {
+
+                           }).catch(function(err) {
+                               status = 0;
+                               msg = "Internal Error: " + err;
+                               res.send({
+                                   status : status,
+                                   message : msg
+                               });
+                               return;
+                           });
+
+                           // if before the update loginattempts was already 2 (MAX_LOGIN_ATTEMPTS -1), then lock him
+                           logger.info("checking login attempts for user");
+                           if (loginattempts + 1 >= MAX_LOGIN_ATTEMPTS) {
+                               logger.info("login attempts failed");
+
+                               //user has had mistaken twice and this is the third time
+                               status = 4;
+                               // passcode lock
+                               msg = "You have incorrectly typed your passcode 3 times. An email was sent to you. Open your email to open your passcode.";
+                               logger.info(msg);
+
+                               findUserNameSendEmail(login.getUserName());
+
+                               // remove login token from redis
+                               Common.redisClient.DEL('login_' + loginToken, function(err) {
+                                   if (!!err) {
+                                       logger.info("Failed to delete logintoken");
+                                   }
+
+                                   res.send({
+                                       status : status,
+                                       message : msg
+                                   });
+                                   sendTrack();
+                               });
+                               return;
+                           } else {
+                               status = 0;
+                               msg = "Invalid passcode";
+                               res.send({
+                                   status : status,
+                                   message : msg
+                               });
+                               sendTrack();
+                               return;
+                           }
+
+                       } else {
+                           if (loginattempts > 0) {
+
+                               Common.db.User.update({
+                                   loginattempts : '0'
+                               }, {
+                                   where : {
+                                       email : login.getUserName()
+                                   }
+                               }).then(function() {
+                                   loginUser(login, passcode, res);
+                               }).catch(function(err) {
+                                   status = 0;
+                                   msg = "Internal Error: " + err;
+                                   res.send({
+                                       status : status,
+                                       message : msg
+                                   });
+                                   return;
+                               });
+
+                           } else {
+                               loginUser(login, passcode, res);
+                           }
+                       }
+                   }
+                });
             });
         });
 

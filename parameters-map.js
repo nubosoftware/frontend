@@ -162,7 +162,6 @@ var filter = {
                 "format" : "[a-f0-9]+"
             },
             "timeZone" : {
-                "presence" : true,
                 "format" : "[a-zA-Z\\/\\_\\-\\.]+",
             }
         }

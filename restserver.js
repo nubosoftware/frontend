@@ -25,12 +25,13 @@ var captureDeviceDetails = require('./captureDeviceDetails.js');
 var MediaStream = require('./mediaStream.js');
 var ThreadedLogger = require('./ThreadedLogger.js');
 var ActivationLink = require('./activationLink.js');
-var Upload = require('./upload.js');
 var authFilterExcludes = require('./authFilterExcludes.js');
 var authFilterValidator = require('./authFilterValidator.js');
 var Notifications = require('./Notifications.js');
 var SmsNotification = require('./SmsNotification.js');
 var getResource = require('./getResource.js');
+var internalRequests = require('./internalRequests.js');
+
 
 var port = 8443;
 if (process.argv.length >= 3) {
@@ -446,7 +447,7 @@ var refresh_filter = function() {
         logger.error('Error: Cannot load ' + filterFile + ' file, err: ' + e);
         return;
     }
-    console.log("obj: " + JSON.stringify(obj));
+
     filterObj.reload(obj.rules, {permittedMode: obj.permittedMode});
 };
 refresh_filter();
@@ -492,8 +493,8 @@ function buildServerObject(server) {
     server.get('/activationLink', ActivationLink.func);
     server.get('/unlockPassword', unlockPassword.unlockPassword);
     server.get('/download', downloadFunc);
-    server.post('/file/uploadToSession', Upload.upload);
-    server.post('/file/uploadToLoginToken', Upload.upload);
+    server.post('/file/uploadToSession', internalRequests.upload);
+    server.post('/file/uploadToLoginToken', internalRequests.upload);
     server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
     server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
     server.get('/getResource', getResource.getResource);

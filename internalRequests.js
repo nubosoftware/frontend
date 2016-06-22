@@ -4,6 +4,8 @@ var Common = require('./common.js');
 var url = require('url');
 var logger = Common.logger;
 var _ = require('underscore');
+var nodeHttp = require('http');
+var nodeHttps = require('https');
 
 
 function getOptions() {
@@ -282,6 +284,34 @@ function forwardGetRequest(url, callback) {
     });
 
 }
+
+//pipe upload file to backend server
+function upload(req, res, next) {
+
+    logger.info("upload: uploading file");
+    req.pause();
+
+    var options = url.parse(req.url);
+    options.headers = req.headers;
+    options.method = req.method;
+    options.agent = false;
+    _.extend(options, getOptions());
+
+    var request;
+    if (options.key) request = nodeHttps.request;
+    else request = nodeHttp.request;
+    // TODO move pipe request to http module
+    var connector = request(options, function(serverResponse) {
+        serverResponse.pause();
+        res.writeHeader(serverResponse.statusCode, serverResponse.headers);
+        serverResponse.pipe(res);
+        serverResponse.resume();
+    });
+    req.pipe(connector);
+    req.resume();
+    return;
+}
+
 module.exports = {
     createOrReturnUserAndDomain: createOrReturnUserAndDomain,
     createDomainForUser: createDomainForUser,
@@ -289,5 +319,6 @@ module.exports = {
     validateAuthentication: validateAuthentication,
     createUserFolders: createUserFolders,
     saveSettingsUpdateFile: saveSettingsUpdateFile,
-    forwardGetRequest: forwardGetRequest
+    forwardGetRequest: forwardGetRequest,
+    upload: upload
 }

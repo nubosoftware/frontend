@@ -87,7 +87,7 @@ var filter = {
                 }
             },
             "playerVersion" : {
-                "presence" : true,
+                "presence" : false,
                 "format" : "^[0-9]+[\\.0-9a-z\\-]+",
                 "length" : {
                     "minimum" : 3,
@@ -233,7 +233,7 @@ var filter = {
                 },
                 "format" : "[a-f0-9]+"
             },
-            "user" : userNameFormat,
+            "user" : constraints.excludeSpecialCharacters,
             "password" : {
                 "presence" : true,
                 "length" : {

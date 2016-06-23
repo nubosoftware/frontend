@@ -1662,6 +1662,25 @@ $(function() {
                 } else if (data.status == 4) {          // passcode lock
                     window.location.hash = "passcodelock";
 
+                } else if (data.status == 5) {
+                    settings.set({
+                        'errorType' : data.status,
+                        'adminName' : data.adminName,
+                        'adminEmail' : data.adminEmail
+                    });
+                    settings.save();
+                    window.location.hash = "disableUserDevice";
+
+                } else if (data.status == 6) {
+                    settings.set({
+                        'errorType' : data.status,
+                        'adminName' : data.adminName,
+                        'adminEmail' : data.adminEmail,
+                        'orgName' : data.orgName
+                    });
+                    settings.save();
+                    window.location.hash = "disableUserDevice";
+
                 } else if (data.status == 7) {          // passcode expired
                     passcodeExpired = true;
                     if (passcodeType == 1) {
@@ -2179,6 +2198,25 @@ $(function() {
 
                 } else if (data.status == 4) {          // passcode lock
                     window.location.hash = "passcodelock";
+
+                } else if (data.status == 5) {
+                    settings.set({
+                        'errorType' : data.status,
+                        'adminName' : data.adminName,
+                        'adminEmail' : data.adminEmail
+                    });
+                    settings.save();
+                    window.location.hash = "disableUserDevice";
+
+                } else if (data.status == 6) {
+                    settings.set({
+                        'errorType' : data.status,
+                        'adminName' : data.adminName,
+                        'adminEmail' : data.adminEmail,
+                        'orgName' : data.orgName
+                    });
+                    settings.save();
+                    window.location.hash = "disableUserDevice";
 
                 } else if (data.status == 7) {          // passcode expired
                     if (passcodeType == 0) {
@@ -2964,7 +3002,7 @@ $(function() {
         var version = get_browser_version();
         var versionError = false;
 
-        if ((browserType == "firefox" && version < 28) || (browserType == "chrome" && version < 35) || (browserType == "ie" && version < 11)) {
+        if ((browserType == "firefox" && version < 37) || (browserType == "chrome" && version < 35) || (browserType == "ie" && version < 11)) {
             if (DEBUG) {
                 console.log("browser type: " + browserType + ", browser version: " + version);
             }

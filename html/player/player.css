@@ -1583,9 +1583,6 @@ span#resetPasscodeTxt {
     text-align: center;
 }
 span#unlockPasscodeTxt {
-    /*position: absolute;
-    left: 275px;
-    top: 380px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -1597,13 +1594,10 @@ span#unlockPasscodeTxt {
 }
 
 span#versionErrTitle {
-    /*position: absolute;
-    left: 285px;
-    top: 241px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 100px;    
+    margin-top: 60px;
    
     width: 480px;
     height: 46px;
@@ -1612,16 +1606,10 @@ span#versionErrTitle {
     font-family: NuboRoboto;
 }
 img#chrome {
-    /*position: absolute;
-    top: 320px;
-    left: 400px;*/    
-    margin-left: 200px;
-    margin-top: 100px;
+    margin-left: 140px;
+    margin-top: 60px;
 }
 span#chromeTxt {
-    /*position: absolute;
-    top: 330px;
-    left: 470px;*/
     margin-left: 20px;
     width: 200px;    
         
@@ -1631,36 +1619,22 @@ span#chromeTxt {
 
 }
 img#firefox {
-    /*position: absolute;
-    top: 390px;
-    left: 400px;*/   
-    margin-left: 200px;
+    margin-left: 140px;
     margin-top: 50px;
 }
 span#firefoxTxt {
-    /*position: absolute;
-    top: 400px;
-    left: 470px;*/    
     margin-left: 20px;
-    
     width: 200px;
     text-align: left;
     font-size: 20px;
     font-family: NuboRobotoLight;    
 }
 img#ie {
-    /*position: absolute;
-    top: 460px;
-    left: 400px;*/
-    margin-left: 200px;
+    margin-left: 140px;
     margin-top: 50px;   
 }
 span#ieTxt {
-    /*position: absolute;
-    top: 470px;
-    left: 470px;*/
     margin-left: 20px;
-   
     width: 200px;
     text-align: left;
     font-size: 20px;

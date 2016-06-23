@@ -417,6 +417,9 @@ var filter = {
                 }
             }
         }
+    }, {
+        "path" : "/EWSListener",
+        "constraints" : {}
     }
     ]
 };

@@ -128,6 +128,7 @@ var Common = {
     EWSCalendarNotificationRefreshIntervalInMillis : 30000,
     EWSDomain : "",
     EWSRunCalendarSyncOnThisDataCenter : false,
+    EWSServerURL : false,
     mappingAttributesLDAP : ["memberOf", "mail", "manager", "ipPhone", "sn", "givenName", "distinguishedName", "objectCategory", "mobile"],
     mappingAttributesNubo : ["memberOf", "email", "manager", "officephone", "lastname", "firstname", "distinguishedName", "objectCategory", "mobilephone"],
     isHandlingMediaStreams : false,

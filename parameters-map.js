@@ -380,12 +380,12 @@ var filter = {
     }, {
         "path" : '/captureDeviceDetails',
         "constraints" : {
-            "activationKey" : {
+            "session" : {
                 "presence" : true,
                 "length" : {
                     is : 96
                 },
-                "format" : "[a-f0-9]+"
+                "format" : "[a-f0-9_\\-\\.]+"
             },
             "actionType" : {
                 "presence" : false,

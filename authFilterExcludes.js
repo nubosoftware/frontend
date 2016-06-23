@@ -35,6 +35,7 @@ function excludeList() {
         '/html/player/fonts/Roboto-Light.ttf' : 1,
         '/html/player/images/logo.png' : 1,
         '/html/player/fonts/Roboto-Bold.ttf' : 1,
+        '/html/player/fonts/FreebooterScript-Regular.ttf' : 1,
         '/html/player/images/del.png' : 1,
         '/html/player/images/volcano.png' : 1,
         '/html/player/images/settings.png' : 1,
@@ -45,8 +46,13 @@ function excludeList() {
         '/html/player/images/medal.png' : 1,
         '/html/player/images/welcome.png' : 1,
         '/html/player/images/nuboDefWallpaper.jpg' : 1,
-        '/html/player/images/folder.png' : 1
-
+        '/html/player/images/folder.png' : 1,
+        '/html/player/images/Welcome_Word.png' : 1,
+        '/download' : 1,
+        '/html/ios/NuboClientIOS.plist' : 1,
+        '/html/ios/NuboS.png' : 1,
+        '/html/ios/NuboClientIOS.ipa': 1,
+        '/html/ios/NuboL.png' : 1
     };
 
     if (production) {

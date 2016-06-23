@@ -13,20 +13,17 @@ function captureDeviceDetails(req, res, next) {
     var msg = "";
     var status = 0;
 
-    var activationKey = req.params.activationKey;
+    var session = req.params.session;
     var actionType = req.params.actionType;
     var ip = req.connection.remoteAddress;
-    var port = req.connection.remotePort;
+    var port = Common.withServiceUDPStaticPort ? Common.withServiceUDPStaticPort : req.connection.remotePort;
 
     // get activation key
-    if (!activationKey || activationKey.length < 5) {
+    if (!session || session.length < 5) {
         status = 1;
-        msg = "Invalid activationKey";
+        msg = "Invalid parameter";
     }
- 
-    if (Common.DEBUG) 
-    logger.info("activationKey inside captureDeviceDetails: " + activationKey);
-
+    
     if (status == 1) {
         res.send({
             status : status,
@@ -35,71 +32,43 @@ function captureDeviceDetails(req, res, next) {
         return;
     }
 
-    // get email based on activation key
-    Common.db.Activation.findAll({
-        attributes: ['email'],
+    // get user details based on session
+    Common.db.User.findAll({
+        attributes: ['clientip', 'clientport'],
         where: {
-            activationkey: activationKey,
-            status: 1
+            username: session,
+            isactive: 1
         },
     }).then(function(results) {
-        // no email found, return an error
+        // no user found, return an error
         if (!results || results == "") {
-            logger.error('Activation key not found ' + activationKey);
+            logger.error('User not found to capture device details ' + session);
             status = 1;
-            msg = 'Activation key not found';
+            msg = 'Invalid parameters';
             res.send({
                 status : status,
                 message : msg
             });
         } else {
-            var userEmail = results[0].email;
+            ip = userResults[0].clientip;
+            port = userResults[0].clientport;
             
             if (actionType == "get") {
-                // get from DB
-                Common.db.User.findAll({
-                    attributes: ['email', 'clientip', 'clientport' ],
-                    where: {
-                        email: userEmail
-                    },
-                }).then(function(userResults) {
-                    // no email found, return an error
-                    if (!userResults || userResults == "") {
-                        logger.error('Details for user not found ' + userEmail);
-                        status = 1;
-                        msg = 'Details for user not found';
-                        res.send({
-                            status : status,
-                            message : msg
-                        });
-                    } else {
-                        ip = userResults[0].clientip;
-                        port = userResults[0].clientport;
-                        status = 0;
-                        msg = 'OK';
-                        res.send({
-                            status : status,
-                            message : msg,
-                            ip : ip,
-                            port : port
-                        });
-                    }
-                }).catch(function(err) {
-                    logger.error(err);
-                    status = 1;
-                    msg = 'Problem selecting client ip and port for user ' + userEmail;
-                    res.send({
-                        status : status,
-                        message : msg
-                    });
+                status = 0;
+                msg = 'OK';
+                res.send({
+                    status : status,
+                    message : msg,
+                    ip : ip,
+                    port : port
                 });
             } else {
                 // save IP and Port on DB
-                updateIPandPort(userEmail, ip, port, function(err) {
+                updateIPandPort(session, ip, port, function(err) {
                     if (err) {
                         logger.error(err);
                         status = 1;
-                        msg = 'Problem capturing IP and Port';
+                        msg = 'Internal error';
                         res.send({
                             status : status,
                             message : msg
@@ -118,9 +87,9 @@ function captureDeviceDetails(req, res, next) {
             }
         }
     }).catch(function(err) {
-        logger.error(err);
+        logger.error('Problem selecting user, error:' + err);
         status = 1;
-        msg = 'Problem selecting email for activation key';
+        msg = 'Internal error';
         res.send({
             status : status,
             message : msg
@@ -128,22 +97,22 @@ function captureDeviceDetails(req, res, next) {
     });
 }
 
-function updateIPandPort(email, ip, port, callback) {
+function updateIPandPort(username, ip, port, callback) {
     // update existing entry
     Common.db.User.update({
         clientip: ip,
         clientport: port
     }, {
         where: {
-            email: email
+        	username: username
         }
     }).then(function(results) {
         if (Common.DEBUG)
-            logger.info("Update ip (" + ip + ") and port (" + port + ") for " + email);
+            logger.info("Update ip (" + ip + ") and port (" + port + ") for " + username);
         callback(null);
         return;
     }).catch(function(err) {
-        callback("can't update ip and port for " + email + ", error is:" + err);
+        callback("can't update ip and port for " + username + ", error is:" + err);
         return;
     });
 }

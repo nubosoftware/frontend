@@ -495,6 +495,10 @@ function buildServerObject(server) {
     server.get('/download', downloadFunc);
     server.post('/file/uploadToSession', internalRequests.upload);
     server.post('/file/uploadToLoginToken', internalRequests.upload);
+    // if Exchange is external to organization (like office 365) the notification will come from it
+    if (Common.EWSServerURL) {
+        server.post('/EWSListener', internalRequests.upload);
+    }
     server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
     server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
     server.get('/getResource', getResource.getResource);

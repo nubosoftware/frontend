@@ -503,6 +503,9 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                         }
                         callback(finish);
                         return;
+                    case 3:
+                        callback(null);
+                        return;
                     default:
                         var msg = "Internal error. Please contact administrator.";
                         response = {

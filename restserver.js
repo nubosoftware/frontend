@@ -400,7 +400,7 @@ function authValidate(req, res, next) {
     req.nubodata = {};
     getValidator().validate(req, function(err) {
         if (err) {
-            logger.error("authValidate: " + err);
+            logger.error("authValidate: " + err + ", URL: " + req.url);
 
             res.contentType = 'json';
             res.send({

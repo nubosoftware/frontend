@@ -36,6 +36,7 @@ function excludeList() {
         '/html/player/images/logo.png' : 1,
         '/html/player/fonts/Roboto-Bold.ttf' : 1,
         '/html/player/fonts/FreebooterScript-Regular.ttf' : 1,
+        '/html/player/images/connerr.png': 1,
         '/html/player/images/del.png' : 1,
         '/html/player/images/volcano.png' : 1,
         '/html/player/images/settings.png' : 1,

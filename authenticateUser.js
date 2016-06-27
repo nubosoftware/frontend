@@ -122,7 +122,7 @@ function AuthenticateUser(req, res, next) {
                 });
                 return;
             }
-            internalRequests.createOrReturnUserAndDomain(login.getUserName(), logger, function(err, obj) {
+            internalRequests.createOrReturnUserAndDomain(login.getEmail(), logger, function(err, obj) {
                 if (err) {
                     status = 0;
                     msg = "Internal Error: " + err;
@@ -162,7 +162,7 @@ function AuthenticateUser(req, res, next) {
                         orgUser = user;
                         orgPassword = password;
 
-                        internalRequests.updateUserAccount(login.getUserName(), email, authType, serverURL, userDomain, orgUser, orgPassword, secureSSL, signature, login.getDeviceID(), updateOtherDevices, true, function(err) {
+                        internalRequests.updateUserAccount(login.getEmail(), email, authType, serverURL, userDomain, orgUser, orgPassword, secureSSL, signature, login.getDeviceID(), updateOtherDevices, true, function(err) {
                             if (err) {
                                 logger.error("Error updating user account: " + err);
                                 return;

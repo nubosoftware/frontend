@@ -280,13 +280,13 @@ var filter = {
         "path": "/file/uploadToSession",
         "constraints": {
             "sessionid" : constraints.excludeSpecialCharacters,
-            "session": constraints.requestedSessionIdConstr
+            "session": constraints.excludeSpecialCharacters
         }
     }, {
         "path" : "/file/uploadToLoginToken",
         "constraints" : {
             "sessionid" : constraints.excludeSpecialCharacters,
-            "loginToken" : constraints.requestedLoginTokenConstr,
+            "loginToken" : constraints.excludeSpecialCharacters,
             "dontChangeName" : {
                 "format" : "^[a-z]+$",
                 "inclusion" : {

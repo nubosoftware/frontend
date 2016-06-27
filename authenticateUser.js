@@ -149,39 +149,46 @@ function AuthenticateUser(req, res, next) {
                     if (err) {
                         res.send({
                             status : '0',
-                            message : err
+                            message : 'Internal error. Please contact administrator.'
                         });
-                        logger.info("AuthenticateUser error: " + msg);
+                        logger.error("AuthenticateUser: " + err);
                         return;
                     }
                     login.setAuthenticationRequired(false);
-                    if (true) {
-                        // if (paramters have been changed update also all other devices)
-                        var updateOtherDevices = (orgUser != user || orgPassword != password);
-                        logger.info('Update account info for user!');
-                        orgUser = user;
-                        orgPassword = password;
+                   
+                    // if (paramters have been changed update also all other devices)
+                    var updateOtherDevices = (orgUser != user || orgPassword != password);
+                    logger.info('Update account info for user!');
+                    orgUser = user;
+                    orgPassword = password;
 
-                        internalRequests.updateUserAccount(login.getEmail(), email, authType, serverURL, userDomain, orgUser, orgPassword, secureSSL, signature, login.getDeviceID(), updateOtherDevices, true, function(err) {
+                    internalRequests.updateUserAccount(login.getUserName(), email, authType, serverURL, userDomain, orgUser, orgPassword, secureSSL, signature, login.getDeviceID(), updateOtherDevices, true, function(err) {
+                        if (err) {
+                            res.send({
+                                status: '0',
+                                message: 'Internal error. Please contact administrator.'
+                            });
+                            logger.error("AuthenticateUser: " + err);
+                            return;
+                        }
+
+                        login.save(function(err, login) {
                             if (err) {
-                                logger.error("Error updating user account: " + err);
+                                res.send({
+                                    status: '0',
+                                    message: 'Internal error. Please contact administrator.'
+                                });
+                                logger.error("AuthenticateUser: " + err);
                                 return;
                             }
 
+                            res.send({
+                                status: 1,
+                                message: "User authenticated"
+                            });
+                            updateFirstLogin(login.getActivationKey(), 0);
                         });
-                        //User.updateUserAccount
-                    }
-                    login.save(function(err, login) {
-                        status = 1;
-                        var msg = "User authenticated";
-                        console.dir(login.loginParams);
-                        res.send({
-                            status : status,
-                            message : msg
-                        });
-                        updateFirstLogin(login.getActivationKey(), 0);
                     });
-                    //login.save
                 });
                 //validateAuthentication
 

@@ -17,7 +17,7 @@ function parseParameters(mode, data, parameters, func) {
 
             // paramter of type list
         } else if (parameters[k] == "*") {
-            if (typeof parsedData[k] !== "object")
+            if (parsedData[k] && typeof parsedData[k] !== "object")
                 throw ("parameter " + k + " is not an object");
 
             for (var i in parsedData[k]) {

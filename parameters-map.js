@@ -131,7 +131,7 @@ var filter = {
         "path" : "/validate",
         "constraints" : {
             "sessionid" : constraints.excludeSpecialCharacters,
-            "username" : userNameFormat,
+            "username" : constraints.excludeSpecialCharacters,
             "deviceid" : {
                 "presence" : true,
                 "format" : "[a-zA-Z0-9_\\-\\.@]+",

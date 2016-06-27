@@ -701,7 +701,8 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
 
                     login.setDeviceName(userDeviceData.devicename);
                     login.setDeviceID(userDeviceData.imei);
-                    login.setUserName(userData.email);
+                    login.setEmail(userData.email);
+                    login.setUserName(userData.username);
                     login.setImUserName(userData.username);
                     login.setActivationKey(activationKey);
                     login.setIsAdmin(userData.isAdmin);

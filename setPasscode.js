@@ -161,7 +161,7 @@ function setPasscode(req, res, next) {
                 passcodetypechange : 0
             }, {
                 where : {
-                    email : login.getUserName()
+                    email : login.getEmail()
                 }
             }).then(function() {
 
@@ -201,7 +201,7 @@ function setPasscode(req, res, next) {
                     appType : 'Nubo',
                     ip : req.connection.remoteAddress,
                     userParams : {
-                        email : login.getUserName(),
+                        email : login.getEmail(),
                     },
                     other : {
                         dcName : Common.dcName

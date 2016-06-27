@@ -77,7 +77,7 @@ function checkPasscode(req, res, next) {
                 });
                 return;
             }
-            logger.user(login.getUserName());
+            logger.user(login.getEmail());
 
             function loginUser(login, passcode, res) {
                 login.setPasscode(passcode);
@@ -124,7 +124,7 @@ function checkPasscode(req, res, next) {
                     appType : 'Nubo',
                     ip : req.connection.remoteAddress,
                     userParams : {
-                        email : login.getUserName(),
+                        email : login.getEmail(),
                     },
                     other : {
                         dcName : Common.dcName,
@@ -151,7 +151,7 @@ function checkPasscode(req, res, next) {
                 attributes : ['isactive', 'passcode', 'loginattempts'],
                 where : {
                     orgdomain : login.getMainDomain(),
-                    email : login.getUserName()
+                    email : login.getEmail()
                 },
             }).complete(function(err, results) {
                 if (!!err) {
@@ -167,7 +167,7 @@ function checkPasscode(req, res, next) {
 
                 if (!results || results == "") {
                     status = 0;
-                    msg = "Cannot find user or user is inactive " + login.getUserName();
+                    msg = "Cannot find user or user is inactive " + login.getEmail();
                     res.send({
                         status : status,
                         message : msg
@@ -186,7 +186,7 @@ function checkPasscode(req, res, next) {
                 Common.db.UserDevices.findAll({
                     attributes: ['active'],
                     where: {
-                        email: login.getUserName(),
+                        email: login.getEmail(),
                         imei: login.getDeviceID(),
                         maindomain : login.getMainDomain()
                     },
@@ -283,7 +283,7 @@ function checkPasscode(req, res, next) {
                                loginattempts : (loginattempts + 1)
                            }, {
                                where : {
-                                   email : login.getUserName()
+                                   email : login.getEmail()
                                }
                            }).then(function() {
 
@@ -308,7 +308,7 @@ function checkPasscode(req, res, next) {
                                msg = "You have incorrectly typed your passcode 3 times. An email was sent to you. Open your email to open your passcode.";
                                logger.info(msg);
 
-                               findUserNameSendEmail(login.getUserName());
+                               findUserNameSendEmail(login.getEmail());
 
                                // remove login token from redis
                                Common.redisClient.DEL('login_' + loginToken, function(err) {
@@ -341,7 +341,7 @@ function checkPasscode(req, res, next) {
                                    loginattempts : '0'
                                }, {
                                    where : {
-                                       email : login.getUserName()
+                                       email : login.getEmail()
                                    }
                                }).then(function() {
                                    loginUser(login, passcode, res);
@@ -394,7 +394,7 @@ function findUserNameSendEmail(userEmail) {
 
         if (!results || results == "") {
             status = 0;
-            msg = "Cannot find user " + login.getUserName();
+            msg = "Cannot find user " + userEmail;
             logger.info("findUserNameSendEmail:" + msg);
             return;
         }

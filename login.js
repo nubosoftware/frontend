@@ -34,6 +34,10 @@ module.exports = function(token, callback) {
         })(this);
     };
 
+    this.setEmail = function(email) {
+        this.loginParams.email = email;
+    };
+
     this.setUserName = function(userName) {
         this.loginParams.userName = userName;
     };
@@ -111,6 +115,10 @@ module.exports = function(token, callback) {
 
     this.setDcurl = function(dcurl) {
         this.loginParams.dcurl = dcurl;
+    };
+
+    this.getEmail = function() {
+        return this.loginParams.email;
     };
 
     this.getUserName = function() {

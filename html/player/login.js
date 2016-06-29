@@ -141,7 +141,7 @@ var WallpaperColorList = [{
 
 var WallpaperImageList = [{
     "id" : "0",
-    "image" : "#58585A"
+    "image" : "images/stars.jpg"
 }, {
     "id" : "1",
     "image" : "images/candy.jpg"
@@ -302,12 +302,11 @@ function formatPage() {
     if (wallpaperImage) {
         $("#maindiv").css('background-image', "url(" + wallpaperImage + ")");
         $("#datadiv").css('background-image', "url(" + wallpaperImage + ")");
-
-        $("#maindiv").css('background-size', 'cover');
-        $("#maindiv").css('background-repeat', 'no-repeat');
-        $("#datadiv").css('background-size', 'cover');
-        $("#datadiv").css('background-repeat', 'no-repeat');
     }
+    $("#maindiv").css('background-size', 'cover');
+    $("#maindiv").css('background-repeat', 'no-repeat');
+    $("#datadiv").css('background-size', 'cover');
+    $("#datadiv").css('background-repeat', 'no-repeat');
 }
 
 var mobilecheck = function() {
@@ -2817,11 +2816,7 @@ $(function() {
             if (type == 0) {
                 newWallpaperColor = WallpaperColorList[parseInt(res)].color;
             } else {
-                if (res == 0) {
-                    newWallpaperColor = WallpaperImageList[parseInt(0)].image;
-                } else {
-                    newWallpaperImage = WallpaperImageList[parseInt(res)].image;
-                }
+                newWallpaperImage = WallpaperImageList[parseInt(res)].image;
             }
 
             var activationKey = settings.get("activationKey");

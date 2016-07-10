@@ -24,6 +24,7 @@ var PRINT_NETWORK_COMMANDS = false;
 var writeToDrawCmdLog = false;
 
 var resCache = {};
+var fontCache = {};
 
 function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     "use strict";
@@ -46,7 +47,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     	calculateStretch, drawStretchyPatch, showSoftKeyboard, updatePopWindow, resizeWindow, sendKeyboardExtractedText, 
     	updateScreenOrientation, drawBitmapMatrix, drawTextOnCanvas, drawPosTextOnCanvas, setTextAttFromPaint, drawTextRun, 
     	sendRoundTripDataCommand, prepareViewCache, roundTripDataAck, outgoingCall, drawPath, drawPoints, toast, setTopTask, 
-        setWindowPos, getColorFromInt, setShaderToGrdColorStop, clearProcessCacheAck, setPackageName;
+        setWindowPos, getColorFromInt, setShaderToGrdColorStop, clearProcessCacheAck, setPackageName, getFontFromAsset;
 
     var writer = new UXIPWriter(function(buffer) {
         ws.send(buffer);
@@ -1220,9 +1221,18 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     };
 
     setTextAttFromPaint = function(ctx, paint) {
-        var fontFamily = "NuboRoboto";
-        if (paint.fontPath == "/system/fonts/AndroidClock.ttf")
-            fontFamily = "AndroidClock";
+        var fontFamily = "";
+
+        if (paint.fontPath != null && paint.fontPath.length > 0 && paint.fontPath.indexOf('assets') > -1) {
+            fontFamily = getFontFromAsset(paint.fontPath);
+        }
+
+        if (fontFamily == null || fontFamily.length == 0) {
+            var fontFamily = "NuboRoboto";
+            if (paint.fontPath == "/system/fonts/AndroidClock.ttf") {
+                fontFamily = "AndroidClock";
+            }
+        }
 
         var fontStyle = "";
         switch(paint.typefaceStyle) {
@@ -1259,6 +1269,64 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         }
 
     };
+
+    getFontFromAsset = function(assetFontPath) {
+       var fontData = fontCache[assetFontPath];
+
+        if (fontData == null) {
+            var fontPath = assetFontPath.replace('assets ','');
+
+            var i = fontPath.indexOf("/");
+            if (i < 0) {
+                return "";
+            }
+
+            var fontPackage = fontPath.substr(0,i);
+
+            i = fontPath.indexOf("/assets/");
+            if (i < 0) {
+                return "";
+            }
+            var fileName = fontPath.substr(i+1);
+
+            if (fontPackage == null || fontPackage.length == 0 || fileName == null || fileName.length == 0) {
+                return "";
+            }
+
+            var url = "../../getResource?" + "packageName=" + fontPackage + "&fileName=" + fileName;
+            getJSON(url, function(data) {
+                if (data.status == 0) {
+                  var fileContent = data.fileContent;
+
+                  var i1 = fileName.lastIndexOf('/');
+                  var i2 = fileName.lastIndexOf('.');
+                  if (i1 < 0 || i2 < 0) {
+                      return "";
+                  }
+                  var fontFamily = fileName.substring(i1+1, i2);
+
+                  var fontUrl = "url(data:font/opentype;base64," + fileContent + " )";
+                  var f = new FontFace(fontFamily, fontUrl, {});
+
+                  f.load().then(function (loadedFace) {
+                      document.fonts.add(loadedFace);
+                      // save data
+                      fontData = {};
+                      fontData.path = assetFontPath;
+                      fontData.fontFamily = fontFamily;
+                      fontData.fileContent = fileContent;
+                      fontCache[assetFontPath] = fontData;
+                      return fontFamily;
+                  });
+                }
+            },function(){
+                Log.e("getJSON: ERROR");
+                return "";
+            });
+        } else {
+            return fontData.fontFamily;
+        }
+    }
 
     drawTextOnCanvas = function(ctx, text, x, y, paint) {
         setTextAttFromPaint(ctx, paint);

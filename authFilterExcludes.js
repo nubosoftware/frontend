@@ -84,6 +84,7 @@ function excludeList() {
         '/Notifications/sendNotificationFromRemoteServer' : 1,
         '/getResource' : 1,
         '/EWSListener' : 1
+        '/startsession' : 1
     }
 
     var excludeList = {
@@ -92,7 +93,6 @@ function excludeList() {
             '/checkPasscode' : 1,
             '/setPasscode' : 1,
             '/resetPasscode' : 1,
-            '/startsession' : 1,
             '/file/uploadToLoginToken' : 1
         },
         'LOGINTOKEN' : {

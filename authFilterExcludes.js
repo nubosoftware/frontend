@@ -82,7 +82,8 @@ function excludeList() {
         '/download' : 1,
         '/SmsNotification/sendSmsNotificationFromRemoteServer' : 1,
         '/Notifications/sendNotificationFromRemoteServer' : 1,
-        '/getResource' : 1
+        '/getResource' : 1,
+        '/EWSListener' : 1
     }
 
     var excludeList = {
@@ -91,7 +92,7 @@ function excludeList() {
             '/checkPasscode' : 1,
             '/setPasscode' : 1,
             '/resetPasscode' : 1,
-            'startsession' : 1,
+            '/startsession' : 1,
             '/file/uploadToLoginToken' : 1
         },
         'LOGINTOKEN' : {

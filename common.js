@@ -155,7 +155,9 @@ var Common = {
     },
     encryptConf: false,
     exitJobs: [],
-    authValidatorPermittedMode: false
+    authValidatorPermittedMode: false,
+    allowOnlyImportedADusers : false,
+    disableIPBlockMechanism : false
 };
 
 try {

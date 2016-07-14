@@ -244,6 +244,11 @@ function execActivate(req, res, next, email, username) {
         }
     }
 
+    // this line will ensure that we'll check that user already exist in our DB and only imported users from AD are allowed to enter
+    if (Common.allowOnlyImportedADusers) {
+        alreadyUser = 'Y';
+    }
+
     var deviceType = req.params.deviceType;
     if (deviceType == undefined || deviceType.length < 1)
         deviceType = 'Android';
@@ -723,6 +728,12 @@ function execActivate(req, res, next, email, username) {
                 return;
             }
             var attmpts = Number(obj);
+
+            // disable too many attempts in case of load balancer in front
+            if (Common.disableIPBlockMechanism) {
+            	attmpts = 0;
+            }
+
             if (attmpts >= 3) {
                 logger.info("Activate too many already user attmepts for ip: " + clientIP);
                 res.send({

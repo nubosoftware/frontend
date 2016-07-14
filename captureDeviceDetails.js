@@ -13,10 +13,17 @@ function captureDeviceDetails(req, res, next) {
     var msg = "";
     var status = 0;
 
-    var session = req.params.session;
+    var session = req.params.sessionid;
     var actionType = req.params.actionType;
     var ip = req.connection.remoteAddress;
+
+    // for some reason ip is starting with ::ffff:
+    if (ip != null) {
+    	ip = ip.replace('::ffff:','');
+    }
+
     var port = Common.withServiceUDPStaticPort ? Common.withServiceUDPStaticPort : req.connection.remotePort;
+    var sourcePort = req.connection.remotePort;
 
     // get activation key
     if (!session || session.length < 5) {
@@ -50,41 +57,27 @@ function captureDeviceDetails(req, res, next) {
                 message : msg
             });
         } else {
-            ip = userResults[0].clientip;
-            port = userResults[0].clientport;
-            
-            if (actionType == "get") {
-                status = 0;
-                msg = 'OK';
-                res.send({
-                    status : status,
-                    message : msg,
-                    ip : ip,
-                    port : port
-                });
-            } else {
-                // save IP and Port on DB
-                updateIPandPort(session, ip, port, function(err) {
-                    if (err) {
-                        logger.error(err);
-                        status = 1;
-                        msg = 'Internal error';
-                        res.send({
-                            status : status,
-                            message : msg
-                        });
-                    } else {
-                        status = 0;
-                        msg = 'OK';
-                        res.send({
-                            status : status,
-                            message : msg,
-                            ip : ip,
-                            port : port
-                        });
-                    }
-                });
-            }
+            // save IP and Port on DB
+            updateIPandPort(session, ip, port, sourcePort, function(err) {
+                if (err) {
+                    logger.error(err);
+                    status = 1;
+                    msg = 'Internal error';
+                    res.send({
+                        status : status,
+                        message : msg
+                    });
+                } else {
+                    status = 0;
+                    msg = 'OK';
+                    res.send({
+                        status : status,
+                        message : msg,
+                        ip : ip,
+                        port : port
+                    });
+                }
+            });
         }
     }).catch(function(err) {
         logger.error('Problem selecting user, error:' + err);
@@ -97,11 +90,11 @@ function captureDeviceDetails(req, res, next) {
     });
 }
 
-function updateIPandPort(username, ip, port, callback) {
+function updateIPandPort(username, ip, port, sourcePort, callback) {
     // update existing entry
     Common.db.User.update({
         clientip: ip,
-        clientport: port
+        clientport: sourcePort
     }, {
         where: {
         	username: username

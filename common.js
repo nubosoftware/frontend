@@ -136,7 +136,7 @@ var Common = {
     ffmpegCgroupDir : "/sys/fs/cgroup/cpu/ffmpeg/tasks",
     activateBySMS : false,
     smsHandler : false,
-    registerOrgPassword: "683ae3c5819a594e89f",
+    registerOrgPassword: "",
     encryptedParameters: {
         "dbPassword": 1,
         "mailOptions": {

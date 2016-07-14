@@ -20,6 +20,8 @@ var EV_CONST = eventLog.EV_CONST;
 var EV_CREATE_PLAYER = EV_CONST.EV_CREATE_PLAYER;
 var INFO = EV_CONST.INFO;
 
+var EMAIL_SIZE = 255;
+
 function createLogEvents(deviceid, email, domain, firstName, lastName, regid, creationData, deviceType, activationKey, callback) {
     var eventtype = EV_CREATE_PLAYER;
     var extra_info = 'email:' + email + ' firstName:' + firstName + ' lastName:' + lastName
@@ -53,6 +55,9 @@ function returnInternalError(err, res) {
 function validateEmail(email) {
     // http://stackoverflow.com/a/46181/11236
     var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (email.length > EMAIL_SIZE) {
+        return false;
+    }
     return re.test(email);
 }
 

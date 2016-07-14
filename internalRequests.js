@@ -285,6 +285,37 @@ function forwardGetRequest(url, callback) {
 
 }
 
+
+function forwardCheckStreamFile(loginToken, streamFileName, callback) {
+
+    var resObjData;
+    var options = getOptions();
+    options.path = "/checkStreamFile" + "?loginToken=" + loginToken + "&streamFileName=" + streamFileName;
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            callback(err);
+            return;
+        } else {
+            try {
+                resObjData = JSON.parse(resData);
+                if (resObjData.status === 1) {
+                    callback(null,resObjData.status);
+                } else if (resObjData.status === 0) {
+                    callback(resObjData.message);
+                } else {
+                    callback("unknown status code");
+                }
+                return;
+            } catch (e) {
+                callback(e);
+                return;
+            }
+        }
+    });
+}
+
+
 //pipe upload file to backend server
 function upload(req, res, next) {
 
@@ -302,6 +333,7 @@ function upload(req, res, next) {
     else request = nodeHttp.request;
     // TODO move pipe request to http module
     var connector = request(options, function(serverResponse) {
+
         serverResponse.pause();
         res.writeHeader(serverResponse.statusCode, serverResponse.headers);
         serverResponse.pipe(res);
@@ -312,6 +344,31 @@ function upload(req, res, next) {
     return;
 }
 
+
+function getStreamsFile(req, res, next) {
+    var loginToken = req.params.loginToken;
+    var streamName = req.params.streamName;
+    req.pause();
+    var options = getOptions();
+    options.path = "/readStreamFile" + "?loginToken=" + loginToken + "&streamFileName=" + streamName;
+    options.headers = req.headers;
+    options.method = req.method;
+    options.agent = false;
+    var request;
+    if (options.key) request = nodeHttps.request;
+    else request = nodeHttp.request;
+    var connector = request(options, function(serverResponse) {
+        serverResponse.pause();
+        res.writeHeader(serverResponse.statusCode, serverResponse.headers);
+        serverResponse.pipe(res);
+        serverResponse.resume();
+    });
+    req.pipe(connector);
+    req.resume();
+    return;
+}
+
+
 module.exports = {
     createOrReturnUserAndDomain: createOrReturnUserAndDomain,
     createDomainForUser: createDomainForUser,
@@ -320,5 +377,7 @@ module.exports = {
     createUserFolders: createUserFolders,
     saveSettingsUpdateFile: saveSettingsUpdateFile,
     forwardGetRequest: forwardGetRequest,
+    forwardCheckStreamFile: forwardCheckStreamFile,
+    getStreamsFile : getStreamsFile,
     upload: upload
 }

@@ -83,7 +83,7 @@ function excludeList() {
         '/SmsNotification/sendSmsNotificationFromRemoteServer' : 1,
         '/Notifications/sendNotificationFromRemoteServer' : 1,
         '/getResource' : 1,
-        '/EWSListener' : 1
+        '/EWSListener' : 1,
         '/startsession' : 1
     }
 

@@ -31,6 +31,7 @@ var Notifications = require('./Notifications.js');
 var SmsNotification = require('./SmsNotification.js');
 var getResource = require('./getResource.js');
 var internalRequests = require('./internalRequests.js');
+var checkStreamFile = require('./checkStreamFile.js');
 
 
 var port = 8443;
@@ -495,6 +496,8 @@ function buildServerObject(server) {
     server.get('/download', downloadFunc);
     server.post('/file/uploadToSession', internalRequests.upload);
     server.post('/file/uploadToLoginToken', internalRequests.upload);
+    server.get('/getStreamsFile' , internalRequests.getStreamsFile);
+    server.get('/checkStreamsFile' , checkStreamFile.func);
     // if Exchange is external to organization (like office 365) the notification will come from it
     if (Common.EWSServerURL) {
         server.post('/EWSListener', internalRequests.upload);
@@ -530,7 +533,6 @@ function buildServerObject(server) {
     });
 
     var isPermittedUrl = function(url) {
-        // logger.error("url: "+ url )
         var match;
         match = url.match('^.*/html/(.*)');
         if (match !== null){

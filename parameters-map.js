@@ -3,6 +3,13 @@ var constraints = require("nubo-validateConstraints");
 var Common = require("./common.js");
 
 var userNameFormat;
+constraints.loginTokenConstraint = {
+    "presence" : true,
+    "length" : {
+        is : 96
+    },
+    "format" : "[a-f0-9]+"
+};
 
 if (Common.withService) {
     userNameFormat = {
@@ -443,7 +450,22 @@ var filter = {
     }, {
         "path" : "/EWSListener",
         "constraints" : {}
+    }, {
+        "path" : "/getStreamsFile",
+        "constraints" : {
+            "loginToken" : constraints.loginTokenConstraint,
+            "streamName" : {"presence" : false, "format" : "[a-zA-Z0-9_\\.]+", "length" : {"minimum" : 1, "maximum" : 255}
+            }
+        }
+    }, {
+        "path" : "/checkStreamsFile",
+        "constraints" : {
+            "loginToken" : constraints.loginTokenConstraint,
+            "streamName" : {"presence" : false, "format" : "[a-zA-Z0-9_\\.]+", "length" : {"minimum" : 1, "maximum" : 255}
+            }
+        }
     }
+
     ]
 };
 

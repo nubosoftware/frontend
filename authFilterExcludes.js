@@ -84,13 +84,13 @@ function excludeList() {
         '/Notifications/sendNotificationFromRemoteServer' : 1,
         '/getResource' : 1,
         '/EWSListener' : 1,
-        '/startsession' : 1
+        '/startsession' : 1,
+        '/checkPasscode' : 1
     }
 
     var excludeList = {
         'SESSID' : {
             '/authenticateUser' : 1,
-            '/checkPasscode' : 1,
             '/setPasscode' : 1,
             '/resetPasscode' : 1,
             '/file/uploadToLoginToken' : 1

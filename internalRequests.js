@@ -338,7 +338,7 @@ function upload(req, res, next) {
         res.writeHeader(serverResponse.statusCode, serverResponse.headers);
         serverResponse.pipe(res);
         serverResponse.resume();
-    });
+    });		
     req.pipe(connector);
     req.resume();
     return;
@@ -348,9 +348,11 @@ function upload(req, res, next) {
 function getStreamsFile(req, res, next) {
     var loginToken = req.params.loginToken;
     var streamName = req.params.streamName;
+    var isLive = req.params.isLive;
     req.pause();
     var options = getOptions();
-    options.path = "/readStreamFile" + "?loginToken=" + loginToken + "&streamFileName=" + streamName;
+    console.log("SharonLog url = " + req.url)
+    options.path = "/readStreamFile" + "?loginToken=" + loginToken + "&streamFileName=" + streamName + "&isLive="+isLive;
     options.headers = req.headers;
     options.method = req.method;
     options.agent = false;

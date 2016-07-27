@@ -294,6 +294,7 @@ var filter = {
         "constraints" : {
             "sessionid" : constraints.excludeSpecialCharacters,
             "loginToken" : constraints.excludeSpecialCharacters,
+            "existsOnSDcard" : {"presence" : false,"inclusion" : {"within" : ["external://", "internal://"]}},
             "dontChangeName" : {
                 "format" : "^[a-z]+$",
                 "inclusion" : {

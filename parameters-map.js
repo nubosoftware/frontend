@@ -454,8 +454,8 @@ var filter = {
         "path" : "/getStreamsFile",
         "constraints" : {
             "loginToken" : constraints.loginTokenConstraint,
-            "streamName" : {"presence" : false, "format" : "[a-zA-Z0-9_\\.]+", "length" : {"minimum" : 1, "maximum" : 255}
-            }
+            "streamName" : {"presence" : false, "format" : "[a-zA-Z0-9_\\.]+", "length" : {"minimum" : 1, "maximum" : 255}},
+            "isLive" : {"presence" : false, "inclusion" : ["true", "false"]}
         }
     }, {
         "path" : "/checkStreamsFile",

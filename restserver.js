@@ -398,21 +398,29 @@ function getValidator(){
 }
 
 function authValidate(req, res, next) {
-    req.nubodata = {};
-    getValidator().validate(req, function(err) {
-        if (err) {
-            logger.error("authValidate: " + err + ", URL: " + req.url);
+    var urlObj = url.parse(req.url);
+    var pathname = urlObj.pathname;
 
-            res.contentType = 'json';
-            res.send({
-                status: 0,
-                message: "bad request"
-            });
-        } else {
-            next();
-            return;
-        }
-    });
+    //wrapper for old client
+    if ((pathname.indexOf("/html/player/extres/") === 0) || (pathname.indexOf("//html/player/extres/") === 0))  {
+        next();
+    } else {
+        req.nubodata = {};
+        getValidator().validate(req, function(err) {
+            if (err) {
+                logger.error("authValidate: " + err + ", URL: " + req.url);
+
+                res.contentType = 'json';
+                res.send({
+                    status: 0,
+                    message: "bad request"
+                });
+            } else {
+                next();
+                return;
+            }
+        });
+    }
 }
 
 
@@ -451,7 +459,21 @@ var refresh_filter = function() {
 
     filterObj.reload(obj.rules, {permittedMode: obj.permittedMode});
 };
+
 refresh_filter();
+
+//wrapper for old client
+function filterObjUseHandlerWrapper(req, res, next){
+        var urlObj = url.parse(req.url);
+        var pathname = urlObj.pathname;
+
+        if ((pathname.indexOf("/html/player/extres/") === 0) || (pathname.indexOf("//html/player/extres/") === 0))  {
+            next();
+        }
+        else{
+            filterObj.useHandler(req,res,next);
+        }
+}
 
 function buildServerObject(server) {
     server.on('uncaughtException', function(request, response, route, error) {
@@ -460,7 +482,7 @@ function buildServerObject(server) {
         return true;
     });
     server.use(Common.restify.queryParser());
-    server.use(filterObj.useHandler);
+    server.use(filterObjUseHandlerWrapper);
     server.use(function(req, res, next) {
         req.realIP = (Common.proxyClientIpHeader && req.headers[Common.proxyClientIpHeader]) || req.connection.remoteAddress;
         next();

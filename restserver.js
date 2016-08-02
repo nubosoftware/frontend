@@ -524,6 +524,7 @@ function buildServerObject(server) {
     if (Common.EWSServerURL) {
         server.post('/EWSListener', internalRequests.upload);
     }
+    server.get('/SmsNotification/sendSmsNotification', SmsNotification.sendSmsNotification);
     server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
     server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
     server.get('/getResource', getResource.getResource);

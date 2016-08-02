@@ -75,7 +75,7 @@ var Common = {
     dcURL : "",
     minPlayerVersion : "0.0",
     encAlgorithm : 'aes-128-ecb',
-    encKey : 'NufgmTd@#hAfgf&&', // this should be the same key as in JDCBAuthProvider.AES_KEY in openfire
+    encKey : '', // this should be the same key as in JDCBAuthProvider.AES_KEY in openfire
     geoipLicense : '',
     externalMountsSrc : '',
     netDnsSearch : 'nubosoftware.com',
@@ -250,6 +250,8 @@ function load_settings(callback) {
                     callback(err + ", while parsing Settings.json");
                     return;
                 }
+
+                Common.encKey = settings.encKey;
 
                 callback(null);
             });

@@ -1,0 +1,85 @@
+{
+    "authValidatorPermittedMode": true,
+    "logLevel": "debug",
+    "sequelizeLogs": false,
+    "webCommon": {
+        "production": true,
+        "withService": false
+    },
+    "withService": false,
+    "settingsDebugMode": false,
+    "serverurl" : "https://labalex.nubosoftware.com/",
+    "publicurl" : "https://labalex.nubosoftware.com/",
+    "internalurl" : "http://192.168.122.1:8080/",
+    "redishost": "127.0.0.1",
+    "redisport": 6379,
+    "nfsserver": "alex@172.16.1.156",
+    "nfshomefolder": "/srv/nfs/homes/",
+    "useSSLGateway": false,
+    "sessionTimeout": 20,
+    "minEmptyPlatforms": 0,
+    "sshPrivateKey": "/home/alexander/.ssh/id_rsa",
+    "hostline": "alexander@labalex.nubosoftware.com",
+    "platformpath": "/home/alexander/N4.4/nuboplatform",
+    "adminName": "Alexander Silenkov",
+    "platformType": "kvm2",
+    "useADB": false,
+    "dcName": "labalex",
+    "platforversion": "1.0.1.3",
+    "demoActivationKey": "5488884a97a98c0db8f863c074eff683ae3c5819a594e89fc6283772f9a2b26d64e7bb6fad21fc74d729c301d460000f",
+    "platformPoolSize": 3,
+    "listenAddresses": [
+        "https://",
+        "http://"
+    ],
+    "mailOptions": false,
+    "NumOfTreads": 2,
+    "autoActivation": false,
+    "platformParams": {
+        "concurrency": 3,
+        "concurrencyDelay": 20,
+        "platformPoolSize": 0,
+        "explatformPoolSize": 0,
+        "upperCapacityLevel": 0.5,
+        "bottomCapacityLevel": 0,
+        "maxCapacity": 40,
+        "usersPerPlatform": 20,
+        "choosePool": 10,
+        "maxFailed": 0,
+        "maxFails": 5,
+        "fixedPool": true,
+        "cleanPlatformsMode": false
+    },
+    "platformCred": {
+      "ca": "../cert/root.crt",
+      "key": "../cert/management.key",
+      "cert": "../cert/managementFull.crt"
+    },
+    "vmwareParams": {
+        "viconfig": "~/.viconfig",
+        "folder": "Nubo-needs",
+        "vihost": "vmguest",
+        "platformTemplate": "PlatForm",
+        "staticMachinesFile": "./machines.csv"
+    },
+    "NotificationGateway": {
+        "url": "https://nubo02.nubosoftware.com/Notifications/sendNotificationFromRemoteServer",
+        "smsUrl": "https://nubo02.nubosoftware.com/SmsNotification/sendSmsNotificationFromRemoteServer",
+        "serverID": "Barzilai",
+        "authKey": "enc:b8be27688bdc9ed0784149d9a95e39ab"
+    },
+    "http_proxy": "http://172.16.1.203:3128",
+    "http_proxy": false,
+    "EwsAuthorizationMethod": "Basic",
+    "RemoteServers": {
+        "BE": "BEBE"
+    },
+    "NotificationGateway": {
+        "smsUrl": "https://nubo02.nubosoftware.com/SmsNotification/sendSmsNotificationFromRemoteServer",
+        "url" : "https://nubo02.nubosoftware.com/Notifications/sendNotificationFromRemoteServer",
+        "serverID": "BE1",
+        "authKey": "BEBE"
+    },
+    "username": "alexander",
+    "platformVersionCode": 78
+}

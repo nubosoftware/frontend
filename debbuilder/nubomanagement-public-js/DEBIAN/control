@@ -1,0 +1,8 @@
+Package: nubomanagement-public-js
+Version: %Version%
+Architecture: all
+Depends: node-forever, nodejs (>=4.4.5), nubo-common
+Recommends:
+Maintainer: NuboSoftware <alexander@nubosoftware.com>
+Section: main
+Description: nubo management web service that run in public network

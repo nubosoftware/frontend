@@ -2736,6 +2736,14 @@ $(function() {
             uxip = new UXIP(datadiv, width, height);
             uxip.PlayerView = this;
 
+            var firstLogin = settings.get("firstGatewayConnection");
+            if (firstLogin == undefined) {
+                firstLogin = true;
+            }
+            if (firstLogin) {
+                $('.firstLoginPopup').css("visibility", "visible");
+            }
+
             var url = mgmtURL + "startsession?loginToken=" + encodeURIComponent(loginToken);
             if (DEBUG) {
                 console.log("PlayerView. " + url);
@@ -2836,6 +2844,12 @@ $(function() {
 
             document.getElementById("maindiv").style.backgroundColor = newWallpaperColor;
             document.getElementById("maindiv").style.backgroundImage = "url(" + mgmtURL + "html/player/" + newWallpaperImage + ")";
+        },
+
+        setFirstGatewayConnection : function (firstLogin) {
+            $('.firstLoginPopup').css("visibility", "hidden");
+            settings.set({'firstGatewayConnection' : firstLogin});
+            settings.save();
         }
     });
     
@@ -3022,10 +3036,12 @@ $(function() {
                 "wallpaperImage" : "",
                 "wallpaperColor" : wallpaperColor,
                 "uploadExternalWallpaper" : true,
+                "firstGatewayConnection" : true,
                 "deviceID" : ""
             });
             settings.save();
             window.location.hash = "greeting";
+            location.reload();
             return;
         }
         if (actions == "error") {

@@ -1,0 +1,8 @@
+Package: nubomanagement-public-common
+Version: %Version%
+Architecture: all
+Depends: nodejs(>= 4.4.5), node-forever, rsyslog (>= 7.4.4), nubo-common, nubomanagement-public-js, nubomanagement-public-node-modules, nubomanagement-public-webplayer
+Recommends:
+Maintainer: NuboSoftware <alexander@nubosoftware.com>
+Section: main
+Description: nubo management web service that run in public network

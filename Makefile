@@ -10,13 +10,10 @@ js_files_list := $(filter-out debbuilder/% rpmbuild/%,$(js_files_list))
 js_files_list := $(filter-out .gitignore Makefile rsyslog-nubomanagement-public.conf,$(js_files_list))
 node_modules_files_list := package.json
 
-include NuboVersion.txt
-VERSIONLINE=$(MAJOR).$(MINOR).$(PATCHLEVEL)
+default: all
 
-default: rpm
-
-rpm: nubomanagement-public nubomanagement-public-common
-rpm: nubomanagement-public-js nubomanagement-public-node_modules nubomanagement-public-webplayer
+all: nubomanagement-public nubomanagement-public-common
+all: nubomanagement-public-js nubomanagement-public-node_modules nubomanagement-public-webplayer
 
 define get_current_version
 $(eval $1_commit=$(shell git log -n 1 --format=oneline -- $($1_files_list)))
@@ -27,24 +24,42 @@ $(eval $1_buildid=$(shell echo $($1_tag) | sed 's/.*\(1\.2\.[0-9]*\)\.\([0-9]*\)
 $(eval $1_buildid=$(shell if [ `echo "$($1_tag)" | grep -E "\-g[a-f0-9]{7}$$"` ]; then echo $($1_buildid)+1 | bc; else echo $($1_buildid); fi))
 endef
 
-nubomanagement-public: $(nubo_proj_dir)/rpms/latest/nubomanagement-public-$(VERSIONLINE)-$(BUILDID).x86_64.rpm
+define get_project_version
+$(eval $1_tag=$(shell git describe --tags))
+$(eval $1_version=$(shell echo $($1_tag) | sed 's/.*\(1\.2\.[0-9]*\)\.\([0-9]*\).*/\1/'))
+$(eval $1_buildid=$(shell echo $($1_tag) | sed 's/.*\(1\.2\.[0-9]*\)\.\([0-9]*\).*/\2/'))
+$(eval $1_buildid=$(shell if [ `echo "$($1_tag)" | grep -E "\-g[a-f0-9]{7}$$"` ]; then echo $($1_buildid)+1 | bc; else echo $($1_buildid); fi))
+endef
 
-nubomanagement-public-common: $(nubo_proj_dir)/rpms/latest/nubomanagement-public-common-$(VERSIONLINE)-$(BUILDID).x86_64.rpm
+nubomanagement-public:
+	$(call get_project_version,public)
+	@echo "public version $(public_version) $(public_buildid)"
+	make $(nubo_proj_dir)/rpms/latest/nubomanagement-public-$(public_version)-$(public_buildid).x86_64.rpm
+	make $(nubo_proj_dir)/debs/latest/nubomanagement-public-$(public_version)-$(public_buildid).deb
+
+nubomanagement-public-common:
+	$(call get_project_version,common)
+	@echo "common version $(common_version) $(common_buildid)"
+	make $(nubo_proj_dir)/rpms/latest/nubomanagement-public-common-$(common_version)-$(common_buildid).x86_64.rpm
+	make $(nubo_proj_dir)/debs/latest/nubomanagement-public-common-$(common_version)-$(common_buildid).deb
 
 nubomanagement-public-js:
 	$(call get_current_version,js)
 	@echo "js version $(js_version) $(js_buildid)"
 	make $(nubo_proj_dir)/rpms/latest/nubomanagement-public-js-$(js_version)-$(js_buildid).x86_64.rpm
+	make $(nubo_proj_dir)/debs/latest/nubomanagement-public-js-$(js_version)-$(js_buildid).deb
 
 nubomanagement-public-node_modules:
 	$(call get_current_version,node_modules)
 	@echo "node_modules version $(node_modules_version) $(node_modules_buildid)"
 	make $(nubo_proj_dir)/rpms/latest/nubomanagement-public-node_modules-$(node_modules_version)-$(node_modules_buildid).x86_64.rpm
+	make $(nubo_proj_dir)/debs/latest/nubomanagement-public-node-modules-$(node_modules_version)-$(node_modules_buildid).deb
 
 nubomanagement-public-webplayer:
 	$(call get_current_version,webplayer)
 	@echo "webplayer version $(webplayer_version) $(webplayer_buildid)"
 	make $(nubo_proj_dir)/rpms/latest/nubomanagement-public-webplayer-$(webplayer_version)-$(webplayer_buildid).x86_64.rpm
+	make $(nubo_proj_dir)/debs/latest/nubomanagement-public-webplayer-$(webplayer_version)-$(webplayer_buildid).deb
 
 define make_rpm
 $(eval cur_version=$(shell echo "$2" | sed 's/.*\(1\.2\.[0-9]*\)\-\([0-9]*\)\.\(.*\)/\1/'))
@@ -77,6 +92,35 @@ $(nubo_proj_dir)/rpms/latest/nubomanagement-public-webplayer-%.rpm: $(webplayer_
 
 $(nubo_proj_dir)/rpms/latest/nubomanagement-public-%.rpm:
 	$(call make_rpm,$@,$*)
+
+define make_deb
+$(eval cur_version=$(shell echo "$2" | sed 's/.*\(1\.2\.[0-9]*\)\-\([0-9]*\)/\1/'))
+$(eval cur_buildid=$(shell echo "$2" | sed 's/.*\(1\.2\.[0-9]*\)\-\([0-9]*\)/\2/'))
+#echo "rpm version $(cur_version) $(cur_buildid) $(cur_arch)"
+$(eval pkgname=$(subst -$2.deb,,$(notdir $1)))
+$(eval pkgname=$(subst -$(cur_version)-$(cur_buildid).deb,,$(notdir $@)))
+NUBO_PROJ_PATH=$(nubo_proj_dir) \
+PROJ_PATH=$(current_dir) \
+Version=$(cur_version).$(cur_buildid) \
+./debbuilder/$(pkgname)/debbuilder.sh && \
+fakeroot dpkg-deb -b debbuild/$(pkgname) $(nubo_proj_dir)/debs/latest/$(pkgname)-$(cur_version)-$(cur_buildid).deb
+endef
+
+$(nubo_proj_dir)/debs/latest/nubomanagement-public-common-%.deb:
+	$(call make_deb,$@,$*)
+
+$(nubo_proj_dir)/debs/latest/nubomanagement-public-node-modules-%.deb: $(node_modules_files_list)
+	$(call make_deb,$@,$*)
+
+$(nubo_proj_dir)/debs/latest/nubomanagement-public-js-%.deb: $(js_files_list)
+	$(call make_deb,$@,$*)
+
+$(nubo_proj_dir)/debs/latest/nubomanagement-public-webplayer-%.deb: $(webplayer_files_list)
+	$(call make_deb,$@,$*)
+
+$(nubo_proj_dir)/debs/latest/nubomanagement-public-%.deb:
+	$(call make_deb,$@,$*)
+
 
 .PHONY: default clean nubomanagement nubomanagement-public nubomanagement-public-common
 .PHONY: nubomanagement-public-js nubomanagement-public-node_modules nubomanagement-public-webplayer

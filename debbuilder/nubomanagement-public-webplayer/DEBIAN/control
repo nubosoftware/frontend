@@ -1,0 +1,8 @@
+Package: nubomanagement-public-webplayer
+Version: %Version%
+Architecture: all
+Depends: nubomanagement-public-js
+Recommends:
+Maintainer: NuboSoftware <alexander@nubosoftware.com>
+Section: main
+Description: nubo management web service that run in public network

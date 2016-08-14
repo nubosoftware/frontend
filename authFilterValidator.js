@@ -17,19 +17,19 @@ AuthFilterValidator.prototype.validate = function(req, callback) {
     var reqPath = req.path(req.url);
 
     var self = this;
+    var mode = self._permittedMode ? "permitted" : "enforced"
 
     async.eachSeries(this._filters, function(filter, callback) {
         filterFunc = authFilters.getFilter(filter);
 
         if (filterFunc) {
             filterFunc(req, self._excludeList, function(err) {
-                if (self._permittedMode) {
-                    if(err){
-                        logger.error("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ AuthFilterValidator: " + err + ". path: " + req.url + " (permitted mode)");
-                    }
-                    callback(null);
+                if(err) {
+                    logger.error("$$$$$ AuthFilterValidator: " + err + ". path: " + req.url + " (" + mode + " mode)");
                 }
-                else{
+                if (self._permittedMode) {
+                    callback(null);
+                } else {
                     callback(err);
                 }
             });

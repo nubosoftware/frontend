@@ -22,7 +22,6 @@ var unlockPassword = require('./unlockPassword.js');
 var SendEmailForUnknownJobTitle = require('./sendEmailForUnknownJobTitle.js');
 var setPasscode = require('./setPasscode.js');
 var captureDeviceDetails = require('./captureDeviceDetails.js');
-var MediaStream = require('./mediaStream.js');
 var ThreadedLogger = require('./ThreadedLogger.js');
 var ActivationLink = require('./activationLink.js');
 var authFilterExcludes = require('./authFilterExcludes.js');
@@ -510,8 +509,6 @@ function buildServerObject(server) {
     server.get('/sendEmailForUnknownJobTitle', SendEmailForUnknownJobTitle.func);
     server.get('/captureDeviceDetails', captureDeviceDetails.captureDeviceDetails);
     server.get('/resendUnlockPasswordLink', unlockPassword.resendUnlockPasswordLink);
-    server.get('/createStream', MediaStream.createStream);
-    server.get('/playPauseStream', MediaStream.playPauseStream);
     server.get('/html/player/common.js', require('./webCommon.js'));
     server.get('/activationLink', ActivationLink.func);
     server.get('/unlockPassword', unlockPassword.unlockPassword);

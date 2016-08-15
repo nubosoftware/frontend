@@ -229,9 +229,19 @@ function checkIfNeedRedirection(playerVersion, activationKey, clientIP, logger, 
                     error = msg;
                     callback(finish);
                     return;
+                } else {
+                    if(activation.status === 0) {
+                        error = "Activation pending"
+                        response = {
+                            status: 0,
+                            message: 'Activation pending. Please try again later.'
+                        }
+                        callback(error);
+                    } else {
+                        activationData = activation;
+                        callback(null);
+                    }
                 }
-                activationData = activation;
-                callback(null);
             });
         },
         // check if user connected already to some data center

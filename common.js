@@ -44,27 +44,7 @@ var Common = {
     platfromPortStart : 5560,
     platformIPPrefix : "192.168.122.",
     platformMacPrefix : "52:54:00:12:00:",
-    cassandraHost : 'localhost:9160',
-    nfsserver : 'alex@172.16.0.109',
     nfshomefolder : '/srv/nfs4/homes/',
-    nfslocalcachefolder : '/home/nubodev/Android/nubo-production/nubomanagement/homesbak/homes/',
-    nfsId: 1,
-    settingsfolder : 'com.nubo.nubosettings/startup/',
-    browserfolder : 'com.android.browser/',
-    useSSLGateway : false,
-    internal_network : 'none',
-    gwplatformport : 8890,
-    gwcontrolport : 8891,
-    hostline : 'user@host',
-    imagesPath: "/opt/Android-KitKat",
-    exchange_platformpath : "/home/sharon/storage/Android/ExchangePlatformKK/nuboplatform", //sharon
-    platforversion : '0.4.dev',
-    sessionTimeout : 600, // 10 minutes session timeout
-    sshPrivateKey : '/home/nubodev/.ssh/id_rsa',
-    platformType : 'emulator',
-    startPlatformNum : 2,
-    nographics : false,
-    useADB : true,
     urlToAPK : "https://nubo01.nubosoftware.com/html/android/Nuboil.apk",
     urlToIOS1 : "https://nubo01.nubosoftware.com/html/ios/enterprises/SysAid/SysAid_Apps.mobileprovision",
     urlToIOS2 : "https://nubo01.nubosoftware.com/html/ios/enterprises/SysAid/GWILNuboClient.plist",
@@ -77,40 +57,10 @@ var Common = {
     encAlgorithm : 'aes-128-ecb',
     encKey : '', // this should be the same key as in JDCBAuthProvider.AES_KEY in openfire
     geoipLicense : '',
-    externalMountsSrc : '',
-    netDnsSearch : 'nubosoftware.com',
     listenAddresses : ["https://", "http://"],
     activationTimeoutPeriod : 48,
     nuboMask : '24',
-    platformParams : {
-        concurrency: 2,
-        concurrencyDelay: 10000,
-        platformPoolSize: 0,
-        explatformPoolSize: 0,
-        upperCapacityLevel: 0.5,
-        bottomCapacityLevel: 0,
-        maxCapacity: 60,
-        usersPerPlatform: 20,
-        choosePool: 10,
-        maxFailed: 0,
-        maxFails: 5,
-        fixedPool: true,
-        cleanPlatformsMode: false
-    },
     logLevel: "info",
-    defaultApps: [
-        "com.android.browser",
-        "com.android.calculator2",
-        "com.android.calendar",
-        "com.android.contacts",
-        "com.android.email",
-        "com.android.gallery",
-        "com.mobisystems.editor.office_with_reg",
-        "com.mobisystems.mobiscanner",
-        "com.nubo.messenger",
-        "com.nubo.nubosettings"
-    ],
-    hideControlPanel : false,
     //TODO change the name to something more appropriate!!!
     withService : false,
     withServiceDeviceID : "virtualDevice",
@@ -120,20 +70,9 @@ var Common = {
 		IMAdmin1 : 1,
 		IMAdmin2 : 2
 	},
-	controlPanelApp : "com.nubo.controlpanel",
-    EWSKeepAliveInterval : 5,
-    EWSCalendarSyncRefreshIntervalInMinutes : 10,
-    EWSCalendarSyncReadAheadEventsInMinutes : 120,
-    EWSCalendarSocketTimeoutInMillis : 5000,
-    EWSCalendarNotificationRefreshIntervalInMillis : 30000,
     EWSDomain : "",
-    EWSRunCalendarSyncOnThisDataCenter : false,
     EWSServerURL : false,
-    mappingAttributesLDAP : ["memberOf", "mail", "manager", "ipPhone", "sn", "givenName", "distinguishedName", "objectCategory", "mobile"],
-    mappingAttributesNubo : ["memberOf", "email", "manager", "officephone", "lastname", "firstname", "distinguishedName", "objectCategory", "mobilephone"],
-    isHandlingMediaStreams : false,
     photoCompression : 70,
-    ffmpegCgroupDir : "/sys/fs/cgroup/cpu/ffmpeg/tasks",
     activateBySMS : false,
     smsHandler : false,
     registerOrgPassword: "",
@@ -312,12 +251,6 @@ function parse_configs() {
 
         if(settings.logLevel && (settings.logLevel !== Common.logLevel)) logger.level = settings.logLevel;
 
-        if(settings.EWSDomainPrefix) {
-            //TODO: remove this block in Aug 2016 as depricated
-            logger.warn("use EWSDomain insead of EWSDomainPrefix");
-            Common.EWSDomain = settings.EWSDomainPrefix.slice(0,-1);
-            delete settings.EWSDomainPrefix;
-        }
         // load all attributes of settings in to Common
         for (var attrname in settings) {
             Common[attrname] = settings[attrname];

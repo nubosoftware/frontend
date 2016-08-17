@@ -522,10 +522,16 @@ function execActivate(req, res, next, email, username) {
                                     }).complete(function(err, results) {
                                         if (!!err) { // error on fetching org
                                             logger.error('Error on get orgs details for ' + emailDomain +', error: ' + err);
-                                        } else if (!results || results == "") { // no org in DB
-                                             logger.error('Cannot find org ' + emailDomain);
                                         } else { // get org details and act accordingly
-                                            var row = results[0];
+                                            var row;
+                                            if (results.length === 0) {
+                                                row = {
+                                                    notifieradmin: "",
+                                                    deviceapprovaltype: 0
+                                                }
+                                            } else {
+                                                row = results[0];
+                                            }
                                             var notifieradmin = row.notifieradmin != null ? row.notifieradmin : '';
                                             var deviceapprovaltype = row.deviceapprovaltype != null ? row.deviceapprovaltype : 0;
                                             

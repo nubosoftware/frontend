@@ -9,4 +9,7 @@ mkdir -p $BUILD_ROOT
 
 rsync -r $PROJ_PATH/debbuilder/nubomanagement-public/DEBIAN/ $BUILD_ROOT/DEBIAN/
 sed "s/%Version%/$Version/g" -i $BUILD_ROOT/DEBIAN/control
+sed "s/%Js_Version%/$Js_Version/g" -i $BUILD_ROOT/DEBIAN/control
+sed "s/%Node_modules_Version%/$Node_modules_Version/g" -i $BUILD_ROOT/DEBIAN/control
+sed "s/%Webplayer_Version%/$Webplayer_Version/g" -i $BUILD_ROOT/DEBIAN/control
 

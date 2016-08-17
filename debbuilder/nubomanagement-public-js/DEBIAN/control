@@ -1,7 +1,7 @@
 Package: nubomanagement-public-js
 Version: %Version%
 Architecture: all
-Depends: node-forever, nodejs (>=4.4.5), nubo-common
+Depends: nodejs (>=4.4.5), node-forever, nubomanagement-public
 Recommends:
 Maintainer: NuboSoftware <alexander@nubosoftware.com>
 Section: main

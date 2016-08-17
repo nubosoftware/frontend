@@ -5,7 +5,7 @@ Release: %{_release}
 Group: System Environment/Daemons
 BuildArch: x86_64
 License: none
-Requires: nubomanagement-public-js, nubomanagement-public-node_modules
+Requires: nubomanagement-public-js = %{Js_Version}, nubomanagement-public-node_modules = %{Node_modules_Version}, nubomanagement-public-webplayer = %{Webplayer_Version}, nubomanagement-public
 
 %description
 nubo management web service that run in public network

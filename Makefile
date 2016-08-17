@@ -70,6 +70,7 @@ $(eval pkgname=$(subst -$2.rpm,,$(notdir $1)))
 NUBO_PROJ_PATH=$(nubo_proj_dir) \
 PROJ_PATH=$(nubo_proj_dir)/nubomanagement-public \
 rpmbuild -v \
+$3 \
 --define "_topdir $(nubo_proj_dir)/nubomanagement-public/rpmbuild" \
 --define "_version $(cur_version)" \
 --define "_release $(cur_buildid)" \
@@ -79,7 +80,15 @@ cp $(nubo_proj_dir)/nubomanagement-public/rpmbuild/RPMS/$(cur_arch)/$(pkgname)-$
 endef
 
 $(nubo_proj_dir)/rpms/latest/nubomanagement-public-common-%.rpm:
-	$(call make_rpm,$@,$*)
+	$(call get_current_version,js)
+	$(call get_current_version,node_modules)
+	$(call get_current_version,webplayer)
+	$(eval versions_line=\
+	--define "Js_Version $(js_version)-$(js_buildid)" \
+	--define "Node_modules_Version $(node_modules_version)-$(node_modules_buildid)" \
+	--define "Webplayer_Version $(webplayer_version)-$(webplayer_buildid)" \
+	)
+	$(call make_rpm,$@,$*,$(versions_line))
 
 $(nubo_proj_dir)/rpms/latest/nubomanagement-public-node_modules-%.rpm: $(node_modules_files_list)
 	$(call make_rpm,$@,$*)
@@ -99,6 +108,7 @@ $(eval cur_buildid=$(shell echo "$2" | sed 's/.*\(1\.2\.[0-9]*\)\-\([0-9]*\)/\2/
 #echo "rpm version $(cur_version) $(cur_buildid) $(cur_arch)"
 $(eval pkgname=$(subst -$2.deb,,$(notdir $1)))
 $(eval pkgname=$(subst -$(cur_version)-$(cur_buildid).deb,,$(notdir $@)))
+$3 \
 NUBO_PROJ_PATH=$(nubo_proj_dir) \
 PROJ_PATH=$(current_dir) \
 Version=$(cur_version).$(cur_buildid) \
@@ -107,7 +117,15 @@ fakeroot dpkg-deb -b debbuild/$(pkgname) $(nubo_proj_dir)/debs/latest/$(pkgname)
 endef
 
 $(nubo_proj_dir)/debs/latest/nubomanagement-public-common-%.deb:
-	$(call make_deb,$@,$*)
+	$(call get_current_version,js)
+	$(call get_current_version,node_modules)
+	$(call get_current_version,webplayer)
+	$(eval versions_line=\
+	Js_Version=$(js_version).$(js_buildid) \
+	Node_modules_Version=$(node_modules_version).$(node_modules_buildid) \
+	Webplayer_Version=$(webplayer_version).$(webplayer_buildid) \
+	)
+	$(call make_deb,$@,$*,$(versions_line))
 
 $(nubo_proj_dir)/debs/latest/nubomanagement-public-node-modules-%.deb: $(node_modules_files_list)
 	$(call make_deb,$@,$*)

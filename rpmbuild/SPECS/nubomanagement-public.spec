@@ -5,7 +5,7 @@ Release: %{_release}
 Group: System Environment/Daemons
 BuildArch: x86_64
 License: none
-Requires: nubomanagement-public-common, nubomanagement-public-js, nubomanagement-public-node_modules, nubomanagement-public-webplayer
+Requires: nodejs >= 4.4.5, node-forever, nubomanagement-public-common = %{_version}-%{_release}
 
 %description
 nubo management web service that run in public network
@@ -16,6 +16,8 @@ nubo management web service that run in public network
 %build
 
 %install
+rm -rf $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT
 
 %post
 

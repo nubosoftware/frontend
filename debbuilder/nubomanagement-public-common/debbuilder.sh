@@ -14,4 +14,7 @@ install -m 644 $NUBO_PROJ_PATH/nubomanagement-public/rsyslog-nubomanagement-publ
 
 rsync -r $PROJ_PATH/debbuilder/nubomanagement-public-common/DEBIAN/ $BUILD_ROOT/DEBIAN/
 sed "s/%Version%/$Version/g" -i $BUILD_ROOT/DEBIAN/control
+sed "s/%Js_Version%/$Js_Version/g" -i $BUILD_ROOT/DEBIAN/control
+sed "s/%Node_modules_Version%/$Node_modules_Version/g" -i $BUILD_ROOT/DEBIAN/control
+sed "s/%Webplayer_Version%/$Webplayer_Version/g" -i $BUILD_ROOT/DEBIAN/control
 

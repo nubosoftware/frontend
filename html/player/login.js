@@ -180,6 +180,9 @@ var WallpaperImageList = [{
     "image" : "images/ILove.jpg"
 }];
 
+var WebmailList = ["gmail", "hotmail", "yahoo", "zoho", "icloud", "aim", "windowslive", "gmx", "fastmail", "bigstring",
+                   "gawab", "inbox.com", "lavabit", "zapak", "hotpop", "myway", "are2"];
+
 var DEBUG = false;
 var mgmtURL;
 var clickbgColor = '#828282';
@@ -1115,6 +1118,18 @@ $(function() {
                     errInForm = true;
                     $('#WorkEmailErr').text(l("invalidWorkEmail"));
                     $('#edWorkEmail').addClass("error");
+                }
+            }
+            if (!errInForm) {
+                var domain = workEmail.substring(workEmail.lastIndexOf("@") + 1);
+                if (domain != undefined && domain.length > 0) {
+                    for (var i=0; i<WebmailList.length; i++) {
+                        if (domain.indexOf(WebmailList[i]) > -1) {
+                            errInForm = true;
+                            $('#WorkEmailErr').text(l("invalidWorkEmailWeb1") + " " + WebmailList[i] + " " + l("invalidWorkEmailWeb2"));
+                            $('#edWorkEmail').addClass("error");
+                        }
+                    }
                 }
             }
             if (errInForm)

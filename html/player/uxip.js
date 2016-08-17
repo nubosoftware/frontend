@@ -880,6 +880,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             case DrawCmd.writeTransaction:
                 var d = new Date();
                 lastTimeReceiveData = d.getTime();
+                publicinterface.PlayerView.setFirstGatewayConnection(false);
 
                 func = writeTransaction;
                 break;

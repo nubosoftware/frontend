@@ -1820,6 +1820,28 @@ progress::-webkit-progress-bar {
     display: none;
 }
 
+div.firstLoginPopup {
+    visibility: hidden;
+    width: 220px;
+    height: 85px;
+    background: #464646;
+    margin: auto;
+    text-align: center;
+    z-index: 500;
+    position: relative;
+    border-radius: 5px;
+    margin-top: 200px;
+}
+div.firstLoginSpinner {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+span.firstLoginMsg {
+    padding-top: 10px;
+    font-family: NuboRoboto;
+    font-size: 15px;
+}
+
 div.spinner {
     position: absolute;
     left: 50%;

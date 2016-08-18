@@ -370,6 +370,41 @@ function getStreamsFile(req, res, next) {
     return;
 }
 
+function setAdminInDB(email, orgdomain, callback) {
+    console.log('internalREquests: email: ' + email);
+    var options = getOptions();
+    options.path = "/setAdminInDB" + "?email=" + email + "&orgdomain=" + orgdomain;
+    console.log('internalREquests: options: ' + options);
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            console.log('internalRequests err: ' + err);
+            callback(err);
+            return;
+        }
+
+        var resObjData;
+        console.log('resObjData: ' + resData);
+        try {
+            resObjData = JSON.parse(resData);
+            console.log('resObjData: ' + resObjData);
+        } catch (e) {
+            callback(e);
+            return;
+        }
+
+        if (resObjData.status === 1) {
+            callback(null, resObjData.resObj, resObjData.userObj, resObjData.orgObj);
+        } else if (resObjData.status === 0) {
+            callback(resObjData.message);
+        } else {
+            callback("unknown status code");
+        }
+
+        return;
+    });
+}
+
 
 module.exports = {
     createOrReturnUserAndDomain: createOrReturnUserAndDomain,
@@ -381,5 +416,6 @@ module.exports = {
     forwardGetRequest: forwardGetRequest,
     forwardCheckStreamFile: forwardCheckStreamFile,
     getStreamsFile : getStreamsFile,
+    setAdminInDB : setAdminInDB,
     upload: upload
 }

@@ -26,6 +26,11 @@ function createTrialProd(req, res, next) {
         msg = "Invalid parameters";
     }
 
+    var forceAdmin = req.params.forceAdmin;
+    if (!forceAdmin || !forceAdmin == "Y") {
+        forceAdmin = "N";
+    }
+
     if (status != 1) {
         res.send( {
             status : status,
@@ -34,7 +39,7 @@ function createTrialProd(req, res, next) {
         return;
     }
     
-    createTrialInternal(email, function(err) {
+    createTrialInternal(email, forceAdmin, function(err) {
         if (err) {
             res.send({
                 status : 0,
@@ -51,7 +56,7 @@ function createTrialProd(req, res, next) {
     });
 }
 
-function createTrialInternal(email, callback) {
+function createTrialInternal(email, forceAdmin, callback) {
     var myDomain = "";
     var isFirstTime = false;
     
@@ -95,9 +100,14 @@ function createTrialInternal(email, callback) {
                         callback(null);
                         return;
                     } else {
-                        // we found admin, so we send err that admin already exists
-                        callback("Admin is already exists in organization");
-                        return;
+                        if (forceAdmin == "Y") {
+                            callback(null);
+                            return;
+                        } else {
+                            // we found admin, so we send err that admin already exists
+                            callback("Admin is already exists in organization");
+                            return;
+                        }
                     }
                 });
             } else {

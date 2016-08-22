@@ -84,6 +84,7 @@ function excludeList() {
         '/Notifications/sendNotificationFromRemoteServer' : 1,
         '/getResource' : 1,
         '/EWSListener' : 1,
+        '//EWSListener' : 1,
         '/startsession' : 1,
         '/checkPasscode' : 1
     }

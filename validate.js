@@ -126,10 +126,9 @@ function validate(req, res, next) {
 
         if (!error && response)
             logger.info("validate: user successfully validated");
-
             logger.info("client response: " , JSON.stringify(response, null, 2));
             res.send(response);
-            
+
         return;
     });
 }
@@ -386,6 +385,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
     var finish = 'finish';
     var response = null;
     var error = null;
+    var loginToken = null;
 
     if (activationKey.indexOf('NuboTester') == 0) {
         // this is nubo test we need to pre register him !
@@ -759,13 +759,26 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                             passcodetypechange: userData.user.passcodetypechange,
                             loginToken: login.getLoginToken()
                         }
-
+                        if (Common.fastConnection) {
+                            loginToken = login.getLoginToken();
+                        }
                         callback(finish);
                     });
                 });
             }
         ], function(finish) {
             callback(error, response);
+            //optimistic login - starting user session...
+            if (Common.fastConnection) {
+                var url = "/startsession" + "?loginToken=" + loginToken + "&fastConnection=true";
+                internalRequests.forwardGetRequest(url, function(err, resObj){
+                    if (err) {
+                        logger.error("Optimistic startsession failed! err = " + err);
+                    } else {
+                        logger.info("Optimistic session created successfully");
+                    }
+                });
+            }
         });
     }
 }

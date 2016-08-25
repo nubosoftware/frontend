@@ -31,6 +31,7 @@ function excludeList() {
         '/html/player/lang/en.json' : 1,
         '/html/player/deps.js' : 1,
         '/html/player/images/x.png' : 1,
+        '/html/player/images/clock.png' : 1,
         '/html/player/fonts/Roboto-Regular.ttf' : 1,
         '/html/player/fonts/Roboto-Light.ttf' : 1,
         '/html/player/images/logo.png' : 1,

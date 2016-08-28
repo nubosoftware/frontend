@@ -214,7 +214,12 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
     // Hanan - removing time and location due to security issue raised by Israel that content is displayed on physical client
     notifyLocation = '';
     notifyTime = '';
-    
+
+    if (!pushRegID || pushRegID == '' || pushRegID == '(null)') {
+       logger.info('Aborting push notification to ' + deviceType + ', push reg id is null');
+       return;
+    }
+
     if (Common.NotificationGateway) {
         sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type);
         return;

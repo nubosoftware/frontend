@@ -40,6 +40,7 @@ function excludeList() {
         '/html/player/images/connerr.png': 1,
         '/html/player/images/del.png' : 1,
         '/html/player/images/volcano.png' : 1,
+        '/html/player/images/umbrella_ic.png' : 1,
         '/html/player/images/settings.png' : 1,
         '/html/player/images/video_recording.png' : 1,
         '/html/player/images/search.png' : 1,

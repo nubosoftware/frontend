@@ -51,6 +51,8 @@ function excludeList() {
         '/html/player/images/nuboDefWallpaper.jpg' : 1,
         '/html/player/images/folder.png' : 1,
         '/html/player/images/Welcome_Word.png' : 1,
+        '/html/player/images/ajax-loader.gif' : 1,
+        '/html/player/jobs_list.json' : 1,
         '/download' : 1,
         '/html/ios/NuboClientIOS.plist' : 1,
         '/html/ios/NuboS.png' : 1,

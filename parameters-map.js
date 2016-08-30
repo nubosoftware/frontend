@@ -360,10 +360,10 @@ var filter = {
             },
             "serverAuthKey" : {
                 "presence" : true,
-                "format" : "[0-9a-zA-Z_\\.\\-]+",
+                "format" : "[0-9a-zA-Z_\\.\\-+=/]+",
                 "length" : {
                     "minimum" : 6,
-                    "maximum" : 25
+                    "maximum" : 100
                 }
             },
             "notifyTime" : constraints.excludeSpecialCharacters,

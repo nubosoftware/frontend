@@ -104,7 +104,9 @@ function excludeList() {
             '/createStream' : 1,
             '/playPauseStream' : 1,
             '/file/uploadToSession' : 1,
-            '/Notifications/pushNotification' : 1
+            '/Notifications/pushNotification' : 1,
+            '//Notifications/sendNotificationFromRemoteServer' : 1,
+            '/Notifications/sendNotificationFromRemoteServer' : 1
 
         }
     }

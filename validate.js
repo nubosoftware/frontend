@@ -769,7 +769,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
         ], function(finish) {
             callback(error, response);
             //optimistic login - starting user session...
-            if (Common.fastConnection) {
+            if (Common.fastConnection && activationData.firstlogin == 0) {
                 var url = "/startsession" + "?loginToken=" + loginToken + "&fastConnection=true";
                 internalRequests.forwardGetRequest(url, function(err, resObj){
                     if (err) {

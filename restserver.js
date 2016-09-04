@@ -422,6 +422,21 @@ function authValidate(req, res, next) {
     }
 }
 
+function captureDeviceNetworkDetails(req,res,next) {
+    // skip irrelevant requets to reduce calls to DB
+    if ((req.url.indexOf("/html/player/extres/") >= 0) || (req.url.indexOf("//html/player/extres/") >= 0) || req.url.indexOf("getResource") >= 0 || req.url.indexOf("checkStreamsFile") >= 0)  {
+        next();
+    } else {
+        captureDeviceDetails.updateNetworkDeviceDetails(req, function(err) {
+	    if (err) {
+	        logger.error(err);
+	    }
+	    next();
+	    return;
+        });
+    }
+}
+
 
 var cnt = 0;
 
@@ -492,6 +507,9 @@ function buildServerObject(server) {
     server.use(accesslogger);
     server.use(nocache);
     server.use(authValidate);
+    if (Common.withService) {
+	server.use(captureDeviceNetworkDetails);
+    } 
     // server.use(Common.restify.gzipResponse());
     server.use(Common.restify.CORS({
         origins: Common.allowedOrigns, // defaults to ['*']

@@ -10,110 +10,79 @@ function captureDeviceDetails(req, res, next) {
     var logger = new ThreadedLogger();
     
     res.contentType = 'json';
-    var msg = "";
+    var msg = 'OK';
     var status = 0;
 
-    var session = req.params.sessionid;
-    var actionType = req.params.actionType;
-    var ip = req.connection.remoteAddress;
-
-    // for some reason ip is starting with ::ffff:
-    if (ip != null) {
-    	ip = ip.replace('::ffff:','');
-    }
-
-    var port = Common.withServiceUDPStaticPort ? Common.withServiceUDPStaticPort : req.connection.remotePort;
-    var sourcePort = req.connection.remotePort;
-
-    // get activation key
-    if (!session || session.length < 5) {
-        status = 1;
-        msg = "Invalid parameter";
-    }
-    
-    if (status == 1) {
-        res.send({
-            status : status,
-            msg : msg
-        });
-        return;
-    }
-
-    // get user details based on session
-    Common.db.User.findAll({
-        attributes: ['clientip', 'clientport'],
-        where: {
-            username: session,
-            isactive: 1
-        },
-    }).then(function(results) {
-        // no user found, return an error
-        if (!results || results == "") {
-            logger.error('User not found to capture device details ' + session);
-            status = 1;
-            msg = 'Invalid parameters';
-            res.send({
-                status : status,
-                message : msg
-            });
-        } else {
-            // save IP and Port on DB
-            updateIPandPort(session, ip, port, sourcePort, function(err) {
-                if (err) {
-                    logger.error(err);
-                    status = 1;
-                    msg = 'Internal error';
-                    res.send({
-                        status : status,
-                        message : msg
-                    });
-                } else {
-                    status = 0;
-                    msg = 'OK';
-                    res.send({
-                        status : status,
-                        message : msg,
-                        ip : ip,
-                        port : port
-                    });
-                }
-            });
-        }
-    }).catch(function(err) {
-        logger.error('Problem selecting user, error:' + err);
-        status = 1;
-        msg = 'Internal error';
-        res.send({
+    updateNetworkDeviceDetails(req, function(err) {
+	if (err) {
+	    msg = err;
+	    status = 1;
+	}
+	res.send({
             status : status,
             message : msg
         });
     });
 }
 
-function updateIPandPort(username, ip, port, sourcePort, callback) {
+function updateNetworkDeviceDetails(req, callback) {
+    // capture session and IP from request
+    var session = req.params.sessionid;
+    var ip = req.connection.remoteAddress;
+
+    // for some reason ip is starting with ::ffff:
+    if (ip != null) {
+    	ip = ip.replace('/:/g','');
+    }
+    if (ip != null) {
+    	ip = ip.replace('/f/g','');
+    }
+
+    // if parameter exist in common, we use static port both on device and both on server to send UDP notifications
+    var sourcePort = Common.withServiceUDPStaticPort ? Common.withServiceUDPStaticPort : req.connection.remotePort;
+
+    if(session) {
+        // update ip on DB if it has been changed
+        updateIPandPort(session, ip, sourcePort, function(err) {
+            if (err) {
+                logger.error(err);
+                msg = 'Internal error';
+                callback(msg)
+            } else {
+	        callback(null);
+            }
+        });
+    } else {
+        logger.warn("updateNetworkDeviceDetails get empty session");
+        callback('Internal error');
+    }
+
+
+}
+
+function updateIPandPort(username, ip, sourcePort, callback) {
     // update existing entry
     Common.db.User.update({
         clientip: ip,
         clientport: sourcePort
     }, {
         where: {
+                clientip: {ne: ip},
         	username: username
         }
     }).then(function(results) {
-        if (Common.DEBUG)
-            logger.info("Update ip (" + ip + ") and port (" + port + ") for " + username);
+console.log("updateIPandPort:", results);
         callback(null);
-        return;
     }).catch(function(err) {
         callback("can't update ip and port for " + username + ", error is:" + err);
-        return;
     });
 }
 
 
 
 captureDeviceDetails = {
-    captureDeviceDetails : captureDeviceDetails
+    captureDeviceDetails : captureDeviceDetails,
+    updateNetworkDeviceDetails : updateNetworkDeviceDetails
 };
 
 module.exports = captureDeviceDetails;

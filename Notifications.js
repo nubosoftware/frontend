@@ -165,7 +165,15 @@ function sendNotificationFromRemoteServer(req, res) {
     var type = readParam("type");
 
     if (status == 1) {
-        sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type);
+        if (Common.withService) {
+            udpNotification(pushRegID, notifyTitle, notifyTime, notifyLocation, type, function(err) {
+                if (err) {
+                    logger.error('ERROR::pushUDPNotification: ' + err);
+                }
+            });
+        } else {
+            sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type);
+        }
         msg = "Notification queued";
     }
 

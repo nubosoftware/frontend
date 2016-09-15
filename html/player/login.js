@@ -375,6 +375,13 @@ $(function() {
             }
 
             wallpaperImage = this.get("wallpaperImage");
+            if (wallpaperImage == undefined || wallpaperImage == "") {
+                wallpaperImage = "images/stars.jpg";
+                this.set({
+                    "wallpaperImage" : wallpaperImage
+                });
+                this.save();
+            }
 
         },
         sync : function(method, model) {

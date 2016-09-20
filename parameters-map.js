@@ -161,6 +161,9 @@ var filter = {
                     "minimum" : 3,
                     "maximum" : 255
                 }
+            },
+            "timeZone" : {
+                "format" : "[a-zA-Z\\/\\_\\-\\.]+"
             }
         }
     }, {

@@ -264,8 +264,8 @@ var filter = {
     }, {
         "path" : "/resendUnlockPasswordLink",
         "constraints" : {
+            "sessionid" : constraints.excludeSpecialCharacters,
             "activationKey" : {
-                "sessionid" : constraints.excludeSpecialCharacters,
                 "presence" : true,
                 "length" : {
                     is : 96

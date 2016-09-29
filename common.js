@@ -9,6 +9,19 @@ var async = require('async');
 var _ = require('underscore');
 
 var Common = {
+    STATUS_OK : 1,
+    STATUS_ERROR : 0,
+    STATUS_EXPIRED_LOGIN_TOKEN : 2,
+    STATUS_INVALID_PLAYER_VERSION : 3,
+    STATUS_PASSWORD_LOCK : 4,
+    STATUS_CHANGE_URL : 301,
+    STATUS_DISABLE_USER_DEVICE : 5,
+    STATUS_DISABLE_USER : 6,
+    STATUS_EXPIRED_PASSCODE : 7,
+    STATUS_EXISTING_USER_NOT_ALLOWED : 8,
+    STATUS_DOMAIN_NOT_FOUND : 9,
+    STATUS_PENDING : 10,
+    STATUS_INVALID_PASSCODE : 11,
     minUXIPVersion : 1,
     util : require('util'),
     fs : require('fs'),

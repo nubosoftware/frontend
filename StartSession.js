@@ -17,7 +17,7 @@ function startSession(req, res, next) {
     // https://login.nubosoftware.com/startsession?loginToken=[loginToken]?timeZone=[timeZome]
     res.contentType = 'json';
     var errRes = {
-        status: 0,
+        status: Common.STATUS_ERROR,
         message: 'Internal error. Please contact administrator.',
     };
 

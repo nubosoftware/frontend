@@ -17,7 +17,7 @@ var MIN_DIFFERENT_DIGITS = 4;
 var MAX_LOGIN_ATTEMPTS = 3;
 
 function returnInternalError(err, res) {
-    status = 3;
+    status = Common.STATUS_ERROR;
     // internal error
     msg = "Internal error";
     console.error(err.name, err.message);
@@ -46,7 +46,7 @@ function checkPasscode(req, res, next) {
 
     var loginToken = req.params.loginToken;
     if (loginToken == undefined || loginToken.length < 5) {
-        status = 2;
+        status = Common.STATUS_EXPIRED_LOGIN_TOKEN;
         // invalid parameter
         msg = "Invalid loginToken";
     }
@@ -54,7 +54,7 @@ function checkPasscode(req, res, next) {
     var passcode = req.params.passcode;
 
     if (passcode == undefined) {
-        status = 0;
+        status = Common.STATUS_INVALID_PASSCODE;
         // invalid parameter
         msg = "Invalid passCode";
         res.send({
@@ -67,7 +67,7 @@ function checkPasscode(req, res, next) {
     (function(loginToken, passcode) {
         new Login(loginToken, function(err, login) {
             if (err) {
-                status = 2;
+                status = Common.STATUS_EXPIRED_LOGIN_TOKEN;
                 // invalid parameter
                 msg = "Invalid loginToken, err:" + err;
                 res.send({
@@ -84,7 +84,7 @@ function checkPasscode(req, res, next) {
                 login.setValidLogin(true);
                 login.loginParams.passcode = passcode;
                 login.save(function(err, login) {
-                    var status = 1;
+                    var status = Common.STATUS_OK;
                     var msg = "Passcode is valid. User loggedin";
                     var l = login.loginParams;
                     var passcodeexpirationdate;
@@ -93,14 +93,14 @@ function checkPasscode(req, res, next) {
                         var now = new Date();
                         passcodeexpirationdate = new Date(passcodeupdate.getTime() + l.passcodeexpirationdays*24*60*60*1000);
                         if (now > passcodeexpirationdate) {
-                            status = 7;
+                            status = Common.STATUS_EXPIRED_PASSCODE;
                             msg = "Passcode is valid, but expired";
                         } else {
-                            status = 1;
+                            status = Common.STATUS_OK;
                             msg = "Passcode is valid. User loggedin";
                         }
                     } else  {
-                        status = 1;
+                        status = Common.STATUS_OK;
                         msg = "Passcode is valid. User loggedin";
                     }
 
@@ -136,7 +136,7 @@ function checkPasscode(req, res, next) {
             }
 
             if (login.getPasscodeActivationRequired() != "false" || login.getAuthenticationRequired() != "false") {
-                status = 0;
+                status = Common.STATUS_ERROR;
                 // invalid parameter
                 msg = "Pascode enter not allowed";
                 res.send({
@@ -155,7 +155,7 @@ function checkPasscode(req, res, next) {
                 },
             }).complete(function(err, results) {
                 if (!!err) {
-                    status = 0;
+                    status = Common.STATUS_ERROR;
                     msg = "Internal Error: " + err;
                     res.send({
                         status : status,
@@ -166,7 +166,7 @@ function checkPasscode(req, res, next) {
                 }
 
                 if (!results || results == "") {
-                    status = 0;
+                    status = Common.STATUS_ERROR;
                     msg = "Cannot find user or user is inactive " + login.getEmail();
                     res.send({
                         status : status,
@@ -193,7 +193,7 @@ function checkPasscode(req, res, next) {
                 }).complete(function(err, results) {
                     var retErrorMsg = "Checkpasscode failure";
                     if (!!err) {
-                        status = 0;
+                        status = Common.STATUS_ERROR;
                         msg = "Internal Error: " + err;
                         logger.info(msg);
                         res.send({
@@ -205,7 +205,7 @@ function checkPasscode(req, res, next) {
                     }
 
                    if (!results || results == "") {
-                       status = 0;
+                       status = Common.STATUS_ERROR;
                        msg = "Cannot find device " + login.getDeviceID();
                        logger.info(msg);
                        res.send({
@@ -230,7 +230,7 @@ function checkPasscode(req, res, next) {
                            var adminName = "";
                            var adminEmail = "";
                            if (!!err) {
-                                status = 0;
+                                status = Common.STATUS_ERROR;
                                 msg = "Internal Error: " + err;
                                 logger.info(msg);
                            } else {
@@ -242,12 +242,12 @@ function checkPasscode(req, res, next) {
                            }
 
 	                       if (isUserActive == 0) {
-	                           status = 6;
+	                           status = Common.STATUS_DISABLE_USER;
 	                           msg = "User is inactive " + login.getUserName();
 	                           logger.info(msg);
 	                      } else {
 	                           //inactive device
-	                           status = 5;
+	                           status = Common.STATUS_DISABLE_USER_DEVICE;
 	                           msg = "Device is inactive " + login.getDeviceID();
 	                           logger.info(msg);
 	                      }
@@ -288,7 +288,7 @@ function checkPasscode(req, res, next) {
                            }).then(function() {
 
                            }).catch(function(err) {
-                               status = 0;
+                               status = Common.STATUS_ERROR;
                                msg = "Internal Error: " + err;
                                res.send({
                                    status : status,
@@ -303,7 +303,7 @@ function checkPasscode(req, res, next) {
                                logger.info("login attempts failed");
 
                                //user has had mistaken twice and this is the third time
-                               status = 4;
+                               status = Common.STATUS_PASSWORD_LOCK;
                                // passcode lock
                                msg = "You have incorrectly typed your passcode 3 times. An email was sent to you. Open your email to open your passcode.";
                                logger.info(msg);
@@ -324,7 +324,7 @@ function checkPasscode(req, res, next) {
                                });
                                return;
                            } else {
-                               status = 0;
+                               status = Common.STATUS_INVALID_PASSCODE;
                                msg = "Invalid passcode";
                                res.send({
                                    status : status,
@@ -346,7 +346,7 @@ function checkPasscode(req, res, next) {
                                }).then(function() {
                                    loginUser(login, passcode, res);
                                }).catch(function(err) {
-                                   status = 0;
+                                   status = Common.STATUS_ERROR;
                                    msg = "Internal Error: " + err;
                                    res.send({
                                        status : status,
@@ -386,14 +386,14 @@ function findUserNameSendEmail(userEmail) {
     }).complete(function(err, results) {
 
         if (!!err) {
-            status = 0;
+            status = Common.STATUS_ERROR;
             msg = "Internal Error: " + err;
             logger.info("findUserNameSendEmail:" + msg);
             return;
         }
 
         if (!results || results == "") {
-            status = 0;
+            status = Common.STATUS_ERROR;
             msg = "Cannot find user " + userEmail;
             logger.info("findUserNameSendEmail:" + msg);
             return;
@@ -418,7 +418,7 @@ function findUserNameSendEmail(userEmail) {
                 }).then(function() {
                     sendNotification(userEmail, firstname, lastname, loginEmailToken,mobilePhone,mainDomain);
                 }).catch(function(err) {
-                    status = 0;
+                    status = Common.STATUS_ERROR;
                     msg = "Internal Error: " + err;
                     logger.info("findUserNameSendEmail:update loginemailtoken" + msg);
                     return;

@@ -11,7 +11,7 @@ var Track = require('./track.js');
 var MIN_DIFFERENT_DIGITS = 4;
 
 function returnInternalError(err, res) {
-    status = 3;
+    status = Common.STATUS_ERROR;
     // internal error
     msg = "Internal error";
     console.error(err.name, err.message);
@@ -93,7 +93,7 @@ function setPasscode(req, res, next) {
     //read and validate params
     var loginToken = req.params.loginToken;
     if (loginToken == undefined || loginToken.length < 5) {
-        status = 2;
+        status = Common.STATUS_ERROR;
         // invalid parameter
         msg = "Invalid loginToken";
         res.send({
@@ -106,7 +106,7 @@ function setPasscode(req, res, next) {
     var passcode = req.params.passcode;
     if (passcode == undefined || validatePassword(passcode) == 0) {
 
-        status = 0;
+        status = Common.STATUS_ERROR;
         // invalid parameter
         msg = "Invalid passCode";
         res.send({
@@ -120,7 +120,7 @@ function setPasscode(req, res, next) {
     (function(loginToken, passcode) {
         new Login(loginToken, function(err, login) {
             if (err) {
-                status = 2;
+                status = Common.STATUS_EXPIRED_LOGIN_TOKEN;
                 // invalid parameter
                 msg = "Invalid loginToken, err:" + err;
                 res.send({
@@ -133,7 +133,7 @@ function setPasscode(req, res, next) {
             logger.info("login.getPasscodeActivationRequired=" + login.getPasscodeActivationRequired());
             if (oldpasscode) {
                 if (login.loginParams.passcode !== oldpasscode) {
-                    status = 0;
+                    status = Common.STATUS_ERROR;
                     // invalid parameter
                     msg = "Pascode change not allowed";
                     res.send({
@@ -144,7 +144,7 @@ function setPasscode(req, res, next) {
                 }
             } else {
                 if (login.getPasscodeActivationRequired() != "true") {
-                    status = 0;
+                    status = Common.STATUS_ERROR;
                     // invalid parameter
                     msg = "Pascode activation not allowed";
                     res.send({
@@ -184,7 +184,7 @@ function setPasscode(req, res, next) {
                 login.setPasscode(passcode);
                 login.setValidLogin(true);
                 login.save(function(err, login) {
-                    status = 1;
+                    status = Common.STATUS_OK;
                     var msg = "Passcode updated";
                     console.dir(login.loginParams);
                     res.send({
@@ -209,7 +209,7 @@ function setPasscode(req, res, next) {
                 });
 
             }).catch(function(err) {
-                status = 0;
+                status = Common.STATUS_ERROR;
                 msg = "Internal Error: " + err;
                 logger.info(msg);
                 res.send({

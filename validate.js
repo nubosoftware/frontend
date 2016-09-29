@@ -21,7 +21,7 @@ var MAX_VALIDATE_RETRIES = 4;
 var VALIDATE_ATTEMPT_INTERVAL = 500;
 
 function returnInternalError(err, res) {
-    status = 3;
+    status = Common.STATUS_ERROR;
     // internal error
     msg = "Internal error";
     console.error(err.name, err.message);
@@ -48,7 +48,7 @@ function validate(req, res, next) {
 
     if(Common.withService && !clientUserName){
         res.send({
-            status: 1,
+            status: Common.STATUS_ERROR,
             message: "Invalid username"
         });
         return;    
@@ -56,14 +56,14 @@ function validate(req, res, next) {
 
     if (!activationKey || activationKey.length < 5) {
         res.send({
-            status: 1,
+            status: Common.STATUS_ERROR,
             message: "Invalid activationKey"
         });
         return;
     }
 
     // var response = {
-    //     status: 0,
+    //     status: Common.STATUS_ERROR,
     //     message: 'Internal error'
     // }
     // res.send(response);
@@ -117,7 +117,7 @@ function validate(req, res, next) {
         if (!response) {
             logger.error('validate: don\'t have response to send');
             response = {
-                status: 0,
+                status: Common.STATUS_ERROR,
                 message: 'Internal error. Please contact administrator.'
             }
             res.send(response);
@@ -155,7 +155,7 @@ function checkIfNeedRedirection(playerVersion, activationKey, clientIP, logger, 
                         var msg = "Redirecting user from " + twoNumbersVersionStr + " to " + redirect;
                         logger.info("checkIfNeedRedirection: player version not supported, " + msg);
                         response = {
-                            status: 301,
+                            status: Common.STATUS_CHANGE_URL,
                             message: msg,
                             mgmtURL: redirect
                         }
@@ -167,7 +167,7 @@ function checkIfNeedRedirection(playerVersion, activationKey, clientIP, logger, 
                 var minVer = parseVersion(Common.minPlayerVersion);
                 if (playerVer.major < minVer.major || (playerVer.major == minVer.major && playerVer.minor < minVer.minor)) {
                     response = {
-                        status: 3,
+                        status: Common.STATUS_INVALID_PLAYER_VERSION,
                         message: "Invalid player version"
                     }
                     callback(finish);
@@ -184,7 +184,7 @@ function checkIfNeedRedirection(playerVersion, activationKey, clientIP, logger, 
                         var errMsg = "Redirection failed";
                         logger.error("checkIfNeedRedirection: " + errMsg + ", " + err);
                         response = {
-                            status: 0,
+                            status: Common.STATUS_ERROR,
                             message: errMsg
                         }
                         error = err;
@@ -198,7 +198,7 @@ function checkIfNeedRedirection(playerVersion, activationKey, clientIP, logger, 
                         var msg = "Redirecting user from " + data.countryCode + " to " + redirect;
                         logger.info("checkIfNeedRedirection: geo redirection, " + msg);
                         response = {
-                            status: 301,
+                            status: Common.STATUS_CHANGE_URL,
                             message: msg,
                             mgmtURL: redirect
                         }
@@ -222,17 +222,17 @@ function checkIfNeedRedirection(playerVersion, activationKey, clientIP, logger, 
                 if (err) {
                     var msg = 'failed getting activation data';
                     response = {
-                        status: 0,
+                        status: Common.STATUS_ERROR,
                         message: msg
                     }
                     error = msg;
                     callback(finish);
                     return;
                 } else {
-                    if(activation.status === 0) {
+                    if(activation.status === Common.STATUS_ERROR) {
                         error = "Activation pending"
                         response = {
-                            status: 0,
+                            status: Common.STATUS_ERROR,
                             message: 'Activation pending. Please try again later.'
                         }
                         callback(error);
@@ -253,7 +253,7 @@ function checkIfNeedRedirection(playerVersion, activationKey, clientIP, logger, 
             internalRequests.createOrReturnUserAndDomain(activationData.email, logger, function(err, user, userObj, orgObj) {
                 if (err) {
                     response = {
-                        status: 0,
+                        status: Common.STATUS_ERROR,
                         message: 'Internal error'
                     }
                     logger.error("checkIfNeedRedirection: couldn't get user, " + err);
@@ -266,7 +266,7 @@ function checkIfNeedRedirection(playerVersion, activationKey, clientIP, logger, 
                     var msg = "Redirecting user from " + Common.dcName + " to " + user.dcname;
                     logger.info("checkIfNeedRedirection: user connected already, " + msg);
                     response = {
-                        status: 301,
+                        status: Common.STATUS_CHANGE_URL,
                         message: msg,
                         mgmtURL: user.dcurl
                     }
@@ -291,7 +291,6 @@ function getActivationData(activationKey, logger, callback) {
             activationkey: activationKey
         },
     }).complete(function(err, results) {
-
         if (!!err) {
             logger.error("getActivationInfo: " + err);
             var errMsg = "Internal database error";
@@ -397,7 +396,6 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                 activationkey: activationKey
             },
         }).complete(function(err, results) {
-
             if (!!err) {
                 returnInternalError(err);
                 return;
@@ -424,7 +422,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
             Common.db.Activation.create({
                 activationkey: activationKey,
                 deviceid: activationKey,
-                status: 1,
+                status: Common.STATUS_OK,
                 email: email,
                 firstname: 'Nubo',
                 lastname: 'Tester',
@@ -477,7 +475,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                     getActivationData(activationKey, logger, function(err, activation) {
                         if (err) {
                             response = {
-                                status: 0,
+                                status: Common.STATUS_ERROR,
                                 message: err
                             }
                             error = err;
@@ -498,7 +496,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                     case 0:
                         var msg = "Activation pending. Please try again later.";
                         response = {
-                            status: 0,
+                            status: Common.STATUS_PENDING,
                             message: msg
                         }
                         callback(finish);
@@ -508,7 +506,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                         return;
                     case 2:
                         response = {
-                            status: 2,
+                            status: Common.STATUS_EXPIRED_LOGIN_TOKEN,
                             message: "Activation expired. Please register again."
                         }
                         callback(finish);
@@ -519,7 +517,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                     default:
                         var msg = "Internal error. Please contact administrator.";
                         response = {
-                            status: 0,
+                            status: Common.STATUS_ERROR,
                             message: msg
                         }
                         logger.error('validateActivation: ' + msg);
@@ -531,7 +529,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
             function(callback) {
                 if (deviceID !== activationData.deviceid) {
                     response = {
-                        status: 0,
+                        status: Common.STATUS_ERROR,
                         message: "Internal error. Please contact administrator."
                     }
                     error = "device ID recived from client doesnt indentical to the one in activation table";
@@ -548,7 +546,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                     internalRequests.createOrReturnUserAndDomain(activationData.email, logger, function(err, resObj, userObj, orgObj) {
                         if (err) {
                             response = {
-                                status: 0,
+                                status: Common.STATUS_ERROR,
                                 message: "Internal error. Please contact administrator."
                             }
                             error = err;
@@ -596,7 +594,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                 if (Common.withService) {
                     if (userData.username != clientUserName) {
                         response = {
-                            status: 0,
+                            status: Common.STATUS_ERROR,
                             message: "Could not find username: " + clientUserName
                         }
                         callback(finish);
@@ -606,7 +604,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
 
                 if (userData.user.isactive == 0) {
                     response = {
-                        status: 6,
+                        status: Common.STATUS_DISABLE_USER,
                         message: "user not active!. Please contact administrator.",
                         orgName: userData.orgName,
                         adminEmail: adminEmail,
@@ -622,7 +620,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                 var loginattempts = userData.loginattempts ? userData.loginattempts : 0;
                 if (loginattempts >= MAX_LOGIN_ATTEMPTS) {
                     response = {
-                        status: 4,
+                        status: Common.STATUS_PASSWORD_LOCK,
                         message: "User passcode has been locked. Unlock email was sent. Please contact administrator."
                     }
                     callback(finish);
@@ -639,7 +637,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                 getUserDeviceData(email, deviceid, logger, maindomain, function(err, userDevice, isDeviceBlocked) {
                     if (err) {
                         response = {
-                            status: 0,
+                            status: Common.STATUS_ERROR,
                             message: err
                         }
                         error = err;
@@ -650,7 +648,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
 
                     if (isDeviceBlocked) {
                         response = {
-                            status: 5,
+                            status: Common.STATUS_DISABLE_USER_DEVICE,
                             message: "device " + deviceid + " blocked!. Please contact administrator.",
                             orgName: userData.orgName,
                             adminEmail: adminEmail,
@@ -662,7 +660,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
 
                     if (userDevice.active == 0) {
                         response = {
-                            status: 5,
+                            status: Common.STATUS_DISABLE_USER_DEVICE,
                             message: "device " + deviceid + " not active!. Please contact administrator.",
                             orgName: userData.orgName,
                             adminEmail: adminEmail,
@@ -681,7 +679,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                 new Login(null, function(err, login) {
                     if (err) {
                         response = {
-                            status: 0,
+                            status: Common.STATUS_ERROR,
                             message: "Internal error. Please contact administrator."
                         }
                         error = err;
@@ -730,7 +728,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                     login.save(function(err, login) {
                         if (err) {
                             response = {
-                                status: 0,
+                                status: Common.STATUS_ERROR,
                                 message: "Internal error. Please contact administrator."
                             }
                             error = err;
@@ -740,7 +738,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                         }
      
                         response = {
-                            status: 1,
+                            status: Common.STATUS_OK,
                             message: "Device activated !",
                             authenticationRequired: login.getAuthenticationRequired(),
                             passcodeActivationRequired: login.getPasscodeActivationRequired(),

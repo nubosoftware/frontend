@@ -11,7 +11,7 @@ var User = require('./user.js');
 var isFirstTime = "";
 
 function returnInternalError(err, res) {
-    var statusInternal = 0;
+    var statusInternal = Common.STATUS_ERROR;
     // internal error
     var msgInternal = "Internal error";
     console.error(err.name, err.message);
@@ -29,7 +29,7 @@ function resetPasscode(req, res, next) {
     // https://oritest.nubosoftware.com/resetPasscode?loginToken=[loginToken]
     res.contentType = 'json';
     var msg = "";
-    var status = 100;
+    var status = 100
     //unknown
     var statusEmail = 100;
     isFirstTime = "";
@@ -37,12 +37,12 @@ function resetPasscode(req, res, next) {
     //read and validate params
     var loginToken = req.params.loginToken;
     if (loginToken == undefined || loginToken.length < 5) {
-        status = 2;
+        status = Common.STATUS_ERROR;
         // invalid parameter
         msg = "Invalid loginToken";
     }
 
-    if (status == 0) {
+    if (status == Common.STATUS_ERROR) {
         res.send({
             status : status,
             message : msg
@@ -53,7 +53,7 @@ function resetPasscode(req, res, next) {
     (function(loginToken) {
         new Login(loginToken, function(err, login) {
             if (err) {
-                status = 2;
+                status = Common.STATUS_EXPIRED_LOGIN_TOKEN;
                 // invalid parameter
                 msg = "Invalid loginToken, err:" + err;
                 res.send({
@@ -64,7 +64,7 @@ function resetPasscode(req, res, next) {
                 return;
             }
             if (login.getPasscodeActivationRequired() != "false" || login.getAuthenticationRequired() != "false") {
-                status = 0;
+                status = Common.STATUS_ERROR;
                 // invalid parameter
                 msg = "Pascode reset not allowed";
                 res.send({
@@ -124,7 +124,7 @@ function resetPasscode(req, res, next) {
                                 activationkey : login.getActivationKey()
                             }
                         }).then(function() {
-                            status = 1;
+                            status = Common.STATUS_OK;
                             var msg = "Reset passcode sent";
                             res.send({
                                 status : status,
@@ -209,11 +209,11 @@ function resetPasscode(req, res, next) {
                                             },
                                         }).complete(function(err, results) {
                                             if (!!err) {
-                                                status = 0;
+                                                status = Common.STATUS_ERROR;
                                                 msg = "Internal Error: " + err;
                                                 logger.info("reset passcode find user by email error: " + msg);
                                             } else if (!results || results == "") {
-                                                status = 0;
+                                                status = Common.STATUS_ERROR;
                                                 msg = "Cannot find user " + login.getUserName();
                                                 logger.info("reset passcode find user by email error, " + msg);
                                             } else {
@@ -231,7 +231,7 @@ function resetPasscode(req, res, next) {
                                 }
                             });       
                     }).catch(function(err) {
-                        status = 0;
+                        status = Common.STATUS_ERROR
                         msg = "Internal Error: " + err;
                         res.send({
                             status : status,

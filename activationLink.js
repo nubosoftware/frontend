@@ -17,7 +17,7 @@ var ActivationLink = {
 module.exports = ActivationLink;
 
 function returnInternalError(err, res) {
-    status = 3;
+    status = Common.STATUS_ERROR;
     // internal error
     msg = "Internal error";
     console.error(err.name, err.message);
@@ -45,14 +45,14 @@ function activationLink(req, res, next) {
     var logger = new ThreadedLogger();
     var emailToken = req.params.token;
     if (emailToken == undefined || emailToken.length < 15) {
-        status = 1;
+        status = Common.STATUS_ERROR;
         // invalid parameter
         msg = "Invalid token";
     }
 
     var cloneActivation = req.params.cloneActivation;
 
-    if (status == 1) {
+    if (status == Common.STATUS_ERROR) {
         res.send({
             status : status,
             message : msg
@@ -73,7 +73,7 @@ function activationLink(req, res, next) {
         }
 
         if (!results || results == "") {
-            status = 1;
+            status = Common.STATUS_ERROR;
             // invalid parameter
             msg = "Token not found!";
             res.send({
@@ -146,7 +146,7 @@ function activationLink(req, res, next) {
                             activationkey : oldActivationKey
                         }
                     }).then(function() {
-                        status = 0;
+                        status = Common.STATUS_OK;
 
                         // mark old activation from the same device as invalid
                         // cloneActivation if exist, has different deviceid (HTML5 client) so we can run it here, asynchronously with cloneActivation update
@@ -157,7 +157,6 @@ function activationLink(req, res, next) {
                                 deviceid : deviceid
                             },
                         }).complete(function(err, results) {
-
                             if (!!err) {
                                 logger.info("ERROR: Cannot get Activations of deviceid: " + deviceid);
                             }
@@ -190,7 +189,6 @@ function activationLink(req, res, next) {
                         //4. create user in storage (if necessary)
 
                         if (cloneActivation != undefined && cloneActivation.length > 5) {
-
                             Common.db.Activation.findAll({
                                 attributes : ['deviceid', 'activationkey', 'status', 'pushregid', 'email', 'firstname', 'lastname', 'jobtitle', 'devicetype'],
                                 where : {
@@ -286,7 +284,7 @@ function activationLink(req, res, next) {
                 // createOrReturnUserAndDomain
 
             } else {
-                status = 1;
+                status = Common.STATUS_ERROR;
                 // invalid parameter
                 msg = "Token is not valid any more. Please try again.";
                 var deviceType = row.devicetype;

@@ -14,7 +14,7 @@ var internalRequests = require('./internalRequests.js');
 var isFirstTime = "";
 
 function returnInternalError(err, res) {
-    status = 3;
+    status = Common.STATUS_ERROR;
     // internal error
     msg = "Internal error";
     console.error(err.name, err.message);
@@ -60,14 +60,14 @@ function AuthenticateUser(req, res, next) {
 
     var loginToken = req.params.loginToken;
     if (loginToken == undefined || loginToken.length < 5) {
-        status = 0;
+        status = Common.STATUS_ERROR;
         // invalid parameter
         msg = "Invalid loginToken";
     }
 
     var user = req.params.user;
     if (user == undefined || user.length < 1) {
-        status = 0;
+        status = Common.STATUS_ERROR;
         // invalid parameter
         msg = "Invalid user";
     }
@@ -83,12 +83,12 @@ function AuthenticateUser(req, res, next) {
 
     var password = req.params.password;
     if (password == undefined || password.length < 5) {
-        status = 0;
+        status = Common.STATUS_ERROR;
         // invalid parameter
         msg = "Invalid password";
     }
 
-    if (status == 0) {
+    if (status == STATUS_ERROR) {
         logger.info("AuthenticateUser error: " + msg);
         res.send({
             status : status,
@@ -100,7 +100,7 @@ function AuthenticateUser(req, res, next) {
     (function(loginToken, user, password) {
         new Login(loginToken, function(err, login) {
             if (err) {
-                status = 0;
+                status = Common.STATUS_ERROR;
                 // invalid parameter
                 msg = "Invalid loginToken, err:" + err;
                 logger.info("AuthenticateUser error: " + msg);
@@ -112,7 +112,7 @@ function AuthenticateUser(req, res, next) {
                 return;
             }
             if (login.getAuthenticationRequired() != "true") {
-                status = 0;
+                status = Common.STATUS_ERROR;
                 // invalid parameter
                 msg = "Authentication not allowed";
                 logger.info("AuthenticateUser error: " + msg);
@@ -124,7 +124,7 @@ function AuthenticateUser(req, res, next) {
             }
             internalRequests.createOrReturnUserAndDomain(login.getEmail(), logger, function(err, obj) {
                 if (err) {
-                    status = 0;
+                    status = Common.STATUS_ERROR;
                     msg = "Internal Error: " + err;
                     logger.info("AuthenticateUser error: " + msg);
                     res.send({
@@ -148,7 +148,7 @@ function AuthenticateUser(req, res, next) {
                 internalRequests.validateAuthentication(login.getMainDomain(), email, authType, serverURL, userDomain, user, password, secureSSL, signature, function(err) {
                     if (err) {
                         res.send({
-                            status : '0',
+                            status : Common.STATUS_ERROR,
                             message : 'Internal error. Please contact administrator.'
                         });
                         logger.error("AuthenticateUser: " + err);
@@ -165,7 +165,7 @@ function AuthenticateUser(req, res, next) {
                     internalRequests.updateUserAccount(login.getUserName(), email, authType, serverURL, userDomain, orgUser, orgPassword, secureSSL, signature, login.getDeviceID(), updateOtherDevices, true, function(err) {
                         if (err) {
                             res.send({
-                                status: '0',
+                                status: Common.STATUS_ERROR,
                                 message: 'Internal error. Please contact administrator.'
                             });
                             logger.error("AuthenticateUser: " + err);
@@ -175,7 +175,7 @@ function AuthenticateUser(req, res, next) {
                         login.save(function(err, login) {
                             if (err) {
                                 res.send({
-                                    status: '0',
+                                    status: Common.STATUS_ERROR,
                                     message: 'Internal error. Please contact administrator.'
                                 });
                                 logger.error("AuthenticateUser: " + err);
@@ -183,7 +183,7 @@ function AuthenticateUser(req, res, next) {
                             }
 
                             res.send({
-                                status: 1,
+                                status: Common.STATUS_OK,
                                 message: "User authenticated"
                             });
                             updateFirstLogin(login.getActivationKey(), 0);

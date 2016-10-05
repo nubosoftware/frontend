@@ -496,7 +496,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                     case 0:
                         var msg = "Activation pending. Please try again later.";
                         response = {
-                            status: Common.STATUS_PENDING,
+                            status: Common.STATUS_ERROR,
                             message: msg
                         }
                         callback(finish);

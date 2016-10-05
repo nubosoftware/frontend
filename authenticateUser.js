@@ -88,7 +88,7 @@ function AuthenticateUser(req, res, next) {
         msg = "Invalid password";
     }
 
-    if (status == STATUS_ERROR) {
+    if (status == Common.STATUS_ERROR) {
         logger.info("AuthenticateUser error: " + msg);
         res.send({
             status : status,

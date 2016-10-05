@@ -22,6 +22,7 @@ var Common = {
     STATUS_DOMAIN_NOT_FOUND : 9,
     STATUS_PENDING : 10,
     STATUS_INVALID_PASSCODE : 11,
+    STATUS_INVALID_RESOURCE : 12,
     minUXIPVersion : 1,
     util : require('util'),
     fs : require('fs'),

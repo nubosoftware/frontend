@@ -36,7 +36,7 @@ function createLogEvents(deviceid, email, domain, firstName, lastName, regid, cr
 }
 
 function returnInternalError(err, res) {
-    var status = Common.STATUS_ERROR;
+    var status = 1;
     // internal error
     var msg = "Internal error";
     if (err != null) {
@@ -103,7 +103,7 @@ function registerOrg(req, res, next) {
     internalRequests.createDomainForUser(domain, logger, function(err) {
         if (err) {
         	logger.error("Internal error, error is: " + err);
-            status = Common.STATUS_ERROR;
+            status = 1;
             msg = "Internal error";
             res.send({
                 status : status,
@@ -122,7 +122,7 @@ function registerOrg(req, res, next) {
 
         // send ok status
         res.send({
-            status : Common.STATUS_OK,
+            status : 0,
             message : "OK"
         });
 
@@ -208,7 +208,7 @@ function execActivate(req, res, next, email, username) {
     //read and validate params
     var deviceid = req.params.deviceid;
     if (deviceid == undefined || deviceid.length < 5) {
-        status = Common.STATUS_ERROR;
+        status = 1;
         // invalid parameter
         msg = "Invalid device ID";
     }
@@ -217,7 +217,7 @@ function execActivate(req, res, next, email, username) {
 
 //    var email = req.params.email;
     if (email == undefined || !validateEmail(email)) {
-        status = Common.STATUS_ERROR;
+        status = 1;
         // invalid parameter
         msg = "Invalid email address";
     }
@@ -231,19 +231,19 @@ function execActivate(req, res, next, email, username) {
     if (alreadyUser != 'Y') {
         first = req.params.first;
         if (first == undefined || first.length < 1) {
-            status = Common.STATUS_ERROR;
+            status = 1;
             // invalid parameter
             msg = "Invalid first name";
         }
         last = req.params.last;
         if (last == undefined || last.length < 1) {
-            status = Common.STATUS_ERROR;
+            status = 1;
             // invalid parameter
             msg = "Invalid last name";
         }
         title = req.params.title;
         if (title == undefined || title.length < 1) {
-            status = Common.STATUS_ERROR;
+            status = 1;
             // invalid parameter
             msg = "Invalid job title";
         }
@@ -281,7 +281,7 @@ function execActivate(req, res, next, email, username) {
     logger.info("Before params...");
     var signature = req.params.signature;
     if (signature == undefined || signature.length < 1 || signature != signatureconf) {
-        status = Common.STATUS_ERROR;
+        status = 1;
         // invalid parameter
         msg = "Invalid signature";
         logger.info("signature err: " + msg);
@@ -291,7 +291,7 @@ function execActivate(req, res, next, email, username) {
     logger.info("reg id before if: " + regid);
     if (regid == undefined || regid.length < 1) {
         logger.info("reg id err");
-        status = Common.STATUS_ERROR;
+        status = 1;
         // invalid parameter
         msg = "invalid reg id";
         logger.info("reg id err: " + msg);
@@ -299,7 +299,7 @@ function execActivate(req, res, next, email, username) {
 
     logger.info("after regid ");
 
-    if (status == Common.STATUS_ERROR) {
+    if (status == 1) {
         logger.info("Error in activation:" + msg);
         res.send({
             status : status,
@@ -428,7 +428,7 @@ function execActivate(req, res, next, email, username) {
                         });
 
                         logger.info("Added activation " + token);
-                        status = Common.STATUS_OK;
+                        status = 0;
                         msg = "Activation link has been sent";
                         res.send({
                             status : status,
@@ -591,11 +591,11 @@ function execActivate(req, res, next, email, username) {
                                                     },
                                                 }).complete(function(err, results) {
                                                     if (!!err) {
-                                                        status = Common.STATUS_ERROR;
+                                                        status = 1;
                                                         msg = "Internal Error: " + err;
                                                         logger.info("reset passcode find user by email error: " + msg);
                                                     } else if (!results || results == "") {
-                                                        status = Common.STATUS_ERROR;
+                                                        status = 1;
                                                         msg = "Cannot find user " + login.getUserName();
                                                         logger.info("reset passcode find user by email error, " + msg);
                                                     } else {
@@ -733,7 +733,7 @@ function execActivate(req, res, next, email, username) {
             if (err) {
                 logger.info("Activate erorr in get activate_ip_: " + err);
                 res.send({
-                    status : Common.STATUS_ERROR,
+                    status : 1,
                     message : "Activate error in get activate_ip"
                 });
                 return;
@@ -748,7 +748,7 @@ function execActivate(req, res, next, email, username) {
             if (attmpts >= 3) {
                 logger.info("Activate too many already user attmepts for ip: " + clientIP);
                 res.send({
-                    status : Common.STATUS_ERROR,
+                    status : 1,
                     message : "Activate too many already user attempts"
                 });
                 return;
@@ -759,7 +759,7 @@ function execActivate(req, res, next, email, username) {
                     Common.redisClient.setex('activate_ip_' + clientIP, 3600, attmpts, function(err) {
                         logger.info("Email not found: " + email);
                         res.send({
-                            status : Common.STATUS_ERROR,
+                            status : 1,
                             message : "Email not found",
                         });
                     });

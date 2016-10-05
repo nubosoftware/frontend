@@ -11,12 +11,12 @@ function captureDeviceDetails(req, res, next) {
     
     res.contentType = 'json';
     var msg = 'OK';
-    var status = Common.STATUS_OK;
+    var status = 0;
 
     updateNetworkDeviceDetails(req, function(err) {
 	if (err) {
 	    msg = err;
-	    status = Common.STATUS_ERROR;
+	    status = 1;
 	}
 	res.send({
             status : status,

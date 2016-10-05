@@ -54,7 +54,7 @@ function checkPasscode(req, res, next) {
     var passcode = req.params.passcode;
 
     if (passcode == undefined) {
-        status = Common.STATUS_INVALID_PASSCODE;
+        status = Common.STATUS_ERROR;
         // invalid parameter
         msg = "Invalid passCode";
         res.send({
@@ -324,7 +324,7 @@ function checkPasscode(req, res, next) {
                                });
                                return;
                            } else {
-                               status = Common.STATUS_INVALID_PASSCODE;
+                               status = Common.STATUS_ERROR;
                                msg = "Invalid passcode";
                                res.send({
                                    status : status,

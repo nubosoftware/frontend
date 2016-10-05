@@ -45,14 +45,14 @@ function activationLink(req, res, next) {
     var logger = new ThreadedLogger();
     var emailToken = req.params.token;
     if (emailToken == undefined || emailToken.length < 15) {
-        status = Common.STATUS_ERROR;
+        status = 1;
         // invalid parameter
         msg = "Invalid token";
     }
 
     var cloneActivation = req.params.cloneActivation;
 
-    if (status == Common.STATUS_ERROR) {
+    if (status == 1) {
         res.send({
             status : status,
             message : msg
@@ -73,7 +73,7 @@ function activationLink(req, res, next) {
         }
 
         if (!results || results == "") {
-            status = Common.STATUS_ERROR;
+            status = 1;
             // invalid parameter
             msg = "Token not found!";
             res.send({
@@ -146,7 +146,7 @@ function activationLink(req, res, next) {
                             activationkey : oldActivationKey
                         }
                     }).then(function() {
-                        status = Common.STATUS_OK;
+                        status = 0;
 
                         // mark old activation from the same device as invalid
                         // cloneActivation if exist, has different deviceid (HTML5 client) so we can run it here, asynchronously with cloneActivation update

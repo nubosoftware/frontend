@@ -618,20 +618,42 @@ $(function() {
                         window.location.hash = "passcode";
                     }
                 } else if (data.status == 0) {//Pending
-                    if (DEBUG) {
-                        console.log("pending...");
+                    var isValidationError = false;
+                    var message = data.message;
+                    if (message != undefined || message != "") {
+                        message = message.toLowerCase();
+                        var isUserPending = message.indexOf("activation pending");
+                        if (isUserPending == -1) {
+                             isValidationError = true;
+                        }
                     }
-                    pendingValidation = true;
-                    if (validationView == null)
-                        return;
 
-                    // this.timeoutId = setTimeout(validationView.checkValidation, 2000);
-                    if (isSplashTemplate) {
-                        validationView.render();
+                    if (isValidationError == false) {
+                        if (DEBUG) {
+                            console.log("pending...");
+                        }
+                        pendingValidation = true;
+                        if (validationView == null)
+                            return;
+
+                        // this.timeoutId = setTimeout(validationView.checkValidation, 2000);
+                        if (isSplashTemplate) {
+                            validationView.render();
+                        } else {
+                            this.timeoutId = setTimeout(validationView.checkValidation, 2000);
+                        }
                     } else {
-                        this.timeoutId = setTimeout(validationView.checkValidation, 2000);
+                        if (DEBUG) {
+                            console.log("checkValidation error");
+                        }
+                        console.log("checkValidation. error " + data.status + ", " + data.message);
+                        this.timeoutId = 0;
+                        pendingValidation = false;
+                        settings.set({
+                            activationKey : ""
+                        });
+                        window.location.hash = "error";
                     }
-
                 } else if (data.status == 301) {
                     mgmtURL = data.mgmtURL;
 
@@ -1192,6 +1214,8 @@ $(function() {
                     }
                     // console.log("CreatePlayerView.activatePlayer. status=301, mgmtURL: " + mgmtURL);
                     setTimeout(createplayerView.activatePlayer, 1000);
+                } else {
+                    window.location.hash = "error";
                 }
 
             });
@@ -1296,6 +1320,10 @@ $(function() {
                     settings.save();
                     window.location.hash = "validation";
 
+                } else if (data.status == 1) {
+                    $('#workEmailSendErr').text(l("emailNotExist"));
+                    $('#workEmailSend').addClass("error");
+
                 } else if (data.status == 2) {// domain company not found
                     $('#workEmailSendErr').text(l("emailNotExist"));
                     $('#workEmailSend').addClass("error");
@@ -1316,6 +1344,8 @@ $(function() {
                     }
                     // console.log("AlreadyUserView.activatePlayer. status=301, mgmtURL: " + mgmtURL);
                     setTimeout(alreadyUserView.activatePlayer, 1000);
+                } else {
+                    window.location.hash = "error";
                 }
             });
 
@@ -1667,10 +1697,24 @@ $(function() {
                 }
 
                 if (data.status == 0) {                 // failed
-                    $('#passcodeErrMsg').text(l('wrongPassCode1') + "      " + l('wrongPassCode2'));
-                    $('#passcodeErrMsg').css("visibility", "visible");
-                    enterPasscode = "";
-                    $('#enterPasscode').val("");
+                    var isError = false;
+                    var message = data.message;
+                    if (message != undefined || message != "") {
+                        message = message.toLowerCase();
+                        var isInvalidPasscode = message.indexOf("invalid passcode");
+                        if (isInvalidPasscode == -1) {
+                           isError = true;
+                        }
+                    }
+
+                    if (isError == false) {
+                        $('#passcodeErrMsg').text(l('wrongPassCode1') + "      " + l('wrongPassCode2'));
+                        $('#passcodeErrMsg').css("visibility", "visible");
+                        enterPasscode = "";
+                        $('#enterPasscode').val("");
+                    } else {
+                        window.location.hash = "error";
+                    }
 
                 } else if (data.status == 1) {          // success
                     loggedIn = true;
@@ -2206,9 +2250,23 @@ $(function() {
                 }
 
                 if (data.status == 0) {                 // failed
-                    $('#passcodeErrMsg').text(l('wrongPassCode1') + "      " + l('wrongPassCode2'));
-                    $('#passcodeErrMsg').css("visibility", "visible");
-                    $('#enterPassword').val("");
+                   var isError = false;
+                    var message = data.message;
+                    if (message != undefined || message != "") {
+                        message = message.toLowerCase();
+                        var isInvalidPasscode = message.indexOf("invalid passcode");
+                        if (isInvalidPasscode == -1) {
+                           isError = true;
+                        }
+                    }
+
+                    if (isError == false) {
+                         $('#passcodeErrMsg').text(l('wrongPassCode1') + "      " + l('wrongPassCode2'));
+                        $('#passcodeErrMsg').css("visibility", "visible");
+                        $('#enterPassword').val("");
+                   } else {
+                        window.location.hash = "error";
+                    }
 
                 } else if (data.status == 1) {          // success
                     loggedIn = true;

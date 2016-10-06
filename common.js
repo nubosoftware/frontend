@@ -18,8 +18,6 @@ var Common = {
     STATUS_DISABLE_USER_DEVICE : 5,
     STATUS_DISABLE_USER : 6,
     STATUS_EXPIRED_PASSCODE : 7,
-    STATUS_EXISTING_USER_NOT_ALLOWED : 8,
-    STATUS_DOMAIN_NOT_FOUND : 9,
     STATUS_INVALID_RESOURCE : 10,
     minUXIPVersion : 1,
     util : require('util'),

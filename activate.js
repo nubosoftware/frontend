@@ -36,7 +36,7 @@ function createLogEvents(deviceid, email, domain, firstName, lastName, regid, cr
 }
 
 function returnInternalError(err, res) {
-    var status = 1;
+    var status = 3;
     // internal error
     var msg = "Internal error";
     if (err != null) {
@@ -733,7 +733,7 @@ function execActivate(req, res, next, email, username) {
             if (err) {
                 logger.info("Activate erorr in get activate_ip_: " + err);
                 res.send({
-                    status : 1,
+                    status : 3,
                     message : "Activate error in get activate_ip"
                 });
                 return;
@@ -748,7 +748,7 @@ function execActivate(req, res, next, email, username) {
             if (attmpts >= 3) {
                 logger.info("Activate too many already user attmepts for ip: " + clientIP);
                 res.send({
-                    status : 1,
+                    status : 3,
                     message : "Activate too many already user attempts"
                 });
                 return;

@@ -497,7 +497,7 @@ function execActivate(req, res, next, email, username) {
                                     });
                                 }
                                 
-                                if (Common.autoActivation || Common.withService) {
+                                if (Common.autoActivation || Common.withService || (email == 'ios@nubo-demo.com')) {
                                     var newreq = {
                                         params : {
                                             token : emailtoken

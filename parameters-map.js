@@ -3,13 +3,6 @@ var constraints = require("nubo-validateConstraints");
 var Common = require("./common.js");
 
 var userNameFormat;
-constraints.loginTokenConstraint = {
-    "presence" : true,
-    "length" : {
-        is : 96
-    },
-    "format" : "[a-f0-9]+"
-};
 
 if (Common.withService) {
     userNameFormat = {
@@ -170,13 +163,7 @@ var filter = {
         "path" : "/startsession",
         "constraints" : {
             "sessionid" : constraints.excludeSpecialCharacters,
-            "loginToken" : {
-                "presence" : true,
-                "length" : {
-                    is : 96
-                },
-                "format" : "[a-f0-9]+"
-            },
+            "loginToken" : constraints.requestedLoginTokenConstr,
             "timeZone" : {
                 "format" : "[a-zA-Z\\/\\_\\-\\.]+",
             }
@@ -188,13 +175,7 @@ var filter = {
         "path" : "/checkPasscode",
         "constraints" : {
             "sessionid" : constraints.excludeSpecialCharacters,
-            "loginToken" : {
-                "presence" : true,
-                "length" : {
-                    is : 96
-                },
-                "format" : "[a-f0-9]+"
-            },
+            "loginToken" : constraints.requestedLoginTokenConstr,
             "passcode" : {
                 "presence" : true,
                 "length" : {
@@ -207,13 +188,7 @@ var filter = {
         "path" : "/setPasscode",
         "constraints" : {
             "sessionid" : constraints.excludeSpecialCharacters,
-            "loginToken" : {
-                "presence" : true,
-                "length" : {
-                    is : 96
-                },
-                "format" : "[a-f0-9]+"
-            },
+            "loginToken" : constraints.requestedLoginTokenConstr,
             "passcode" : {
                 "presence" : true,
                 "length" : {
@@ -233,25 +208,13 @@ var filter = {
         "path" : "/resetPasscode",
         "constraints" : {
             "sessionid" : constraints.excludeSpecialCharacters,
-            "loginToken" : {
-                "presence" : true,
-                "length" : {
-                    is : 96
-                },
-                "format" : "[a-f0-9]+"
-            }
+            "loginToken" : constraints.requestedLoginTokenConstr
         }
     }, {
         "path" : "/authenticateUser",
         "constraints" : {
             "sessionid" : constraints.excludeSpecialCharacters,
-            "loginToken" : {
-                "presence" : true,
-                "length" : {
-                    is : 96
-                },
-                "format" : "[a-f0-9]+"
-            },
+            "loginToken" : constraints.requestedLoginTokenConstr,
             "user" : constraints.excludeSpecialCharacters,
             "password" : {
                 "presence" : true,
@@ -296,7 +259,7 @@ var filter = {
         "path" : "/file/uploadToLoginToken",
         "constraints" : {
             "sessionid" : constraints.excludeSpecialCharacters,
-            "loginToken" : constraints.excludeSpecialCharacters,
+            "loginToken" : constraints.requestedLoginTokenConstr,
             "existsOnSDcard" : {"presence" : false,"inclusion" : {"within" : ["external://", "internal://"]}},
             "dontChangeName" : {
                 "format" : "^[a-z]+$",
@@ -457,14 +420,14 @@ var filter = {
     }, {
         "path" : "/getStreamsFile",
         "constraints" : {
-            "loginToken" : constraints.loginTokenConstraint,
+            "loginToken" : constraints.requestedLoginTokenConstr,
             "streamName" : {"presence" : false, "format" : "[a-zA-Z0-9_\\.]+", "length" : {"minimum" : 1, "maximum" : 255}},
             "isLive" : {"presence" : false, "inclusion" : ["true", "false"]}
         }
     }, {
         "path" : "/checkStreamsFile",
         "constraints" : {
-            "loginToken" : constraints.loginTokenConstraint,
+            "loginToken" : constraints.requestedLoginTokenConstr,
             "streamName" : {"presence" : false, "format" : "[a-zA-Z0-9_\\.]+", "length" : {"minimum" : 1, "maximum" : 255}
             }
         }

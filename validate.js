@@ -412,7 +412,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
             var currentDate = new Date();
 
             // build expiration date 48 hours from creation date (make iT settings later on)
-            Clogger.info('Activation Timeout:' + Common.activationTimeoutPeriod);
+            logger.info('Activation Timeout:' + Common.activationTimeoutPeriod);
             var expirationDate = new Date();
             expirationDate.setHours(expirationDate.getHours() + Common.activationTimeoutPeriod);
 

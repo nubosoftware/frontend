@@ -179,7 +179,9 @@ var filter = {
             "loginToken" : constraints.requestedLoginTokenConstr,
             "passcode" : {
                 "presence" : true,
+                "format" : "[0-9]+",
                 "length" : {
+                    "minimum" : 6,
                     "maximum" : 25
                 }
 
@@ -191,6 +193,7 @@ var filter = {
             "sessionid" : constraints.requestedSessionIdConstr,
             "loginToken" : constraints.requestedLoginTokenConstr,
             "passcode" : {
+                "format" : "[0-9]+",
                 "presence" : true,
                 "length" : {
                     "minimum" : 6,
@@ -198,6 +201,7 @@ var filter = {
                 }
             },
             "oldpasscode" : {
+                "format" : "[0-9]+",
                 "length" : {
                     "minimum" : 6,
                     "maximum" : 25
@@ -374,14 +378,8 @@ var filter = {
     }, {
         "path" : '/captureDeviceDetails',
         "constraints" : {
-            "sessionid" : constraints.requestedSessionIdConstr,
-            "session" : {
-                "presence" : false,
-                "length" : {
-                    is : 96
-                },
-                "format" : "[a-f0-9_\\-\\.]+"
-            },
+            "sessionid" : constraints.sessionIdConstr,
+            "session" : constraints.sessionIdConstr,
             "actionType" : {
                 "presence" : false,
                 "inclusion" : {

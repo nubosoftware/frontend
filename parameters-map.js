@@ -14,14 +14,7 @@ if (Common.withService) {
         }
     };
 } else {
-    userNameFormat = {
-        "email" : true,
-        "presence" : true,
-        "length" : {
-            "minimum" : 1,
-            "maximum" : 255
-        }
-    };
+    userNameFormat = constraints.emailConstrRequested
 }
 
 var filter = {
@@ -38,18 +31,8 @@ var filter = {
         "path" : "/activate",
         "constraints" : {
             "sessionid" : constraints.requestedSessionIdConstr,
-            "email" : {
-                "email" : true,
-                "presence" : true
-            },
-            "deviceid" : {
-                "presence" : true,
-                "format" : "[a-zA-Z0-9_\\-\\.@]+",
-                "length" : {
-                    "minimum" : 1,
-                    "maximum" : 255
-                }
-            },
+            "email" : constraints.emailConstrRequested,
+            "deviceid" : constraints.deviceIdConstrRequested,
             "imsi" : {
                 "format" : "^[^<>'\"/;`%!$&|]*$",
                 "length" : {
@@ -100,10 +83,7 @@ var filter = {
             "secret" : constraints.excludeSpecialCharacters,
             "first" : constraints.excludeSpecialCharacters,
             "last" : constraints.excludeSpecialCharacters,
-            "email" : {
-                "presence" : true,
-                "email" : true
-            },
+            "email" : constraints.emailConstrRequested,
             "domain" : {
                 "presence" : true,
                 "format" : "[a-zA-Z0-9_\\-\\.]+"
@@ -133,14 +113,7 @@ var filter = {
         "constraints" : {
             "sessionid" : constraints.requestedSessionIdConstr,
             "username" : constraints.excludeSpecialCharacters,
-            "deviceid" : {
-                "presence" : true,
-                "format" : "[a-zA-Z0-9_\\-\\.@]+",
-                "length" : {
-                    "minimum" : 1,
-                    "maximum" : 255
-                }
-            },
+            "deviceid" : constraints.deviceIdConstrRequested,
             "activationKey" : {
                 "presence" : true,
                 "length" : {
@@ -364,16 +337,7 @@ var filter = {
         "constraints" : {
             "sessionid" : constraints.requestedSessionIdConstr,
             "fileName" : constraints.pathConstr,
-            "packageName" : {
-                "presence" : false,
-                "format" : {
-                    "pattern" : "[a-zA-Z0-9_\\.\\-]+"
-                },
-                "length" : {
-                    "minimum" : 1,
-                    "maximum" : 128
-                }
-            }
+            "packageName" : constraints.packagenameConstrOptional
         }
     }, {
         "path" : '/captureDeviceDetails',
@@ -403,7 +367,7 @@ var filter = {
         "path" : "/Notifications/pushNotification",
         "constraints" : {
             "sessionid" : constraints.requestedSessionIdConstr,
-            "email": {"email" : true, "presence" : true},
+            "email": constraints.emailConstrRequested,
             "titleText": constraints.requestedExcludeSpecialCharacters,
             "notifyTime": constraints.excludeSpecialCharacters,
             "notifyLocation": constraints.excludeSpecialCharacters,

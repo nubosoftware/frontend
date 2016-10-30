@@ -31,13 +31,13 @@ var filter = {
     }, {
         "path" : "/sendEmailForUnknownJobTitle",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "jobTitle" : constraints.requestedExcludeSpecialCharacters
         }
     }, {
         "path" : "/activate",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "email" : {
                 "email" : true,
                 "presence" : true
@@ -73,13 +73,7 @@ var filter = {
                     "within" : [" ", "true", "false"]
                 }
             },
-            "signature" : {
-                "presence" : "false",
-                "length" : {
-                    "minimum" : 1,
-                    "maximum" : 255
-                }
-            },
+            "signature" : constraints.excludeSpecialCharacters,
             "regid" : {
                 "presence" : false,
                 "format" : "[a-zA-Z0-9_\\-\\.]+",
@@ -101,7 +95,7 @@ var filter = {
     }, {
         "path" : "/registerOrg",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "secret" : constraints.excludeSpecialCharacters,
             "first" : constraints.excludeSpecialCharacters,
             "last" : constraints.excludeSpecialCharacters,
@@ -117,7 +111,7 @@ var filter = {
     }, {
         "path" : "/activationLink",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "token" : {
                 "presence" : true,
                 "length" : {
@@ -130,7 +124,7 @@ var filter = {
     }, {
         "path" : "/validate",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "username" : constraints.excludeSpecialCharacters,
             "deviceid" : {
                 "presence" : true,
@@ -162,7 +156,7 @@ var filter = {
     }, {
         "path" : "/startsession",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "loginToken" : constraints.requestedLoginTokenConstr,
             "timeZone" : {
                 "format" : "[a-zA-Z\\/\\_\\-\\.]+",
@@ -174,7 +168,7 @@ var filter = {
     }, {
         "path" : "/checkPasscode",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "loginToken" : constraints.requestedLoginTokenConstr,
             "passcode" : {
                 "presence" : true,
@@ -187,7 +181,7 @@ var filter = {
     }, {
         "path" : "/setPasscode",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "loginToken" : constraints.requestedLoginTokenConstr,
             "passcode" : {
                 "presence" : true,
@@ -207,13 +201,13 @@ var filter = {
     }, {
         "path" : "/resetPasscode",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "loginToken" : constraints.requestedLoginTokenConstr
         }
     }, {
         "path" : "/authenticateUser",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "loginToken" : constraints.requestedLoginTokenConstr,
             "user" : constraints.excludeSpecialCharacters,
             "password" : {
@@ -227,7 +221,7 @@ var filter = {
     }, {
         "path" : "/resendUnlockPasswordLink",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "activationKey" : {
                 "presence" : true,
                 "length" : {
@@ -239,7 +233,7 @@ var filter = {
     }, {
         "path" : "/unlockPassword",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "loginemailtoken" : {
                 "presence" : true,
                 "length" : {
@@ -252,13 +246,13 @@ var filter = {
     }, {
         "path": "/file/uploadToSession",
         "constraints": {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "session": constraints.excludeSpecialCharacters
         }
     }, {
         "path" : "/file/uploadToLoginToken",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "loginToken" : constraints.requestedLoginTokenConstr,
             "existsOnSDcard" : {"presence" : false,"inclusion" : {"within" : ["external://", "internal://"]}},
             "dontChangeName" : {
@@ -273,7 +267,7 @@ var filter = {
     }, {
         "path" : '/SmsNotification/sendSmsNotificationFromRemoteServer',
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "toPhone" : {
                 "presence" : true,
                 "format" : "[0-9-+]+",
@@ -311,7 +305,7 @@ var filter = {
     }, {
         "path" : '/Notifications/sendNotificationFromRemoteServer',
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "type" : {
                 "presence" : true
             },
@@ -350,14 +344,14 @@ var filter = {
     }, {
         "path" : '/getResourceListByDevice',
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "deviceName" : constraints.excludeSpecialCharacters,
             "resolution" : constraints.excludeSpecialCharacters
         }
     }, {
         "path" : '/getResource',
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "fileName" : constraints.pathConstr,
             "packageName" : {
                 "presence" : false,
@@ -373,7 +367,7 @@ var filter = {
     }, {
         "path" : '/captureDeviceDetails',
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "session" : {
                 "presence" : false,
                 "length" : {
@@ -392,7 +386,7 @@ var filter = {
     }, {
         "path" : '/download',
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "dtype" : {
                 "presence" : false,
                 "inclusion" : {
@@ -403,7 +397,7 @@ var filter = {
     }, {
         "path" : "/Notifications/pushNotification",
         "constraints" : {
-            "sessionid" : constraints.excludeSpecialCharacters,
+            "sessionid" : constraints.requestedSessionIdConstr,
             "email": {"email" : true, "presence" : true},
             "titleText": constraints.requestedExcludeSpecialCharacters,
             "notifyTime": {},

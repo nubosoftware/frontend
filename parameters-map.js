@@ -51,6 +51,7 @@ var filter = {
                 }
             },
             "imsi" : {
+                "format" : "^[^<>'\"/;`%!$&|]*$",
                 "length" : {
                     "minimum" : 1,
                     "maximum" : 15
@@ -119,7 +120,13 @@ var filter = {
                 },
                 "format" : "[a-f0-9]+"
             },
-            "cloneActivation" : {}
+            "cloneActivation" : {
+                "presence" : true,
+                "length" : {
+                    is : 96
+                },
+                "format" : "[a-f0-9]+"
+            }
         }
     }, {
         "path" : "/validate",

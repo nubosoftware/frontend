@@ -34,7 +34,7 @@ var filter = {
             "email" : constraints.emailConstrRequested,
             "deviceid" : constraints.deviceIdConstrRequested,
             "imsi" : {
-                "format" : "^[^<>'\"/;`%!$&|]*$",
+                "format" : "[0-9a-zA-Z]+",
                 "length" : {
                     "minimum" : 1,
                     "maximum" : 15
@@ -150,37 +150,15 @@ var filter = {
         "constraints" : {
             "sessionid" : constraints.requestedSessionIdConstr,
             "loginToken" : constraints.requestedLoginTokenConstr,
-            "passcode" : {
-                "presence" : true,
-                "format" : "[0-9]+",
-                "length" : {
-                    "minimum" : 6,
-                    "maximum" : 25
-                }
-
-            }
+            "passcode" : constraints.passcodeConstrRequested
         }
     }, {
         "path" : "/setPasscode",
         "constraints" : {
             "sessionid" : constraints.requestedSessionIdConstr,
             "loginToken" : constraints.requestedLoginTokenConstr,
-            "passcode" : {
-                "format" : "[0-9]+",
-                "presence" : true,
-                "length" : {
-                    "minimum" : 6,
-                    "maximum" : 25
-                }
-            },
-            "oldpasscode" : {
-                "format" : "[0-9]+",
-                "length" : {
-                    "minimum" : 6,
-                    "maximum" : 25
-                }
-
-            }
+            "passcode" : constraints.passcodeConstrRequested,
+            "oldpasscode" : constraints.passcodeConstrOptional
         }
     }, {
         "path" : "/resetPasscode",

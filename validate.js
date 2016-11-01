@@ -724,6 +724,7 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
                     login.setDcurl(userData.dcurl ? userData.dcurl : Common.dcURL);
                     login.loginParams.passcodeexpirationdays = userData.passcodeexpirationdays;
                     login.loginParams.passcodeupdate = userData.passcodeupdate;
+                    login.loginParams.exchangeencoding = userData.org.exchangeencoding;
 
                     login.save(function(err, login) {
                         if (err) {

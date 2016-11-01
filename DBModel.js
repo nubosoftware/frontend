@@ -153,7 +153,11 @@ function initSequelize(dbname, user, password, host, port, callback) {
         impersonationpassword : Sequelize.STRING,
         impersonationuser : Sequelize.STRING,
         notifieradmin : Sequelize.STRING,
-        deviceapprovaltype :  Sequelize.INTEGER
+        deviceapprovaltype :  Sequelize.INTEGER,
+        exchangeencoding : {
+            type : Sequelize.STRING,
+            defaultValue : "UTF-8"
+        }
     }, {
 
         timestamps : false

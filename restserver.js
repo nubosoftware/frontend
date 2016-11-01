@@ -533,8 +533,10 @@ function buildServerObject(server) {
     server.get('/download', downloadFunc);
     server.post('/file/uploadToSession', internalRequests.upload);
     server.post('/file/uploadToLoginToken', internalRequests.upload);
-    server.get('/getStreamsFile' , internalRequests.getStreamsFile);
-    server.get('/checkStreamsFile' , checkStreamFile.func);
+    if (Common.isHandlingMediaStreams) {
+        server.get('/getStreamsFile' , internalRequests.getStreamsFile);
+        server.get('/checkStreamsFile' , checkStreamFile.func);
+    }
     // if Exchange is external to organization (like office 365) the notification will come from it
     if (Common.EWSServerURL) {
         server.post('/EWSListener', internalRequests.upload);

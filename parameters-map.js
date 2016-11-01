@@ -86,7 +86,11 @@ var filter = {
             "email" : constraints.emailConstrRequested,
             "domain" : {
                 "presence" : true,
-                "format" : "[a-zA-Z0-9_\\-\\.]+"
+                "format" : "^([a-zA-Z0-9\_\-]+\.?)+$",
+                "length" : {
+                    "minimum" : 1,
+                    "maximum" : 255
+                }
             }
         }
     }, {
@@ -130,7 +134,11 @@ var filter = {
                 }
             },
             "timeZone" : {
-                "format" : "[a-zA-Z\\/\\_\\-\\.]+"
+                "format" : "[a-zA-Z\\/\\_\\-\\.]+",
+                "length" : {
+                    "minimum" : 3,
+                    "maximum" : 255
+                }
             }
         }
     }, {
@@ -140,6 +148,10 @@ var filter = {
             "loginToken" : constraints.requestedLoginTokenConstr,
             "timeZone" : {
                 "format" : "[a-zA-Z\\/\\_\\-\\.]+",
+                "length" : {
+                    "minimum" : 3,
+                    "maximum" : 255
+                }
             }
         }
     }, {

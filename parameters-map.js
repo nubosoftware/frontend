@@ -405,8 +405,8 @@ var filter = {
             "sessionid" : constraints.requestedSessionIdConstr,
             "email": {"email" : true, "presence" : true},
             "titleText": constraints.requestedExcludeSpecialCharacters,
-            "notifyTime": {},
-            "notifyLocation": {},
+            "notifyTime": constraints.excludeSpecialCharacters,
+            "notifyLocation": constraints.excludeSpecialCharacters,
             "appName" : {
                 "inclusion" : {
                     "within" : ["-1", "0", "1", "2"]

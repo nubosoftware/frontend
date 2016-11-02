@@ -92,7 +92,7 @@ function validate(req, res, next) {
                     return (!response && iter <= MAX_VALIDATE_RETRIES);
                 },
                 function(callback) {
-                    validateActivation(activationKey, deviceId, userData, activationData, req.url, clientUserName, logger, function(err, validateResponse) {
+                    validateActivation(activationKey, deviceId, userData, activationData, req.url, req.params.timeZone, clientUserName, logger, function(err, validateResponse) {
                         if (err)
                             error = err;
 
@@ -379,7 +379,7 @@ function getUserDeviceData(email, deviceID, logger, maindomain, callback) {
     });
 }
 
-function validateActivation(activationKey, deviceID, userdata, activationdata, url, clientUserName, logger, callback) {
+function validateActivation(activationKey, deviceID, userdata, activationdata, url, timeZone, clientUserName, logger, callback) {
 
     var finish = 'finish';
     var response = null;
@@ -770,6 +770,9 @@ function validateActivation(activationKey, deviceID, userdata, activationdata, u
             //optimistic login - starting user session...
             if (Common.fastConnection && activationData.firstlogin == 0) {
                 var url = "/startsession" + "?loginToken=" + loginToken + "&fastConnection=true";
+                if (timeZone) {
+                    url = url + "&timeZone=" + timeZone;
+                }
                 internalRequests.forwardGetRequest(url, function(err, resObj){
                     if (err) {
                         logger.error("Optimistic startsession failed! err = " + err);

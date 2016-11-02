@@ -45,6 +45,8 @@ function validate(req, res, next) {
     var deviceId = req.params.deviceid ? req.params.deviceid : null;
     var clientIP = req.connection.remoteAddress;
     var clientUserName = req.params.username ? req.params.username : null;
+    var timeZone = req.params.timeZone ? req.params.timeZone : null;
+
 
     if(Common.withService && !clientUserName){
         res.send({
@@ -92,7 +94,7 @@ function validate(req, res, next) {
                     return (!response && iter <= MAX_VALIDATE_RETRIES);
                 },
                 function(callback) {
-                    validateActivation(activationKey, deviceId, userData, activationData, req.url, req.params.timeZone, clientUserName, logger, function(err, validateResponse) {
+                    validateActivation(activationKey, deviceId, userData, activationData, req.url, timeZone, clientUserName, logger, function(err, validateResponse) {
                         if (err)
                             error = err;
 

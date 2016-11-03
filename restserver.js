@@ -445,10 +445,13 @@ var accesslogger = accesslog({
 });
 
 var filterModule = require('permission-parser');
+
 var filterOpts = {
-    loge: logger.error
+    loge: logger.error,
+    mode: filterModule.mode.URL
 };
-var filterObj = new filterModule([], filterOpts);
+
+var filterObj = new filterModule.filter([], filterOpts);
 var filterFile = "./parameters-map.js";
 Common.fs.watchFile(filterFile, {
     persistent : false,

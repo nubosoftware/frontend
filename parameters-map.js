@@ -26,7 +26,7 @@ var filter = {
         "path" : "/sendEmailForUnknownJobTitle",
         "constraints" : {
             "sessionid" : constraints.requestedSessionIdConstr,
-            "jobTitle" : constraints.requestedExcludeSpecialCharacters
+            "jobTitle" : constraints.ExcludeSpecialCharactersRequested
         }
     }, {
         "path" : "/activate",
@@ -41,14 +41,14 @@ var filter = {
                     "maximum" : 15
                 }
             },
-            "deviceName" : constraints.excludeSpecialCharacters,
+            "deviceName" : constraints.ExcludeSpecialCharactersOptional,
             "alreadyUser" : {
                 "presence" : false,
                 "inclusion" : ["Y", "N"]
             },
-            "first" : constraints.excludeSpecialCharacters,
-            "last" : constraints.excludeSpecialCharacters,
-            "title" : constraints.excludeSpecialCharacters,
+            "first" : constraints.ExcludeSpecialCharactersOptional,
+            "last" : constraints.ExcludeSpecialCharactersOptional,
+            "title" : constraints.ExcludeSpecialCharactersOptional,
             "deviceType" : {
                 "presence" : false,
                 "inclusion" : ["iPhone", "iPad", "Web", "Android"]
@@ -58,7 +58,7 @@ var filter = {
                     "within" : [" ", "true", "false"]
                 }
             },
-            "signature" : constraints.excludeSpecialCharacters,
+            "signature" : constraints.ExcludeSpecialCharactersOptional,
             "regid" : {
                 "presence" : false,
                 "format" : "[a-zA-Z0-9_\\-\\.]+",
@@ -75,15 +75,15 @@ var filter = {
                     "maximum" : 255
                 }
             },
-            "additionalDeviceInfo" : constraints.excludeSpecialCharacters
+            "additionalDeviceInfo" : constraints.ExcludeSpecialCharactersOptional
         }
     }, {
         "path" : "/registerOrg",
         "constraints" : {
             "sessionid" : constraints.sessionIdConstrOptional,
-            "secret" : constraints.excludeSpecialCharacters,
-            "first" : constraints.excludeSpecialCharacters,
-            "last" : constraints.excludeSpecialCharacters,
+            "secret" : constraints.ExcludeSpecialCharactersOptional,
+            "first" : constraints.ExcludeSpecialCharactersOptional,
+            "last" : constraints.ExcludeSpecialCharactersOptional,
             "email" : constraints.emailConstrRequested,
             "domain" : constraints.adDomainNameConstrRequested
         }
@@ -98,7 +98,7 @@ var filter = {
         "path" : "/validate",
         "constraints" : {
             "sessionid" : constraints.sessionIdConstrOptional,
-            "username" : constraints.excludeSpecialCharacters,
+            "username" : constraints.ExcludeSpecialCharactersOptional,
             "deviceid" : constraints.deviceIdConstrRequested,
             "activationKey" : constraints.requestedTokenConstr,
             "playerVersion" : {
@@ -161,7 +161,7 @@ var filter = {
         "constraints" : {
             "sessionid" : constraints.sessionIdConstrOptional,
             "loginToken" : constraints.requestedLoginTokenConstr,
-            "user" : constraints.excludeSpecialCharacters,
+            "user" : constraints.ExcludeSpecialCharactersOptional,
             "password" : {
                 "presence" : true,
                 "length" : {
@@ -212,7 +212,7 @@ var filter = {
                     "within": ["true", "false"]
                 }
             },
-            "destPath": constraints.pathConstr,
+            "destPath": constraints.pathConstrRequested,
             "isMedia": constraints.boolConstrOptional
         }
     }, {
@@ -260,7 +260,7 @@ var filter = {
             "type" : {
                 "presence" : true
             },
-            "notifyLocation" : constraints.excludeSpecialCharacters,
+            "notifyLocation" : constraints.ExcludeSpecialCharactersOptional,
             "serverID" : {
                 "presence" : true,
                 "format" : "^[0-9a-zA-Z]+$",
@@ -277,8 +277,8 @@ var filter = {
                     "maximum" : 100
                 }
             },
-            "notifyTime" : constraints.excludeSpecialCharacters,
-            "notifyTitle" : constraints.excludeSpecialCharacters,
+            "notifyTime" : constraints.ExcludeSpecialCharactersOptional,
+            "notifyTitle" : constraints.ExcludeSpecialCharactersOptional,
             "deviceType" : {
                 "presence" : true,
                 "inclusion" : ["iPhone", "iPad", "Web", "Android"]
@@ -296,8 +296,8 @@ var filter = {
         "path" : '/getResourceListByDevice',
         "constraints" : {
             "sessionid" : constraints.sessionIdConstrOptional,
-            "deviceName" : constraints.excludeSpecialCharacters,
-            "resolution" : constraints.excludeSpecialCharacters
+            "deviceName" : constraints.ExcludeSpecialCharactersOptional,
+            "resolution" : constraints.ExcludeSpecialCharactersOptional
         }
     }, {
         "path" : '/getResource',
@@ -334,9 +334,9 @@ var filter = {
         "constraints" : {
             "sessionid" : constraints.sessionIdConstrOptional,
             "email": constraints.emailConstrRequested,
-            "titleText": constraints.requestedExcludeSpecialCharacters,
-            "notifyTime": constraints.excludeSpecialCharacters,
-            "notifyLocation": constraints.excludeSpecialCharacters,
+            "titleText": constraints.ExcludeSpecialCharactersRequested,
+            "notifyTime": constraints.ExcludeSpecialCharactersOptional,
+            "notifyLocation": constraints.ExcludeSpecialCharactersOptional,
             "appName" : {
                 "inclusion" : {
                     "within" : ["-1", "0", "1", "2"]

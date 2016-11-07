@@ -497,7 +497,13 @@ function execActivate(req, res, next, email, username) {
                                     });
                                 }
                                 
-                                if (Common.autoActivation || Common.withService || (email == 'ios@nubo-demo.com')) {
+                                var demoUserList = [];
+                                if (Common.demoUserList) {
+                                    demoUserList = Common.demoUserList;
+                                }
+
+                                if (Common.autoActivation || Common.withService || email == 'ios@nubo-demo.com' ||
+                                   (demoUserList.indexOf(email) > -1)) {
                                     var newreq = {
                                         params : {
                                             token : emailtoken

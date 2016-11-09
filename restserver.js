@@ -399,9 +399,9 @@ function getValidator(){
 function authValidate(req, res, next) {
     var urlObj = url.parse(req.url);
     var pathname = urlObj.pathname;
+    var htmlPageMatch = new RegExp('^/html/.*');
 
-    //wrapper for old client
-    if ((pathname.indexOf("/html/player/extres/") === 0) || (pathname.indexOf("//html/player/extres/") === 0))  {
+    if (htmlPageMatch)  {
         next();
     } else {
         req.nubodata = {};
@@ -501,6 +501,7 @@ function buildServerObject(server) {
     server.use(Common.restify.queryParser());
     server.use(filterObjUseHandlerWrapper);
     server.use(function(req, res, next) {
+
         req.realIP = (Common.proxyClientIpHeader && req.headers[Common.proxyClientIpHeader]) || req.connection.remoteAddress;
         next();
 

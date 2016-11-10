@@ -61,7 +61,7 @@ var filter = {
                 "signature": constraints.ExcludeSpecialCharactersOptional,
                 "regid": {
                     "presence": false,
-                    "format": "^[a-zA-Z0-9_-.]+$",
+                    "format": "^[.a-zA-Z0-9_-]+$",
                     "length": {
                         "minimum": 1,
                         "maximum": 255
@@ -103,7 +103,7 @@ var filter = {
                 "activationKey": constraints.requestedTokenConstr,
                 "playerVersion": {
                     "presence": true,
-                    "format": "^[a-zA-Z0-9-.]+$",
+                    "format": "^[.a-zA-Z0-9-]+$",
                     "length": {
                         "minimum": 3,
                         "maximum": 255
@@ -229,7 +229,7 @@ var filter = {
                 },
                 "body": {
                     "presence": true,
-                    "format": "^[0-9a-zA-Z_-.]+$",
+                    "format": "^[.0-9a-zA-Z_-]+$",
                     "length": {
                         "minimum": 1,
                         "maximum": 255
@@ -237,7 +237,7 @@ var filter = {
                 },
                 "serverID": {
                     "presence": true,
-                    "format": "^[0-9a-zA-Z.]+$",
+                    "format": "^[.0-9a-zA-Z]+$",
                     "length": {
                         "minimum": 1,
                         "maximum": 64
@@ -245,7 +245,7 @@ var filter = {
                 },
                 "serverAuthKey": {
                     "presence": true,
-                    "format": "^[0-9a-zA-Z_-.]+$",
+                    "format": "^[.0-9a-zA-Z_-]+$",
                     "length": {
                         "minimum": 6,
                         "maximum": 25
@@ -352,7 +352,7 @@ var filter = {
                 "loginToken": constraints.requestedLoginTokenConstr,
                 "streamName": {
                     "presence": false,
-                    "format": "^[a-zA-Z0-9_.]+$",
+                    "format": "^[.a-zA-Z0-9_]+$",
                     "length": {
                         "minimum": 1,
                         "maximum": 255
@@ -369,7 +369,7 @@ var filter = {
                 "loginToken": constraints.requestedLoginTokenConstr,
                 "streamName": {
                     "presence": false,
-                    "format": "^[a-zA-Z0-9_.]+$",
+                    "format": "^[.a-zA-Z0-9_]+$",
                     "length": {
                         "minimum": 1,
                         "maximum": 255

@@ -7,7 +7,7 @@ var userNameFormat;
 if (Common.withService) {
     userNameFormat = {
         "presence" : true,
-        "format" : "[a-zA-Z0-9\\.@_\\-]+",
+        "format" : "^[a-zA-Z0-9.@_-]+$",
         "length" : {
             "minimum" : 1,
             "maximum" : 255
@@ -35,7 +35,7 @@ var filter = {
             "email" : constraints.emailConstrRequested,
             "deviceid" : constraints.deviceIdConstrRequested,
             "imsi" : {
-                "format" : "[0-9a-zA-Z]+",
+                "format" : "^[0-9a-zA-Z]+$",
                 "length" : {
                     "minimum" : 1,
                     "maximum" : 15
@@ -61,7 +61,7 @@ var filter = {
             "signature" : constraints.ExcludeSpecialCharactersOptional,
             "regid" : {
                 "presence" : false,
-                "format" : "[a-zA-Z0-9_\\-\\.]+",
+                "format" : "^[a-zA-Z0-9_-.]+$",
                 "length" : {
                     "minimum" : 1,
                     "maximum" : 255
@@ -69,7 +69,7 @@ var filter = {
             },
             "playerVersion" : {
                 "presence" : false,
-                "format" : "^[0-9]+[\\.0-9a-z\\-]+",
+                "format" : "^[0-9]+[.0-9a-z-]+$",
                 "length" : {
                     "minimum" : 3,
                     "maximum" : 255
@@ -103,14 +103,14 @@ var filter = {
             "activationKey" : constraints.requestedTokenConstr,
             "playerVersion" : {
                 "presence" : true,
-                "format" : "^([a-zA-Z0-9\-]+\.?)+$",
+                "format" : "^[a-zA-Z0-9-.]+$",
                 "length" : {
                     "minimum" : 3,
                     "maximum" : 255
                 }
             },
             "timeZone" : {
-                "format" : "^([a-zA-Z\\/\\_\\-]+\.?)+$",
+                "format" : "^[a-zA-Z\/_-]+$",
                 "length" : {
                     "minimum" : 3,
                     "maximum" : 255
@@ -124,7 +124,7 @@ var filter = {
             "loginToken": constraints.requestedLoginTokenConstr,
             "platid": constraints.platIdConstrOptional,
             "timeZone": {
-                "format": "^[a-zA-Z\\/\\_\\-\\.]+$",
+                "format": "^[a-zA-Z\/_-]+$",
             },
             "fastConnection": {
                 "inclusion": {
@@ -179,7 +179,7 @@ var filter = {
                 "length" : {
                     is : 96
                 },
-                "format" : "[a-f0-9]+"
+                "format" : "^[a-f0-9]+$"
             }
         }
     }, {
@@ -221,7 +221,7 @@ var filter = {
             "sessionid" : constraints.sessionIdConstrOptional,
             "toPhone" : {
                 "presence" : true,
-                "format" : "[0-9-+]+",
+                "format" : "^[0-9-+]+$",
                 "length" : {
                     "minimum" : 9,
                     "maximum" : 36
@@ -350,14 +350,14 @@ var filter = {
         "path" : "/getStreamsFile",
         "constraints" : {
             "loginToken" : constraints.requestedLoginTokenConstr,
-            "streamName" : {"presence" : false, "format" : "^([a-zA-Z0-9_]+\.?)+$", "length" : {"minimum" : 1, "maximum" : 255}},
+            "streamName" : {"presence" : false, "format" : "^[a-zA-Z0-9_.]+$", "length" : {"minimum" : 1, "maximum" : 255}},
             "isLive" : {"presence" : false, "inclusion" : ["true", "false"]}
         }
     }, {
         "path" : "/checkStreamsFile",
         "constraints" : {
             "loginToken" : constraints.requestedLoginTokenConstr,
-            "streamName" : {"presence" : false, "format" : "^([a-zA-Z0-9_]+\.?)+$", "length" : {"minimum" : 1, "maximum" : 255}
+            "streamName" : {"presence" : false, "format" : "^[a-zA-Z0-9_.]+$", "length" : {"minimum" : 1, "maximum" : 255}
             }
         }
     }

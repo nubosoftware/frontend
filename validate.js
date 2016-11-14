@@ -56,21 +56,6 @@ function validate(req, res, next) {
         return;    
     }
 
-    if (!activationKey || activationKey.length < 5) {
-        res.send({
-            status: Common.STATUS_ERROR,
-            message: "Invalid activationKey"
-        });
-        return;
-    }
-
-    // var response = {
-    //     status: Common.STATUS_ERROR,
-    //     message: 'Internal error'
-    // }
-    // res.send(response);
-    // return;
-
     var error = null;
     var response = null;
     var iter = 0;

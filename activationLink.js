@@ -44,22 +44,7 @@ function activationLink(req, res, next) {
     var msg = "";
     var logger = new ThreadedLogger();
     var emailToken = req.params.token;
-    if (emailToken == undefined || emailToken.length < 15) {
-        status = 1;
-        // invalid parameter
-        msg = "Invalid token";
-    }
-
     var cloneActivation = req.params.cloneActivation;
-
-    if (status == 1) {
-        res.send({
-            status : status,
-            message : msg
-        });
-        return;
-    }
-
     var datetest = new Date();
 
     Common.db.Activation.findAll({

@@ -36,33 +36,28 @@ function resetPasscode(req, res, next) {
 
     //read and validate params
     var loginToken = req.params.loginToken;
-    if (loginToken == undefined || loginToken.length < 5) {
-        status = Common.STATUS_ERROR;
-        // invalid parameter
-        msg = "Invalid loginToken";
-    }
 
-    if (status == Common.STATUS_ERROR) {
-        res.send({
-            status : status,
-            message : msg
-        });
-        return;
-    }
-    
     (function(loginToken) {
         new Login(loginToken, function(err, login) {
             if (err) {
-                status = Common.STATUS_EXPIRED_LOGIN_TOKEN;
-                // invalid parameter
-                msg = "Invalid loginToken, err:" + err;
+                logger.error("resetPasscode: " + err)
                 res.send({
-                    status : status,
-                    message : msg,
+                    status : Common.STATUS_ERROR,
+                    message : 'internal error'
+                });
+                return;
+            }
+
+            if(!login){
+                logger.error("resetPasscode: shouldn't get this error!!!")
+                res.send({
+                    status : Common.STATUS_EXPIRED_LOGIN_TOKEN,
+                    message : "Invalid loginToken",
                     loginToken : 'notValid'
                 });
                 return;
             }
+            
             if (login.getPasscodeActivationRequired() != "false" || login.getAuthenticationRequired() != "false") {
                 status = Common.STATUS_ERROR;
                 // invalid parameter

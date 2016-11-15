@@ -99,14 +99,12 @@ function AuthenticateUser(req, res, next) {
 
     (function(loginToken, user, password) {
         new Login(loginToken, function(err, login) {
-            if (err) {
+            if (err || !login) {
                 status = Common.STATUS_ERROR;
-                // invalid parameter
-                msg = "Invalid loginToken, err:" + err;
-                logger.info("AuthenticateUser error: " + msg);
+                logger.error("AuthenticateUser: " + err);
                 res.send({
                     status : status,
-                    message : msg,
+                    message : 'internal error',
                     loginToken : 'notValid'
                 });
                 return;

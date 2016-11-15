@@ -5,26 +5,10 @@ var logger = Common.logger;
 var crypto = require('crypto');
 var util = require('util');
 var Login = require('./login.js');
-var isFirstTime = "";
 var Track = require('./track.js');
 
 var MIN_DIFFERENT_DIGITS = 4;
 
-function returnInternalError(err, res) {
-    status = Common.STATUS_ERROR;
-    // internal error
-    msg = "Internal error";
-    console.error(err.name, err.message);
-    logger.info("error_1");
-    if (res != undefined) {
-        res.send({
-            status : status,
-            message : msg,
-            isFirstTime : isFirstTime
-        });
-    }
-    return;
-}
 
 function validatePassword(password) {
     // check valid password length
@@ -84,34 +68,14 @@ function validatePassword(password) {
 function setPasscode(req, res, next) {
     // https://oritest.nubosoftware.com/setPasscode?loginToken=[]&passcode=[]&oldpasscode=[]
     res.contentType = 'json';
-    var msg = "";
-    var status = 100;
-    //unknown
-    var statusEmail = 100;
-    isFirstTime = "";
 
     //read and validate params
     var loginToken = req.params.loginToken;
-    if (loginToken == undefined || loginToken.length < 5) {
-        status = Common.STATUS_ERROR;
-        // invalid parameter
-        msg = "Invalid loginToken";
-        res.send({
-            status : status,
-            message : msg
-        });
-        return;
-    }
-
     var passcode = req.params.passcode;
-    if (passcode == undefined || validatePassword(passcode) == 0) {
-
-        status = Common.STATUS_ERROR;
-        // invalid parameter
-        msg = "Invalid passCode";
+    if (validatePassword(passcode) == 0) {
         res.send({
-            status : status,
-            message : msg
+            status : Common.STATUS_ERROR,
+            message : "Invalid passCode"
         });
         return;
     }
@@ -120,36 +84,39 @@ function setPasscode(req, res, next) {
     (function(loginToken, passcode) {
         new Login(loginToken, function(err, login) {
             if (err) {
-                status = Common.STATUS_EXPIRED_LOGIN_TOKEN;
-                // invalid parameter
-                msg = "Invalid loginToken, err:" + err;
+                logger.error("setPasscode: " + err)
                 res.send({
-                    status : status,
-                    message : msg,
+                    status : Common.STATUS_ERROR,
+                    message : 'internal error'
+                });
+                return;
+            }
+
+            if(!login){
+                logger.error("setPasscode: shouldn't get this error!!!")
+                res.send({
+                    status : Common.STATUS_EXPIRED_LOGIN_TOKEN,
+                    message : "Invalid loginToken",
                     loginToken : 'notValid'
                 });
                 return;
             }
+
             logger.info("login.getPasscodeActivationRequired=" + login.getPasscodeActivationRequired());
             if (oldpasscode) {
                 if (login.loginParams.passcode !== oldpasscode) {
-                    status = Common.STATUS_ERROR;
-                    // invalid parameter
-                    msg = "Pascode change not allowed";
                     res.send({
-                        status : status,
-                        message : msg
+                        status : Common.STATUS_ERROR,
+                        message : "Pascode change not allowed"
                     });
                     return;
                 }
             } else {
                 if (login.getPasscodeActivationRequired() != "true") {
                     status = Common.STATUS_ERROR;
-                    // invalid parameter
-                    msg = "Pascode activation not allowed";
                     res.send({
-                        status : status,
-                        message : msg
+                        status : Common.STATUS_ERROR,
+                        message : "Pascode activation not allowed"
                     });
                     return;
                 }
@@ -175,7 +142,7 @@ function setPasscode(req, res, next) {
 
                 }).catch(function(err) {
                     if (err) {
-                        logger.info("Internal error while change resetPasscode: " + err);
+                        logger.error("Internal error while change resetPasscode: " + err);
                         return;
                     }
                 });
@@ -184,12 +151,10 @@ function setPasscode(req, res, next) {
                 login.setPasscode(passcode);
                 login.setValidLogin(true);
                 login.save(function(err, login) {
-                    status = Common.STATUS_OK;
-                    var msg = "Passcode updated";
                     console.dir(login.loginParams);
                     res.send({
-                        status : status,
-                        message : msg
+                        status : Common.STATUS_OK,
+                        message : "Passcode updated"
                     });
                 });
 
@@ -210,11 +175,11 @@ function setPasscode(req, res, next) {
 
             }).catch(function(err) {
                 status = Common.STATUS_ERROR;
-                msg = "Internal Error: " + err;
-                logger.info(msg);
+                logger.error("setPasscode: " + err);
+
                 res.send({
-                    status : status,
-                    message : msg
+                    status : Common.STATUS_ERROR,
+                    message : "Internal Error"
                 });
                 return;
             });
@@ -222,9 +187,6 @@ function setPasscode(req, res, next) {
         });
     })(loginToken, passcode);
 
-    /*status = 1;
-     msg = "Ok";
-     res.send({status: status , message: msg});  */
 }
 
 var setPasscode = {

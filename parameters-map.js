@@ -197,6 +197,11 @@ var filter = {
                 "isMedia": constraints.boolConstrOptional
             }
         }, {
+            "path": "/file/uploadDummyFile",
+            "constraints": {
+                "loginToken": constraints.requestedLoginTokenConstr
+            }
+        }, {
             "path": "/file/uploadToLoginToken",
             "constraints": {
                 "sessionid": constraints.sessionIdConstrRequested,

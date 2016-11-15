@@ -537,6 +537,8 @@ function buildServerObject(server) {
     server.get('/download', downloadFunc);
     server.post('/file/uploadToSession', internalRequests.upload);
     server.post('/file/uploadToLoginToken', internalRequests.upload);
+    server.post('/file/uploadDummyFile', internalRequests.upload);
+
     if (Common.isHandlingMediaStreams) {
         server.get('/getStreamsFile' , internalRequests.getStreamsFile);
         server.get('/checkStreamsFile' , checkStreamFile.func);

@@ -3,21 +3,9 @@ var checkPasscode = require('./checkPasscode.js');
 var logger = Common.logger;
 
 function resendUnlockPasswordLink(req, res, next) {
-    var status = 1;
-    var msg = "";
-    var retErrorMsg = "Invalid resendUnlockPasswordLink access";
     var activationKey = req.params.activationKey;
-    if (!activationKey || activationKey == "") {
-        logger.info("resendUnlockPasswordLink. Invalid activationKey.");
-        status = 0;
-        msg = "Invalid email";
-        res.send({
-            status : status,
-            message : retErrorMsg
-        });
-        return;
-    }
-    logger.info(activationKey);
+
+    logger.info("resendUnlockPasswordLink: " + activationKey);
 
     Common.db.Activation.findAll({
         attributes : ['email', 'status'],
@@ -27,45 +15,41 @@ function resendUnlockPasswordLink(req, res, next) {
     }).complete(function(err, results) {
 
         if (!!err) {
-            status = 0;
-            msg = "Internal Error: " + err;
-            logger.info(msg);
+            logger.error('resendUnlockPasswordLink: ' + err);
             res.send({
-                status : status,
-                message : msg
+                status : Common.STATUS_ERROR,
+                message : 'Internal Error'
             });
             return;
         }
 
         if (!results || results == "") {
-            logger.info("resendUnlockPasswordLink. Cannot find user to send unlock password email.");
-            status = 0;
+            logger.error("resendUnlockPasswordLink: Cannot find user to send unlock password email");
             res.send({
-                status : status,
-                message : retErrorMsg
+                status : Common.STATUS_ERROR,
+                message : 'Internal Error'
             });
+            
             return;
         }
 
         var email = results[0].email != null ? results[0].email : '';
         var activation_status = results[0].status != null ? results[0].status : '';
-        if (activation_status != 1 && activation_status != 4) {
-            logger.info("Inappropriate activation status: " + activation_status);
-            status = 0;
+        if (activation_status !== 1) {
+            logger.error("resendUnlockPasswordLink: user isn't activated")
             res.send({
-                status : status,
-                message : retErrorMsg
+                status : Common.STATUS_ERROR,
+                message : 'Internal Error'
             });
             return;
+
         } else {
-            logger.info("unlock passcode email is sent to :" + email);
             checkPasscode.findUserNameSendEmail(email);
-            status = 1;
+            logger.info("resendUnlockPasswordLink: resent unlock email to: " + email);
             res.send({
-                status : status,
-                message : "resent unlock email"
+                status : Common.STATUS_OK,
+                message : 'unlock passcode email sent to user'
             });
-            logger.info(msg);
             return;
         }
     });
@@ -75,31 +59,8 @@ function resendUnlockPasswordLink(req, res, next) {
 function unlockPassword(req, res, next) {
 
     var status = 1;
-    var msg = "";
-    var retErrorMsg = "Invalid unlockPassword access";
     var email = req.params.email;
-    if (!email || email == "") {
-        logger.info("unlockPassword. Invalid email: " + email);
-        status = 0;
-        msg = retErrorMsg;
-    }
-
-    if (status == 1) {
-        var loginemailtoken = req.params.loginemailtoken;
-        if (!loginemailtoken || loginemailtoken == "") {
-            logger.info("unlockPassword. Invalid loginemailtoken. email: " + email);
-            status = 0;
-            msg = retErrorMsg;
-        }
-    }
-
-    if (status == 0) {
-        res.send({
-            status : status,
-            message : msg
-        });
-        return;
-    }
+    var loginemailtoken = req.params.loginemailtoken;
 
     Common.db.User.findAll({
         attributes : ['loginemailtoken'],
@@ -109,28 +70,25 @@ function unlockPassword(req, res, next) {
     }).complete(function(err, results) {
 
         if (!!err) {
-            msg = "Internal Error: " + err;
-            logger.info("findUserNameSendEmail:" + msg);
-            status = 0;
+            logger.error("unlockPassword:" + err);
             res.send({
-                status : status,
-                message : msg
+                status : Common.STATUS_ERROR,
+                message : 'Internal Error'
             });
             return;
         }
 
         if (!results || results == "") {
-            logger.info("unlockPassword. Cannot find user: " + email);
-            status = 0;
+            logger.error("unlockPassword: Cannot find user " + email);
             res.send({
-                status : status,
-                message : retErrorMsg
+                status : Common.STATUS_ERROR,
+                message : 'Internal Error'
             });
             return;
         }
 
         var loginEmailToken = results[0].loginemailtoken != null ? results[0].loginemailtoken : '';
-        if (loginEmailToken == loginemailtoken) {
+        if (loginEmailToken === loginemailtoken) {
             // update login attempts to 0
 
             Common.db.User.update({
@@ -140,30 +98,28 @@ function unlockPassword(req, res, next) {
                     email : email
                 }
             }).then(function() {
-                logger.info("password of user " + email + " is successfully unlocked");
-                status = 1;
+                var msg = "password of user " + email + " is successfully unlocked";
                 res.send({
-                    status : status,
-                    message : "password is successfully unlocked"
-                });
-                return;
-            }).catch(function(err) {
-                status = 0;
-                msg = "Internal Error: " + err;
-                res.send({
-                    status : status,
+                    status : Common.STATUS_OK,
                     message : msg
+                });
+                logger.info("unlockPassword: " + msg);
+                return;
+
+            }).catch(function(err) {
+                logger.error("unlockPassword: " + err);
+                res.send({
+                    status : Common.STATUS_ERROR,
+                    message : 'Internal Error'
                 });
                 return;
             });
 
         } else {
-            logger.info("unlockPassword. invalid loginEmailToken. email: "+email);
-            status = 0;
-            msg = "Invalid access";
+            logger.error("unlockPassword: incorrect loginemailtoken. may be a hacking attempt");
             res.send({
-                status : status,
-                message : retErrorMsg
+                status : Common.STATUS_ERROR,
+                message : 'Internal Error'
             });
             return;
         }

@@ -7,7 +7,7 @@ var userNameFormat;
 if (Common.withService) {
     userNameFormat = {
         "presence": true,
-        "format": "^[a-zA-Z0-9.@_-]+$",
+        "format": "^[a-zA-Z0-9.@_\\-]+$",
         "length": {
             "minimum": 1,
             "maximum": 255
@@ -124,7 +124,7 @@ var filter = {
                 }
             }
         }, {
-            "path": "^/html/.*",
+            "path": "^/html/",
             "regex": true
         }, {
             "path": "/checkPasscode",
@@ -152,26 +152,14 @@ var filter = {
             "constraints": {
                 "sessionid": constraints.sessionIdConstrOptional,
                 "loginToken": constraints.requestedLoginTokenConstr,
-                "user": constraints.ExcludeSpecialCharactersOptional,
-                "password": {
-                    "presence": true,
-                    "length": {
-                        "minimum": 6,
-                        "maximum": 25
-                    }
-                }
+                "user": constraints.ExcludeSpecialCharactersRequested,
+                "password": constraints.passcodeConstrRequested
             }
         }, {
             "path": "/resendUnlockPasswordLink",
             "constraints": {
                 "sessionid": constraints.sessionIdConstrOptional,
-                "activationKey": {
-                    "presence": true,
-                    "length": {
-                        is: 96
-                    },
-                    "format": "^[a-f0-9]+$"
-                }
+                "activationKey": constraints.tokenConstrRequested
             }
         }, {
             "path": "/unlockPassword",
@@ -225,7 +213,7 @@ var filter = {
                 },
                 "body": {
                     "presence": true,
-                    "format": "^[.0-9a-zA-Z_-]+$",
+                    "format": "^[.0-9a-zA-Z_\\-]+$",
                     "length": {
                         "minimum": 1,
                         "maximum": 255
@@ -241,7 +229,7 @@ var filter = {
                 },
                 "serverAuthKey": {
                     "presence": true,
-                    "format": "^[.0-9a-zA-Z_-]+$",
+                    "format": "^[.0-9a-zA-Z_\\-]+$",
                     "length": {
                         "minimum": 6,
                         "maximum": 25
@@ -267,7 +255,7 @@ var filter = {
                 },
                 "serverAuthKey": {
                     "presence": true,
-                    "format": "^[0-9a-zA-Z_-+=/]+$",
+                    "format": "^[0-9a-zA-Z_\\-+=/]+$",
                     "length": {
                         "minimum": 6,
                         "maximum": 100
@@ -281,7 +269,7 @@ var filter = {
                 },
                 "pushRegID": {
                     "presence": false,
-                    "format": "^[a-zA-Z0-9_-]+$",
+                    "format": "^[a-zA-Z0-9_\\-]+$",
                     "length": {
                         "minimum": 1,
                         "maximum": 255

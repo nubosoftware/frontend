@@ -91,8 +91,14 @@ var filter = {
             "path": "/activationLink",
             "constraints": {
                 "sessionid": constraints.sessionIdConstrOptional,
-                "token": constraints.requestedTokenConstr,
-                "cloneActivation": constraints.requestedTokenConstr
+                "token": constraints.tokenConstrRequested,
+                "cloneActivation": {
+                    "presence": true,
+                    "format": "^[a-z0-9]+$",
+                    "length": {
+                        "maximum": 96
+                    }
+                }
             }
         }, {
             "path": "/validate",
@@ -100,22 +106,9 @@ var filter = {
                 "sessionid": constraints.sessionIdConstrOptional,
                 "username": constraints.ExcludeSpecialCharactersOptional,
                 "deviceid": constraints.deviceIdConstrRequested,
-                "activationKey": constraints.requestedTokenConstr,
-                "playerVersion": {
-                    "presence": true,
-                    "format": "^[.a-zA-Z0-9-]+$",
-                    "length": {
-                        "minimum": 3,
-                        "maximum": 255
-                    }
-                },
-                "timeZone": {
-                    "format": "^[a-zA-Z\/_-]+$",
-                    "length": {
-                        "minimum": 3,
-                        "maximum": 255
-                    }
-                }
+                "activationKey": constraints.tokenConstrRequested,
+                "playerVersion": constraints.playerVersionConstrRequested,
+                "timeZone": constraints.timeZoneConstrOptional
             }
         }, {
             "path": "/startsession",
@@ -123,9 +116,7 @@ var filter = {
                 "sessionid": constraints.sessionIdConstrOptional,
                 "loginToken": constraints.requestedLoginTokenConstr,
                 "platid": constraints.platIdConstrOptional,
-                "timeZone": {
-                    "format": "^[a-zA-Z\/_-]+$",
-                },
+                "timeZone": constraints.timeZoneConstrOptional,
                 "fastConnection": {
                     "inclusion": {
                         "within": ["true"]
@@ -321,7 +312,7 @@ var filter = {
                         "within": ["get"]
                     }
                 },
-                "activationKey": constraints.requestedTokenConstr
+                "activationKey": constraints.tokenConstrRequested
             }
         }, {
             "path": '/download',

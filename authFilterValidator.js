@@ -1,15 +1,15 @@
 var async = require('async');
 var authFilters = require('./authFilters.js');
-var logger = require('./common.js').logger;
+var Common = require('./common.js');
 
-function AuthFilterValidator(filters, excludeList, permittedMode) {
+function AuthFilterValidator(filters, excludeList) {
     if (!(this instanceof AuthFilterValidator)) {
-        return new AuthFilterValidator(filters, excludeList, permittedMode);
+        return new AuthFilterValidator(filters, excludeList);
     }
 
     this._filters = filters;
     this._excludeList = excludeList;
-    this._permittedMode = permittedMode;
+
 }
 
 AuthFilterValidator.prototype.validate = function(req, callback) {
@@ -17,27 +17,38 @@ AuthFilterValidator.prototype.validate = function(req, callback) {
     var reqPath = req.path(req.url);
 
     var self = this;
-    var mode = self._permittedMode ? "permitted" : "enforced"
+    var retStatus = Common.STATUS_ERROR;
+    var retMsg = 'shouldn\'t happen!!!';
+    var retErr = null;
 
     async.eachSeries(this._filters, function(filter, callback) {
         filterFunc = authFilters.getFilter(filter);
 
         if (filterFunc) {
-            filterFunc(req, self._excludeList, function(err) {
-                if(err) {
-                    logger.error("$$$$$ AuthFilterValidator: " + err + ". path: " + req.url + " (" + mode + " mode)");
+            filterFunc(req, self._excludeList, function(err, status, msg) {
+                if (err) {
+                    retErr = err;
+                    callback('break');
+                    return;
                 }
-                if (self._permittedMode) {
-                    callback(null);
-                } else {
-                    callback(err);
-                }
-            });
 
+                retMsg = msg;
+                retStatus = status;
+
+                if (status != Common.STATUS_OK) {
+                    callback('break');
+                    return;
+                }
+
+                callback(null);
+            });
         } else {
-            callback("unknown filter");
+            retErr = "unknown filter";
+            callback('break');
         }
-    }, callback);
+    }, function(err) {
+        callback(retErr, retStatus, retMsg);
+    });
 }
 
 module.exports = AuthFilterValidator;

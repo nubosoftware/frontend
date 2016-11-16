@@ -30,28 +30,10 @@ function excludeList() {
         '/html/player/dropzone.js' : 1,
         '/html/player/lang/en.json' : 1,
         '/html/player/deps.js' : 1,
-        '/html/player/images/x.png' : 1,
-        '/html/player/images/clock.png' : 1,
         '/html/player/fonts/Roboto-Regular.ttf' : 1,
         '/html/player/fonts/Roboto-Light.ttf' : 1,
-        '/html/player/images/logo.png' : 1,
         '/html/player/fonts/Roboto-Bold.ttf' : 1,
         '/html/player/fonts/FreebooterScript-Regular.ttf' : 1,
-        '/html/player/images/connerr.png': 1,
-        '/html/player/images/del.png' : 1,
-        '/html/player/images/volcano.png' : 1,
-        '/html/player/images/umbrella_ic.png' : 1,
-        '/html/player/images/settings.png' : 1,
-        '/html/player/images/video_recording.png' : 1,
-        '/html/player/images/search.png' : 1,
-        '/html/player/images/back.png' : 1,
-        '/html/player/images/dragdrop.png' : 1,
-        '/html/player/images/medal.png' : 1,
-        '/html/player/images/welcome.png' : 1,
-        '/html/player/images/nuboDefWallpaper.jpg' : 1,
-        '/html/player/images/folder.png' : 1,
-        '/html/player/images/Welcome_Word.png' : 1,
-        '/html/player/images/ajax-loader.gif' : 1,
         '/html/player/jobs_list.json' : 1,
         '/download' : 1,
         '/html/ios/NuboClientIOS.plist' : 1,
@@ -76,22 +58,22 @@ function excludeList() {
 
     var noFilterList = {
         '/activate' : 1,
-        '/validate' : 1,
         '/registerOrg' : 1,
         '/getResourceListByDevice' : 1,
         '/sendEmailForUnknownJobTitle' : 1,
-        '/captureDeviceDetails' : 1,
         '/resendUnlockPasswordLink' : 1,
         '/activationLink' : 1,
         '/unlockPassword' : 1,
         '/download' : 1,
         '/SmsNotification/sendSmsNotificationFromRemoteServer' : 1,
         '/Notifications/sendNotificationFromRemoteServer' : 1,
+        '//Notifications/sendNotificationFromRemoteServer' : 1,
+        '/Notifications/pushNotification' : 1,
         '/getResource' : 1,
         '/EWSListener' : 1,
         '//EWSListener' : 1,
-        '/startsession' : 1,
-        '/checkPasscode' : 1
+        '/validate' : 1
+        
     }
 
     var excludeList = {
@@ -99,15 +81,15 @@ function excludeList() {
             '/authenticateUser' : 1,
             '/setPasscode' : 1,
             '/resetPasscode' : 1,
-            '/file/uploadToLoginToken' : 1
+            '/file/uploadToLoginToken' : 1,
+            '/checkPasscode' : 1,
+            '/startsession' : 1
         },
         'LOGINTOKEN' : {
             '/createStream' : 1,
             '/playPauseStream' : 1,
             '/file/uploadToSession' : 1,
-            '/Notifications/pushNotification' : 1,
-            '//Notifications/sendNotificationFromRemoteServer' : 1,
-            '/Notifications/sendNotificationFromRemoteServer' : 1
+            '/captureDeviceDetails' : 1
 
         }
     }

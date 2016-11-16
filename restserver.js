@@ -390,7 +390,7 @@ var validator;
 
 function getValidator(){
     if (!(validator instanceof authFilterValidator)) {
-        validator =  new authFilterValidator(['LOGINTOKEN'], authFilterExcludes.excludeList(), Common.authValidatorPermittedMode);
+        validator =  new authFilterValidator(['LOGINTOKEN'], authFilterExcludes.excludeList());
     }
 
     return validator;
@@ -399,14 +399,21 @@ function getValidator(){
 function authValidate(req, res, next) {
     var urlObj = url.parse(req.url);
     var pathname = urlObj.pathname;
-    var htmlPageMatch = new RegExp('^/html/.*');
+    var htmlPageMatch = new RegExp('^/?/html/player/images/');  //admin can add wallpaper images to this folder
+    var isHtml = htmlPageMatch.exec(pathname);
 
-    if (htmlPageMatch)  {
+    if (isHtml)  {
         next();
     } else {
         req.nubodata = {};
-        getValidator().validate(req, function(err) {
+        getValidator().validate(req, function(err, status, msg) {
             if (err) {
+                if(Common.authValidatorPermittedMode){
+                    logger.error("authValidate: " + err + ", URL: " + req.url + " (permitted mode, passing request)");
+                    next();
+                    return;
+                }
+
                 logger.error("authValidate: " + err + ", URL: " + req.url);
 
                 res.contentType = 'json';
@@ -414,6 +421,16 @@ function authValidate(req, res, next) {
                     status: 0,
                     message: "bad request"
                 });
+                return;
+            } else if(status !== Common.STATUS_OK){
+                var resMessage = msg ? " message: " + msg : '';
+                logger.debug("authValidate: URL: " + req.url + " status: " + status + resMessage);
+                res.contentType = 'json';
+                res.send({
+                    status: status,
+                    message: resMessage
+                });      
+                return;
             } else {
                 next();
                 return;

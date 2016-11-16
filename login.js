@@ -204,6 +204,7 @@ module.exports = function(token, callback) {
                     callback(err, login);
                     return;
                 }
+
                 if (obj != null) {
                     login.loginParams = obj;
                     Common.redisClient.ttl('login_' + login.loginToken, function(err, obj) {
@@ -213,7 +214,8 @@ module.exports = function(token, callback) {
 
                     return;
                 } else {
-                    callback("Cannot find loginToken " + login.loginToken, null);
+                    logger.warn("Cannot find loginToken " + login.loginToken);
+                    callback(null, null);
                     return;
                 }
             });

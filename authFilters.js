@@ -1,6 +1,7 @@
 var async = require('async');
 var Login = require('./login.js');
 var sessionModule = require('./session.js');
+var Common = require('./common.js');
 var Session = sessionModule.Session;
 
 var filters = {
@@ -15,10 +16,10 @@ function sessionIdFilter(req, excludeList, callback) {
     var sessIdExclude = excludeList['SESSID'];
 
     if (sessIdExclude && sessIdExclude[reqPath]) {
-        callback(null);
+        callback(null, Common.STATUS_OK);
         return;
     }
-    
+
     if (!session) {
         callback("missing session ID");
         return;
@@ -31,7 +32,7 @@ function sessionIdFilter(req, excludeList, callback) {
         }
 
         req.nubodata.session = obj;
-        callback(null)
+        callback(null, Common.STATUS_OK);
     });
 }
 
@@ -40,12 +41,12 @@ function isAdminFilter(req, excludeList, callback) {
     var isAdminExclude = excludeList['ISADMIN'];
 
     if (isAdminExclude && isAdminExclude[reqPath]) {
-        callback(null);
+        callback(null, Common.STATUS_OK);
         return;
     }
 
     var session = req.nubodata.session;
-    if(session == undefined){
+    if (session == undefined) {
         callback("missing session data");
         return;
     }
@@ -58,11 +59,17 @@ function isAdminFilter(req, excludeList, callback) {
             return;
         }
 
-        if (login && login.loginParams.isAdmin != 1) {
-            callback("user is not admin");
-        } else {
-            callback(null);
+        if (!login) {
+            callback("loginToken expired")
+            return;
         }
+
+        if (login.loginParams.isAdmin != 1) {
+            callback("user is not admin");
+            return;
+        }
+
+        callback(null, Common.STATUS_OK);
     });
 }
 
@@ -72,7 +79,7 @@ function loginTokenFIlter(req, excludeList, callback) {
     var loginTokenExclude = excludeList['LOGINTOKEN'];
 
     if (loginTokenExclude && loginTokenExclude[reqPath]) {
-        callback(null);
+        callback(null, Common.STATUS_OK);
         return;
     }
 
@@ -87,8 +94,13 @@ function loginTokenFIlter(req, excludeList, callback) {
             return;
         }
 
+        if (!login) {
+            callback(null, Common.STATUS_EXPIRED_LOGIN_TOKEN, 'login token expired');
+            return;
+        }
+
         req.nubodata.loginToken = login;
-        callback(null);
+        callback(null, Common.STATUS_OK);
     });
 }
 

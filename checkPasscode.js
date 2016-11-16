@@ -16,21 +16,6 @@ var MIN_DIFFERENT_DIGITS = 4;
 // user is allowed 3 login attempts. then he will be locked.
 var MAX_LOGIN_ATTEMPTS = 3;
 
-function returnInternalError(err, res) {
-    status = Common.STATUS_ERROR;
-    // internal error
-    msg = "Internal error";
-    console.error(err.name, err.message);
-    if (res != undefined) {
-        res.send({
-            status : status,
-            message : msg,
-            isFirstTime : isFirstTime
-        });
-    }
-    return;
-}
-
 function checkPasscode(req, res, next) {
     // https://oritest.nubosoftware.com/checkPasscode?loginToken=[]&passcode=[]
     var logger = new ThreadedLogger();
@@ -45,38 +30,29 @@ function checkPasscode(req, res, next) {
     logger.info("check passcode...");
 
     var loginToken = req.params.loginToken;
-    if (loginToken == undefined || loginToken.length < 5) {
-        status = Common.STATUS_EXPIRED_LOGIN_TOKEN;
-        // invalid parameter
-        msg = "Invalid loginToken";
-    }
-
     var passcode = req.params.passcode;
-
-    if (passcode == undefined) {
-        status = Common.STATUS_ERROR;
-        // invalid parameter
-        msg = "Invalid passCode";
-        res.send({
-            status : status,
-            message : msg
-        });
-        return;
-    }
 
     (function(loginToken, passcode) {
         new Login(loginToken, function(err, login) {
             if (err) {
-                status = Common.STATUS_EXPIRED_LOGIN_TOKEN;
-                // invalid parameter
-                msg = "Invalid loginToken, err:" + err;
+                logger.error("checkPasscode: " + err)
                 res.send({
-                    status : status,
-                    message : msg,
+                    status : Common.STATUS_ERROR,
+                    message : 'internal error'
+                });
+                return;
+            }
+
+            if(!login){
+                logger.error("checkPasscode: shouldn't get this error!!!")
+                res.send({
+                    status : Common.STATUS_EXPIRED_LOGIN_TOKEN,
+                    message : "Invalid loginToken",
                     loginToken : 'notValid'
                 });
                 return;
             }
+
             logger.user(login.getEmail());
 
             function loginUser(login, passcode, res) {

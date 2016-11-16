@@ -178,10 +178,9 @@ var filter = {
         }, {
             "path": "/file/uploadToLoginToken",
             "constraints": {
-                "sessionid": constraints.sessionIdConstrRequested,
+                "sessionid": constraints.sessionIdConstrOptional,
                 "loginToken": constraints.requestedLoginTokenConstr,
                 "existsOnSDcard": {
-                    "presence": false,
                     "inclusion": {
                         "within": ["external://", "internal://"]
                     }
@@ -191,7 +190,7 @@ var filter = {
                         "within": ["true", "false"]
                     }
                 },
-                "destPath": constraints.pathConstrRequested,
+                "destPath": constraints.pathConstrOptional,
                 "isMedia": constraints.boolConstrOptional
             }
         }, {
@@ -290,11 +289,6 @@ var filter = {
             "constraints": {
                 "sessionid": constraints.sessionIdConstrOptional,
                 "session": constraints.sessionIdConstrRequested,
-                "actionType": {
-                    "inclusion": {
-                        "within": ["get"]
-                    }
-                },
                 "activationKey": constraints.tokenConstrRequested
             }
         }, {
@@ -302,7 +296,6 @@ var filter = {
             "constraints": {
                 "sessionid": constraints.sessionIdConstrOptional,
                 "dtype": {
-                    "presence": false,
                     "inclusion": {
                         "within": ["IOS1", "IOS2"]
                     }
@@ -330,7 +323,6 @@ var filter = {
             "constraints": {
                 "loginToken": constraints.requestedLoginTokenConstr,
                 "streamName": {
-                    "presence": false,
                     "format": "^[.a-zA-Z0-9_]+$",
                     "length": {
                         "minimum": 1,
@@ -338,7 +330,6 @@ var filter = {
                     }
                 },
                 "isLive": {
-                    "presence": false,
                     "inclusion": ["true", "false"]
                 }
             }
@@ -347,7 +338,6 @@ var filter = {
             "constraints": {
                 "loginToken": constraints.requestedLoginTokenConstr,
                 "streamName": {
-                    "presence": false,
                     "format": "^[.a-zA-Z0-9_]+$",
                     "length": {
                         "minimum": 1,

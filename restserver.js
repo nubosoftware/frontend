@@ -686,24 +686,6 @@ function userConnectionStatics(req, pathname) {
     }
 }
 
-function downloadFunc(req, res, next) {
-    var dtype = req.params.dtype;
-    var destURL = Common.urlToAPK;
-    if (dtype === "IOS1")
-        destURL = Common.urlToIOS1;
-    else if (dtype === "IOS2") {
-        var qs = querystring.stringify({
-            url : Common.urlToIOS2
-        });
-        destURL = "itms-services://?action=download-manifest&amp;;;;" + qs;
-    }
-
-    res.writeHead(303, {
-        Location : destURL
-    });
-    res.end();
-}
-
 
 Common.loadCallback = mainFunction;
 if (module) {

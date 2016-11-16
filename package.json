@@ -15,7 +15,7 @@
     "node-gcm": "0.14.0",
     "node-static": "0.7.7",
     "nodemailer": "0.7.1",
-    "nubo-validateConstraints": "0.0.17",
+    "nubo-validateConstraints": "0.0.18",
     "permission-parser": "0.0.6",
     "querystring": "0.2.0",
     "redis": "2.6.0-1",

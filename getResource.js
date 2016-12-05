@@ -17,7 +17,7 @@ function getResource(req, res, next) {
 
     res.contentType = 'json';
     var errRes = {
-        status: Common.STATUS_ERROR,
+        status: 1,
         message: 'Internal error. Please contact administrator.',
     };
 

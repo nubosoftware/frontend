@@ -550,7 +550,7 @@ function buildServerObject(server) {
 //--------------------------------------------------------------------------------------------
     // DB access
     server.get('/checkPasscode', internalRequests.forwardGetRequestt);
-    server.get('/setPasscode', setPasscode.func);
+    server.get('/setPasscode', internalRequests.forwardGetRequestt);
     server.get('/resetPasscode', resetPasscode.func);
 
     // DB access

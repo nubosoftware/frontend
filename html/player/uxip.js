@@ -47,7 +47,8 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     	calculateStretch, drawStretchyPatch, showSoftKeyboard, updatePopWindow, resizeWindow, sendKeyboardExtractedText, 
     	updateScreenOrientation, drawBitmapMatrix, drawTextOnCanvas, drawPosTextOnCanvas, setTextAttFromPaint, drawTextRun, 
     	sendRoundTripDataCommand, prepareViewCache, roundTripDataAck, outgoingCall, drawPath, drawPoints, toast, setTopTask, 
-        setWindowPos, getColorFromInt, setShaderToGrdColorStop, clearProcessCacheAck, setPackageName, getFontFromAsset;
+        setWindowPos, getColorFromInt, setShaderToGrdColorStop, clearProcessCacheAck, setPackageName, getFontFromAsset,
+        createWebSocket;
 
     var writer = new UXIPWriter(function(buffer) {
         ws.send(buffer);
@@ -65,7 +66,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     var waitForDraw = false;
     var lastExtractedText = "";
     var uxipObj = this;
-    var lastTimeReceiveData = 0;
+    var lastTimeReceiveData = new Date().getTime();
     var lastDataTime = 0;
     var timeoutid = 0;
     var mPlaybackMode = playbackMode;
@@ -76,6 +77,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     var connectTime = 0;
     var lastTSLabelTime = 0;
     var resourceURL;
+
+    // first login params
+    var firstLoginReconnect = true;
+    var firstLoginReconnectCounter = 0;
 
     //function constructor(ctx, canvasObj,width,height) {
     mParentNode = parentNode;
@@ -127,12 +132,18 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             }
         };
 
+        NuboOutputStreamMgr.getInstance().createSocket(parentNode, width, height, uxipObj, writer);
+
+        createWebSocket(url);
+        // domObj.onclick=mouseEvent;
+    };
+
+    createWebSocket = function (url) {
+
         ws = new WebSocket(url, ['binary']);
         ws.binaryType = "arraybuffer";
 
-        NuboOutputStreamMgr.getInstance().createSocket(parentNode, width, height, uxipObj, writer);
-
-        ws.onmessage = function(e) {
+         ws.onmessage = function(e) {
             if (DEBUG_PROTOCOL_NETWORK) {
                 Log.d(TAG + DEBUG_PROTOCOL_NETWORK_STR, "onmessage, e.data.byteLength=" + e.data.byteLength);
             }
@@ -190,6 +201,13 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             if (!mPlaybackMode) {
                 wm.killAll();
             }
+
+            if (firstLoginReconnect && firstLoginReconnectCounter < 2) {
+                Log.d(TAG, "onclose.login reconnect");
+                firstLoginReconnectCounter += 1;
+                createWebSocket(url);
+            }
+
             // ISRAEL 28/3/16 - temporary diable this for development
             //window.location.reload();
 
@@ -205,10 +223,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             }
             Log.e(TAG + DEBUG_PROTOCOL_NETWORK_STR, "WebSocket on-error event " + msg);
         };
-
-        //domObj.onclick=mouseEvent;
-
-    };
+    }
 
     function checkTimeOut() {
         var d = new Date();
@@ -878,8 +893,8 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 func = setDirtyRect;
                 break;
             case DrawCmd.writeTransaction:
-                var d = new Date();
-                lastTimeReceiveData = d.getTime();
+                firstLoginReconnect = false;
+                lastTimeReceiveData = new Date().getTime();
                 publicinterface.PlayerView.setFirstGatewayConnection(false);
 
                 func = writeTransaction;
@@ -3380,6 +3395,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         wm.updateWndTaskPos(processId, wndId, newTaskAndPos);
         return true;
     };
+
 
     // return constructor(ctx, canvasObj,width,height); // Return the public API interface
     return publicinterface;

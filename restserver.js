@@ -557,7 +557,7 @@ function buildServerObject(server) {
     server.get('/activate', internalRequests.forwardGetRequestt);
 
     // DB access
-    server.get('/validate', Validate.func);
+    server.get('/validate', internalRequests.forwardGetRequestt);
 
     // DB access
     server.get('/captureDeviceDetails', captureDeviceDetails.captureDeviceDetails);

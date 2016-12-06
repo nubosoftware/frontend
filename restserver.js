@@ -554,7 +554,7 @@ function buildServerObject(server) {
     server.get('/resetPasscode', internalRequests.forwardGetRequestt);
 
     // DB access
-    server.get('/activate', Activate.func);
+    server.get('/activate', internalRequests.forwardGetRequestt);
 
     // DB access
     server.get('/validate', Validate.func);
@@ -566,7 +566,7 @@ function buildServerObject(server) {
     server.get('/resendUnlockPasswordLink', unlockPassword.resendUnlockPasswordLink);
 
     //DB access
-    server.get('/activationLink', ActivationLink.func);
+    server.get('/activationLink', internalRequests.forwardGetRequestt);
 
     //DB access
     server.get('/unlockPassword', unlockPassword.unlockPassword);

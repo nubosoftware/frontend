@@ -563,13 +563,13 @@ function buildServerObject(server) {
     server.get('/captureDeviceDetails', internalRequests.forwardGetRequestt);
 
     // DB access
-    server.get('/resendUnlockPasswordLink', unlockPassword.resendUnlockPasswordLink);
+    server.get('/resendUnlockPasswordLink', internalRequests.forwardGetRequestt);
 
     //DB access
     server.get('/activationLink', internalRequests.forwardGetRequestt);
 
     //DB access
-    server.get('/unlockPassword', unlockPassword.unlockPassword);
+    server.get('/unlockPassword', internalRequests.forwardGetRequestt);
 
 //--------------------------------------------------------------------------------------------
     

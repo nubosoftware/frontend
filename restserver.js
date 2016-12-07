@@ -560,7 +560,7 @@ function buildServerObject(server) {
     server.get('/validate', internalRequests.forwardGetRequestt);
 
     // DB access
-    server.get('/captureDeviceDetails', captureDeviceDetails.captureDeviceDetails);
+    server.get('/captureDeviceDetails', internalRequests.forwardGetRequestt);
 
     // DB access
     server.get('/resendUnlockPasswordLink', unlockPassword.resendUnlockPasswordLink);

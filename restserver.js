@@ -538,7 +538,7 @@ function buildServerObject(server) {
     
 // --------------------------------------------------------------------------------------------
     // need sharon 
-    server.get('/authenticateUser', AuthenticateUser.func);
+    server.get('/authenticateUser', internalRequests.forwardGetRequestt);
 
 
     // do we need it ?
@@ -574,7 +574,7 @@ function buildServerObject(server) {
 //--------------------------------------------------------------------------------------------
     
     // no need to touch
-    server.get('/startsession', StartSession.func);
+    server.get('/startsession', internalRequests.forwardGetRequestt);
 
     // no need to touch 
     server.get('/getResourceListByDevice', getResourceListByDevice);

@@ -3,75 +3,11 @@ var Login = require('./login.js');
 var sessionModule = require('./session.js');
 var Common = require('./common.js');
 var Session = sessionModule.Session;
+var internalRequests = require('./internalRequests.js');
 
 var filters = {
-    'SESSID': 0,
-    'ISADMIN': 1,
-    'LOGINTOKEN': 2
-}
-
-function sessionIdFilter(req, excludeList, callback) {
-    var reqPath = req.path(req.url);
-    var session = req.params.session;
-    var sessIdExclude = excludeList['SESSID'];
-
-    if (sessIdExclude && sessIdExclude[reqPath]) {
-        callback(null, Common.STATUS_OK);
-        return;
-    }
-
-    if (!session) {
-        callback("missing session ID");
-        return;
-    }
-
-    new Session(session, function(err, obj) {
-        if (err) {
-            callback(err);
-            return;
-        }
-
-        req.nubodata.session = obj;
-        callback(null, Common.STATUS_OK);
-    });
-}
-
-function isAdminFilter(req, excludeList, callback) {
-    var reqPath = req.path(req.url);
-    var isAdminExclude = excludeList['ISADMIN'];
-
-    if (isAdminExclude && isAdminExclude[reqPath]) {
-        callback(null, Common.STATUS_OK);
-        return;
-    }
-
-    var session = req.nubodata.session;
-    if (session == undefined) {
-        callback("missing session data");
-        return;
-    }
-
-    var loginToken = session.params.loginToken;
-
-    new Login(loginToken, function(err, login) {
-        if (err) {
-            callback(err);
-            return;
-        }
-
-        if (!login) {
-            callback("loginToken expired")
-            return;
-        }
-
-        if (login.loginParams.isAdmin != 1) {
-            callback("user is not admin");
-            return;
-        }
-
-        callback(null, Common.STATUS_OK);
-    });
-}
+    'LOGINTOKEN': 0
+};
 
 function loginTokenFIlter(req, excludeList, callback) {
     var reqPath = req.path(req.url);
@@ -88,29 +24,29 @@ function loginTokenFIlter(req, excludeList, callback) {
         return;
     }
 
-    new Login(loginToken, function(err, login) {
+    internalRequests.checkLoginToken(loginToken, function(err, response) {
         if (err) {
             callback(err);
             return;
         }
 
-        if (!login) {
+        if (response.status === Common.STATUS_EXPIRED_LOGIN_TOKEN) {
             callback(null, Common.STATUS_EXPIRED_LOGIN_TOKEN, 'login token expired');
             return;
         }
 
-        req.nubodata.loginToken = login;
-        callback(null, Common.STATUS_OK);
+        if (response.status === Common.STATUS_OK) {
+            callback(null, Common.STATUS_OK);
+            return;
+        }
+
+        callback("unknown status");
     });
 }
 
 function getFilter(filter) {
     switch (filters[filter]) {
         case 0:
-            return sessionIdFilter;
-        case 1:
-            return isAdminFilter;
-        case 2:
             return loginTokenFIlter;
         default:
             return null;

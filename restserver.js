@@ -12,23 +12,13 @@ var restify = require("restify");
 var Common = require('./common.js');
 var logger = Common.logger;
 
-var Activate = require('./activate.js');
-var Validate = require('./validate.js');
-var StartSession = require('./StartSession.js');
-var AuthenticateUser = require('./authenticateUser.js');
-var checkPasscode = require('./checkPasscode.js');
-var resetPasscode = require('./resetPasscode.js');
-var unlockPassword = require('./unlockPassword.js');
+
 var SendEmailForUnknownJobTitle = require('./sendEmailForUnknownJobTitle.js');
-var setPasscode = require('./setPasscode.js');
-var captureDeviceDetails = require('./captureDeviceDetails.js');
 var ThreadedLogger = require('./ThreadedLogger.js');
-var ActivationLink = require('./activationLink.js');
 var authFilterExcludes = require('./authFilterExcludes.js');
 var authFilterValidator = require('./authFilterValidator.js');
 var Notifications = require('./Notifications.js');
 var SmsNotification = require('./SmsNotification.js');
-var getResource = require('./getResource.js');
 var internalRequests = require('./internalRequests.js');
 var checkStreamFile = require('./checkStreamFile.js');
 
@@ -538,10 +528,11 @@ function buildServerObject(server) {
     
 // --------------------------------------------------------------------------------------------
 
-    // do we need it ?
-    server.get('/registerOrg', Activate.registerOrg);
+    // depreacted
+    // var Activate = require("./activate.js");
+    // server.get('/registerOrg', Activate.registerOrg);
 
-    // would be depreacted
+    // depreacted
     server.get('/sendEmailForUnknownJobTitle', SendEmailForUnknownJobTitle.func);
 
 //--------------------------------------------------------------------------------------------

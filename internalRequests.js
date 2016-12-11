@@ -316,6 +316,7 @@ function forwardCheckStreamFile(loginToken, streamFileName, callback) {
 }
 
 
+
 //pipe upload file to backend server
 function upload(req, res, next) {
 
@@ -437,6 +438,31 @@ function forwardGetRequestt(req, res, next) {
 
 }
 
+function checkLoginToken(loginToken, callback) {
+    var options = getOptions();
+    options.path = options.path = "/checkLoginToken" + "?loginToken=" + loginToken;
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            callback(err);
+            return;
+        }
+
+        var resObjData;
+        try {
+            resObjData = JSON.parse(resData);
+
+        } catch (e) {
+            callback(e);
+            return;
+        }
+
+        callback(null, resObjData);
+
+        return;
+    });
+}
+
 module.exports = {
     createOrReturnUserAndDomain: createOrReturnUserAndDomain,
     createDomainForUser: createDomainForUser,
@@ -449,5 +475,6 @@ module.exports = {
     forwardCheckStreamFile: forwardCheckStreamFile,
     getStreamsFile : getStreamsFile,
     setAdminInDB : setAdminInDB,
+    checkLoginToken: checkLoginToken,
     upload: upload
 }

@@ -537,9 +537,6 @@ function buildServerObject(server) {
     }));
     
 // --------------------------------------------------------------------------------------------
-    // need sharon 
-    server.get('/authenticateUser', internalRequests.forwardGetRequestt);
-
 
     // do we need it ?
     server.get('/registerOrg', Activate.registerOrg);
@@ -548,44 +545,23 @@ function buildServerObject(server) {
     server.get('/sendEmailForUnknownJobTitle', SendEmailForUnknownJobTitle.func);
 
 //--------------------------------------------------------------------------------------------
-    // DB access
+
+	server.get('/authenticateUser', internalRequests.forwardGetRequestt);
     server.get('/checkPasscode', internalRequests.forwardGetRequestt);
     server.get('/setPasscode', internalRequests.forwardGetRequestt);
     server.get('/resetPasscode', internalRequests.forwardGetRequestt);
-
-    // DB access
     server.get('/activate', internalRequests.forwardGetRequestt);
-
-    // DB access
     server.get('/validate', internalRequests.forwardGetRequestt);
-
-    // DB access
     server.get('/captureDeviceDetails', internalRequests.forwardGetRequestt);
-
-    // DB access
     server.get('/resendUnlockPasswordLink', internalRequests.forwardGetRequestt);
-
-    //DB access
     server.get('/activationLink', internalRequests.forwardGetRequestt);
-
-    //DB access
     server.get('/unlockPassword', internalRequests.forwardGetRequestt);
-
-//--------------------------------------------------------------------------------------------
-    
-    // no need to touch
     server.get('/startsession', internalRequests.forwardGetRequestt);
+    server.get('/getResource', internalRequests.forwardGetRequestt);
 
-    // no need to touch 
     server.get('/getResourceListByDevice', getResourceListByDevice);
-
-    // no need to touch
     server.get('/html/player/common.js', require('./webCommon.js'));
-
-    //no need to touch
     server.get('/download', downloadFunc);
-
-    // no need to touch
     server.post('/file/uploadToSession', internalRequests.upload);
     server.post('/file/uploadToLoginToken', internalRequests.upload);
     server.post('/file/uploadDummyFile', internalRequests.upload);
@@ -600,7 +576,7 @@ function buildServerObject(server) {
     }
     server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
     server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
-    server.get('/getResource', getResource.getResource);
+    
     server.opts('/.*/', optionsHandler);
     
     function optionsHandler(req, res) {

@@ -536,22 +536,56 @@ function buildServerObject(server) {
         origins: Common.allowedOrigns, // defaults to ['*']
     }));
     
+// --------------------------------------------------------------------------------------------
+    // need sharon 
     server.get('/authenticateUser', AuthenticateUser.func);
-    server.get('/checkPasscode', checkPasscode.func);
-    server.get('/setPasscode', setPasscode.func);
-    server.get('/resetPasscode', resetPasscode.func);
-    server.get('/activate', Activate.func);
-    server.get('/validate', Validate.func);
+
+
+    // do we need it ?
     server.get('/registerOrg', Activate.registerOrg);
-    server.get('/startsession', StartSession.func);
-    server.get('/getResourceListByDevice', getResourceListByDevice);
+
+    // would be depreacted
     server.get('/sendEmailForUnknownJobTitle', SendEmailForUnknownJobTitle.func);
+
+//--------------------------------------------------------------------------------------------
+    // DB access
+    server.get('/checkPasscode', internalRequests.forwardGetRequestt);
+    server.get('/setPasscode', internalRequests.forwardGetRequestt);
+    server.get('/resetPasscode', resetPasscode.func);
+
+    // DB access
+    server.get('/activate', Activate.func);
+
+    // DB access
+    server.get('/validate', Validate.func);
+
+    // DB access
     server.get('/captureDeviceDetails', captureDeviceDetails.captureDeviceDetails);
+
+    // DB access
     server.get('/resendUnlockPasswordLink', unlockPassword.resendUnlockPasswordLink);
-    server.get('/html/player/common.js', require('./webCommon.js'));
+
+    //DB access
     server.get('/activationLink', ActivationLink.func);
+
+    //DB access
     server.get('/unlockPassword', unlockPassword.unlockPassword);
+
+//--------------------------------------------------------------------------------------------
+    
+    // no need to touch
+    server.get('/startsession', StartSession.func);
+
+    // no need to touch 
+    server.get('/getResourceListByDevice', getResourceListByDevice);
+
+    // no need to touch
+    server.get('/html/player/common.js', require('./webCommon.js'));
+
+    //no need to touch
     server.get('/download', downloadFunc);
+
+    // no need to touch
     server.post('/file/uploadToSession', internalRequests.upload);
     server.post('/file/uploadToLoginToken', internalRequests.upload);
     server.post('/file/uploadDummyFile', internalRequests.upload);

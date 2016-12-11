@@ -405,6 +405,37 @@ function setAdminInDB(email, orgdomain, callback) {
     });
 }
 
+function forwardGetRequestt(req, res, next) {
+    var options = getOptions();
+    options.path = req.url;
+    res.contentType = 'json';
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            res.send({
+                status: Common.STATUS_ERROR,
+                message: "Internal error"
+            });
+            return;
+        }
+
+        var resObjData;
+        try {
+            resObjData = JSON.parse(resData);
+        } catch (e) {
+            res.send({
+                status: Common.STATUS_ERROR,
+                message: "Internal error"
+            });
+            return;
+        }
+
+        res.send(resObjData);
+
+        return;
+    });
+
+}
 
 module.exports = {
     createOrReturnUserAndDomain: createOrReturnUserAndDomain,
@@ -414,6 +445,7 @@ module.exports = {
     createUserFolders: createUserFolders,
     saveSettingsUpdateFile: saveSettingsUpdateFile,
     forwardGetRequest: forwardGetRequest,
+    forwardGetRequestt: forwardGetRequestt,
     forwardCheckStreamFile: forwardCheckStreamFile,
     getStreamsFile : getStreamsFile,
     setAdminInDB : setAdminInDB,

@@ -32,6 +32,12 @@ var Common = {
     restify : require('restify'),
     crypto : require('crypto'),
     nodemailer : require("nodemailer"),
+    redis : require("redis"),
+    redisConf: {
+        host: "127.0.0.1",
+        port: 6379,
+        db: 0
+    },
     internalServerCredentials: {
         key: "",
         cert: ""
@@ -79,6 +85,9 @@ var Common = {
         },
         "NotificationGateway": {
             "authKey": 1
+        },
+        "redisConf" : {
+            "password" : 1
         },
         "registerOrgPassword": 1,
         "RemoteServers" : "*"
@@ -265,8 +274,85 @@ function parse_configs() {
         if(Common.platformpath) Common.imagesPath = Common.platformpath + "/out/target/product/x86_platform";
 
 
-        // if (firstTimeLoad) {
-        // }
+        if (firstTimeLoad) {
+            //connect to redis
+            Common.redisPool = poolModule.Pool({
+                name : 'redis',
+                create : function(callback) {
+                    var c = Common.redis.createClient(Common.redisConf);
+                    if (Common.redisdb > 0) {
+                        c.select(Common.redisdb, function(err) {
+                        });
+                    }
+
+                    c.on("error", function(err) {
+                        logger.error("Error in redis " + err);
+                    });
+
+                    callback(null, c);
+                },
+                destroy : function(client) {
+                    client.quit();
+                },
+                max : 10,
+                min : 2,
+                idleTimeoutMillis : 30000,
+                log : false
+            });
+
+            var RedisClient = function() {
+
+            };
+            var commands = require("redis/node_modules/redis-commands/commands.json");
+
+            Object.keys(commands).forEach(function(fullCommand) {
+                var command = fullCommand.split(' ')[0];
+
+                RedisClient.prototype[command] = function(args, callback) {
+
+                    var arr = null;
+                    var cb = null;
+
+                    if (Array.isArray(args) && typeof callback === "function") {
+                        arr = args;
+                        cb = callback;
+                    } else {
+                        arr = to_array(arguments);
+                        if (arr.length > 0 && typeof arr[arr.length - 1] === "function") {
+                            cb = arr.pop();
+                        }
+                    }
+                    Common.redisPool.acquire(function(err, client) {
+                        if (err) {
+                            logger.error("Redis connection pool error: " + err);
+                            callback(err);
+                            return;
+                        }
+
+                        /*logger.info("Calling command "+command+" with params: "+JSON.stringify(arr,null,2)+
+                         ", pool usage: "+(Common.redisPool.getPoolSize()-Common.redisPool.availableObjectsCount())+" / "+
+                         Common.redisPool.getPoolSize());        */
+
+                        arr.push(function(err, reply) {
+                            if (err) {
+                                logger.error("Redis command error: " + err);
+                            }
+                            Common.redisPool.release(client);
+                            if (cb)
+                                cb(err, reply);
+                        });
+                        client[command].apply(client, arr);
+
+                    });
+                    return true;
+                };
+                RedisClient.prototype[command.toUpperCase()] = RedisClient.prototype[command];
+            });
+
+            Common.redisClient = new RedisClient();
+
+        }
+
 
         if (Common.loadCallback)
             Common.loadCallback(null, firstTimeLoad);

@@ -273,7 +273,10 @@ var filter = {
                         "minimum": 1,
                         "maximum": 255
                     }
-                }
+                },
+                "ip": constraints.ipConstrOptional,
+                "port": constraints.portNumberConstrOptional,
+                "userName": constraints.ExcludeSpecialCharactersOptional
             }
         }, {
             "path": '/getResourceListByDevice',

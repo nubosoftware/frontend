@@ -166,11 +166,21 @@ function sendNotificationFromRemoteServer(req, res) {
 
     if (status == 1) {
         if (Common.withService) {
-            udpNotification(pushRegID, notifyTitle, notifyTime, notifyLocation, type, function(err) {
-                if (err) {
-                    logger.error('ERROR::pushUDPNotification: ' + err);
-                }
-            });
+            var ip = req.params.ip;
+            var port = req.params.port;
+            var userName = req.params.userName;
+
+            if (!ip || !port || !userName) {
+                logger.error('sendNotificationFromRemoteServer: missing parameter to send UDP notification');
+                status = 0;
+                msg = "missing parameter";
+            } else {
+                udpNotification(pushRegID, notifyTitle, notifyTime, notifyLocation, type, ip, port, userName, function(err) {
+                    if (err) {
+                        logger.error('ERROR::pushUDPNotification: ' + err);
+                    }
+                });
+            }
         } else {
             sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type);
         }
@@ -178,9 +188,9 @@ function sendNotificationFromRemoteServer(req, res) {
     }
 
     res.send({
-            status : status,
-            msg : msg
-        });
+        status: status,
+        msg: msg
+    });
 }
 
 /**
@@ -646,48 +656,25 @@ function isUserNotificationEnabled(data, appName, callback) {
 /*
  Sends a UDP datagram to the client at the specified (DataBase) remote endpoint.
  */
-function udpNotification(email, titleText, notifyTime, notifyLocation, appName, callback) {
+function udpNotification(email, titleText, notifyTime, notifyLocation, appName, ip, port, userName, callback) {
 
-    Common.db.User.findAll({
-        attributes : ['clientport', 'clientip','username'],
-        where : {
-            username : email,
-        },
-    }).complete(function(err, results) {
-        if (!!err || results == '' || results == null) {
-            callback("udpNotification:: Failed accessing DB");
+    //TODO add notifyTime & notifyLocation
+    var message = new Buffer(userName + ':' + appName);
+    //var message = new Buffer(appName);
+
+    var client = dgram.createSocket('udp4');
+    logger.info("Sending UDP notification to: Email = " + email + ", IP = " + ip + ", PORT = " + port);
+    client.send(message, 0, message.length, port, ip, function(err, bytes) {
+        if (err) {
+            callback("udpNotification:: Failed to send dgram msg");
             return;
         } else {
-            //appName = result[0].appname;
-            var mPort = results[0].clientport;
-            var mIP = results[0].clientip;
-            if(!mIP) {
-                callback("missed ip");
-                return;
-            }
-            mIP = mIP.replace(/\/|:/g, "");
-            var dgram = require('dgram');
-            var mUserName = results[0].username;
-
-            //TODO add notifyTime & notifyLocation
-            var message = new Buffer(mUserName + ':' + appName);
-            //var message = new Buffer(appName);
-
-            var client = dgram.createSocket('udp4');
-            logger.info("Sending UDP notification to: Email = " + email + ", IP = " + mIP + ", PORT = " + mPort);
-            client.send(message, 0, message.length, mPort, mIP, function(err, bytes) {
-                if (err) {
-                    callback("udpNotification:: Failed to send dgram msg");
-                    return;
-                } else {
-                    client.close();
-                    callback(null);
-                    return;
-                }
-            });
-
+            client.close();
+            callback(null);
+            return;
         }
     });
+
 }
 
 /*

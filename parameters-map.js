@@ -256,8 +256,8 @@ var filter = {
                     "presence": true,
                     "format": "^[0-9a-zA-Z_\\-+=/]+$",
                     "length": {
-                        "minimum": 6,
-                        "maximum": 100
+                        "minimum": 1,
+                        "maximum": 256
                     }
                 },
                 "notifyTime": constraints.ExcludeSpecialCharactersOptional,

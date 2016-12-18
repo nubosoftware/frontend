@@ -41,7 +41,7 @@ function excludeList() {
         '/html/ios/NuboClientIOS.ipa': 1,
         '/html/ios/NuboL.png' : 1,
         '/html/player/lang/he.json' : 1,
-        '/html/player/images/stars.jpg' : 1
+        '/html/player/clientWallpaper/wallpaper.jpg' : 1
     };
 
     if (production) {

@@ -276,7 +276,22 @@ var filter = {
                 },
                 "ip": constraints.ipConstrOptional,
                 "port": constraints.portNumberConstrOptional,
-                "userName": constraints.ExcludeSpecialCharactersOptional
+                "userName": constraints.ExcludeSpecialCharactersOptional,
+                "enableVibrate": {
+                    "inclusion": {
+                        "within": ["0", "1"]
+                    }
+                },
+                "enableSound" : {
+                    "inclusion": {
+                        "within": ["0", "1"]
+                    }
+                },
+                "showFullNotif" : {
+                    "inclusion": {
+                        "within": ["0", "1"]
+                    }
+                }
             }
         }, {
             "path": '/getResourceListByDevice',

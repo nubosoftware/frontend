@@ -67,6 +67,9 @@ function sendNotificationFromRemoteServer(req, res) {
     var notifyTime = readParam("notifyTime");
     var notifyLocation = readParam("notifyLocation");
     var type = readParam("type");
+    var enableSound = readParam("enableSound");
+    var enableVibrate = readParam("enableVibrate");
+    var showFullNotif = readParam("showFullNotif");
 
     if (status == 1) {
         if (Common.withService) {
@@ -86,7 +89,7 @@ function sendNotificationFromRemoteServer(req, res) {
                 });
             }
         } else {
-            sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type);
+            sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif);
         }
         msg = "Notification queued";
     }
@@ -132,10 +135,12 @@ function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notif
     });
 }
 
-function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type) {
+function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif) {
     // Hanan - removing time and location due to security issue raised by Israel that content is displayed on physical client
-    notifyLocation = '';
-    notifyTime = '';
+    if (showFullNotif != 1) {
+        notifyLocation = '';
+        notifyTime = '';
+    }
 
     if (!pushRegID || pushRegID == '' || pushRegID == '(null)') {
        logger.info('Aborting push notification to ' + deviceType + ', push reg id is null');
@@ -162,6 +167,8 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         message.addData('notifyTime', notifyTime.toString());
         message.addData('title', notifyTitle);
         message.addData('notifyLocation', notifyLocation);
+        message.addData('enableSound', enableSound);
+        message.addData('enableVibrate', enableVibrate);
         message.collapseKey = 'demo';
         message.delayWhileIdle = false;
         message.timeToLive = 3;
@@ -211,6 +218,10 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         note.expiry = Math.floor(Date.now() / 1000) + 360000;
         // Expires 100 hour from now.
 
+        if (notifyLocation.length > 0) {
+            notifyLocation = '\n' + notifyLocation;
+        }
+
         var alert = "";
         if (type != 0) {
             // calendar
@@ -221,20 +232,30 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
                 }
                 alert += '\n' + notifyTime;
             } else {
-                alert = notifyTitle;    
+                alert = notifyTitle + notifyLocation;
             }
         } else {
-            alert = "Email from " + notifyTitle;
+            alert = "Email from " + notifyTitle + notifyLocation;
         }
 
-        note.payload = {
-            "aps" : {
-                "alert" : alert,
-                "sound" : "default"
-            },
-            "when" : "if calendar - send time in utc",
-            "AppId" : type
-        };
+        if (enableSound == 1) {
+            note.payload = {
+                "aps" : {
+                    "alert" : alert,
+                    "sound" : "default"
+                },
+                "when" : "if calendar - send time in utc",
+                "AppId" : type
+            };
+        } else {
+            note.payload = {
+                "aps" : {
+                    "alert" : alert
+                },
+                "when" : "if calendar - send time in utc",
+                "AppId" : type
+            };
+        }
 
         apnConnection.pushNotification(note, myDevice);
     }

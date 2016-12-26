@@ -297,6 +297,25 @@ function formatPage() {
         }
     });
 
+    var displayNuboBar = true;
+    if (Common.displayNuboBar != undefined ) {
+        displayNuboBar = Common.displayNuboBar;
+    }
+
+    if (displayNuboBar) {
+        $("#nuboToolBar").css('visibility', 'visible');
+
+        $("#datadiv").css('position', 'absolute');
+        $("#datadiv").css('left', '0');
+        $("#datadiv").css('top', '46px');
+        $("#datadiv").css('bottom', '0');
+        $("#datadiv").css('width', '100%');
+     } else {
+        $("#nuboToolBar").css('visibility', 'hidden');
+        $("#datadiv").css('width', '100%');
+        $("#datadiv").css('height', '100%');
+    }
+
     // console.log("formatPage. wallpaperColor: " + wallpaperColor + ", wallpaperImage: " + wallpaperImage);
     $("#toolbardiv").css('background-color', '#58585A');
 

@@ -230,8 +230,7 @@ var filter = {
                     "presence": true,
                     "format": "^[.0-9a-zA-Z_\\-]+$",
                     "length": {
-                        "minimum": 6,
-                        "maximum": 25
+                        "minimum": 6
                     }
 
                 }

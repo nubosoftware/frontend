@@ -37,67 +37,95 @@ var SENDING_NOTIFICATION = "sending Notification"
  * Each server need to authenticate with serverID and serverAuthKey
  */
 function sendNotificationFromRemoteServer(req, res) {
-    var status = 1;
-    var msg = "";
+
+    var response = {
+        status: 1,
+        msg: ""
+    };
+
     function readParam(paramName) {
         var value = req.params[paramName];
-        if (status == 1 && value === undefined) {
-            msg = "Missing parameter: "+paramName;
-            logger.error("sendNotificationFromRemoteServer: "+msg);
-            status = 0;
+        if (response.status == 1 && value === undefined) {
+            response.msg = "Missing parameter: " + paramName;
+            logger.error("sendNotificationFromRemoteServer: " + response.msg);
+            response.status = 0;
         }
         return value;
     }
     if (!Common.RemoteServers) {
-        msg = "Missing RemoteServers";
-        logger.error("sendNotificationFromRemoteServer: "+msg);
-        status = 0;
+        response.msg = "Missing RemoteServers";
+        response.status = 0;
+        logger.error("sendNotificationFromRemoteServer: " + response.msg);
     }
+
     var serverID = readParam("serverID");
     var serverAuthKey = readParam("serverAuthKey");
     var confAuthKey = Common.RemoteServers[serverID];
-    if (status == 1 && confAuthKey != serverAuthKey ) {
-        msg = "Invalid serverAuthKey";
-        logger.error("sendNotificationFromRemoteServer: "+msg);
-        status = 0;
+    if (response.status == 1 && confAuthKey != serverAuthKey) {
+        response.msg = "Invalid serverAuthKey";
+        response.status = 0;
+        logger.error("sendNotificationFromRemoteServer: " + response.msg);
     }
+
     var deviceType = readParam("deviceType");
     var pushRegID = readParam("pushRegID");
     var notifyTitle = readParam("notifyTitle");
     var notifyTime = readParam("notifyTime");
     var notifyLocation = readParam("notifyLocation");
     var type = readParam("type");
-    var enableSound = readParam("enableSound");
-    var enableVibrate = readParam("enableVibrate");
-    var showFullNotif = readParam("showFullNotif");
+    var enableSound = req.params["enableSound"]; //readParam("enableSound");
+    var enableVibrate = req.params["enableVibrate"]; //readParam("enableVibrate");
+    var showFullNotif = req.params["showFullNotif"]; //readParam("showFullNotif");
 
-    if (status == 1) {
-        if (Common.withService) {
-            var ip = req.params.ip;
-            var port = req.params.port;
-            var userName = req.params.userName;
-
-            if (!ip || !port || !userName) {
-                logger.error('sendNotificationFromRemoteServer: missing parameter to send UDP notification');
-                status = 0;
-                msg = "missing parameter";
-            } else {
-                udpNotification(pushRegID, notifyTitle, notifyTime, notifyLocation, type, ip, port, userName, function(err) {
-                    if (err) {
-                        logger.error('ERROR::pushUDPNotification: ' + err);
-                    }
-                });
-            }
-        } else {
-            sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif);
-        }
-        msg = "Notification queued";
+    if (response.status !== 1) {
+        res.send(response);
+        return;
     }
 
-    res.send({
-        status: status,
-        msg: msg
-    });
+    if (Common.withService) {
+        var ip = req.params.ip;
+        var port = req.params.port;
+        var userName = req.params.userName;
+
+        if (!ip || !port || !userName) {
+            logger.error('sendNotificationFromRemoteServer: missing parameter to send UDP notification');
+            response.status = 0;
+            response.msg = "missing parameter";
+            res.send(response);
+            return;
+        }
+
+        udpNotification(pushRegID, notifyTitle, notifyTime, notifyLocation, type, ip, port, userName, function(err) {
+            if (err) {
+                logger.error('sendNotificationFromRemoteServer: ' + err);
+                response.status = 0;
+                response.msg = 'Failed sending notification';
+                res.send(response);
+                return;
+            }
+
+            response.msg = "Notification queued";
+            res.send(response);
+        });
+
+    } else {
+        sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, function(err, pushregid) {
+            if (err) {
+                logger.error("sendNotificationFromRemoteServer: " + err);
+                response.status = 0;
+                response.msg = 'Failed sending notification';
+                res.send(response);
+                return;
+            }
+
+            if (pushregid) {
+                response.pushregid = pushregid;
+            }
+
+            response.msg = "Notification queued";
+            res.send(response);
+        });
+    }
 }
 
 /**
@@ -105,7 +133,7 @@ function sendNotificationFromRemoteServer(req, res) {
  * Deliver the push notification to remote server (gateway)
  * Detailed of the gateway are located in Settings.json
  */
-function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type) {
+function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, callback) {
     var urlstr = Common.NotificationGateway.url+"?"+ querystring.stringify({
         deviceType: deviceType,
         pushRegID: pushRegID,
@@ -116,6 +144,7 @@ function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notif
         serverID: Common.NotificationGateway.serverID,
         serverAuthKey: Common.NotificationGateway.authKey
     });
+
     request({
             'method' : 'GET',
             url : urlstr,
@@ -123,19 +152,31 @@ function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notif
             timeout : 5000
         }, function(error, response, body) {
             if (error) {
-                logger.info('error: ' + error);
+                logger.error('sendNotificationToRemoteSever: ' + error);
                 var msg = "Connection error";
-                //callback(msg);
+                callback(msg);
                 return;
             }
 
-            logger.info('STATUS: ' + response.statusCode);
-            logger.info('HEADERS: ' + JSON.stringify(response.headers));
-            logger.info("Body: " + body);
+            try {
+                var resObj = JSON.parse(body);
+            } catch (err) {
+                logger.error('sendNotificationToRemoteSever: ' + err);
+                callback("failed parse server response");
+                return;
+            }
+
+            if (resObj.status === 1){
+                callback(null, resObj.pushregid);
+                return;
+            }
+
+            logger.error('sendNotificationToRemoteSever: got error from remote server: ' + JSON.stringify(resObj));
+            callback('error form remote server');
     });
 }
 
-function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif) {
+function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, callback) {
     // Hanan - removing time and location due to security issue raised by Israel that content is displayed on physical client
     if (showFullNotif != 1) {
         notifyLocation = '';
@@ -148,7 +189,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
     }
 
     if (Common.NotificationGateway) {
-        sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type);
+        sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, callback);
         return;
     }
     
@@ -175,23 +216,18 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         sender.send(message, [pushRegID], nOfRetries, function(err, result) {
             if (err) {
                 logger.error("Cannot send message to GCM err: " +  err + "; res: " + result);
-            } else {
-                logger.info("Notifications.js::sender.send result: ", result);
-                if (result.canonical_ids === 1) {
-                    Common.db.Activation.update(
-                        {
-                            'pushregid': result.results[0].registration_id
-                        }, {
-                            where: {
-                                'pushregid': pushRegID,
-                                'devicetype' : "Android"
-                            }
-                        }
-                    ).then(function(res) {
-                        logger.info("Notifications.js::sender.send activation updated with new regid: ", result.results[0].registration_id);
-                    });
-                }
+                callback(err);
+                return;
             }
+                
+            logger.info("Notifications.js::sender.send result: ", result);
+            if (result.canonical_ids === 1) {
+                logger.info("Notifications.js::sender.send activation updated with new regid: ", result.results[0].registration_id);
+                callback(null, result.results[0].registration_id);
+                return;
+            }
+            
+            callback(null);
         });
         //@TODO - fix the iPhone notification params
     } else if (deviceType === "iPhone" || deviceType === "iPad") {
@@ -258,6 +294,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         }
 
         apnConnection.pushNotification(note, myDevice);
+        callback(null);
     }
 }
 

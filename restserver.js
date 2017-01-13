@@ -499,20 +499,20 @@ function buildServerObject(server) {
 
 //--------------------------------------------------------------------------------------------
 
-	server.get('/authenticateUser', internalRequests.forwardGetRequestt);
-    server.get('/checkPasscode', internalRequests.forwardGetRequestt);
-    server.get('/setPasscode', internalRequests.forwardGetRequestt);
-    server.get('/resetPasscode', internalRequests.forwardGetRequestt);
-    server.get('/activate', internalRequests.forwardGetRequestt);
-    server.get('/validate', internalRequests.forwardGetRequestt);
-    server.get('/captureDeviceDetails', internalRequests.forwardGetRequestt);
-    server.get('/resendUnlockPasswordLink', internalRequests.forwardGetRequestt);
-    server.get('/activationLink', internalRequests.forwardGetRequestt);
-    server.get('/unlockPassword', internalRequests.forwardGetRequestt);
-    server.get('/startsession', internalRequests.forwardGetRequestt);
-    server.get('/getResource', internalRequests.forwardGetRequestt);
+	server.get('/authenticateUser', internalRequests.forwardGetRequest);
+    server.get('/checkPasscode', internalRequests.forwardGetRequest);
+    server.get('/setPasscode', internalRequests.forwardGetRequest);
+    server.get('/resetPasscode', internalRequests.forwardGetRequest);
+    server.get('/activate', internalRequests.forwardGetRequest);
+    server.get('/validate', internalRequests.forwardGetRequest);
+    server.get('/captureDeviceDetails', internalRequests.forwardGetRequest);
+    server.get('/resendUnlockPasswordLink', internalRequests.forwardGetRequest);
+    server.get('/activationLink', internalRequests.forwardGetRequest);
+    server.get('/unlockPassword', internalRequests.forwardGetRequest);
+    server.get('/startsession', internalRequests.forwardGetRequest);
+    server.get('/getResource', internalRequests.forwardGetRequest);
 
-    server.get('/getResourceListByDevice', internalRequests.forwardGetRequestt);
+    server.get('/getResourceListByDevice', internalRequests.forwardGetRequest);
     server.get('/html/player/common.js', require('./webCommon.js'));
     server.get('/download', downloadFunc);
     server.post('/file/uploadToSession', internalRequests.upload);

@@ -273,44 +273,6 @@ function returnInternalError(err, res) {
 var nodestatic = require('node-static');
 var http = require('http');
 
-function testq(req, res, next) {
-
-}
-
-function getResourceListByDevice(req, res, next) {
-
-    var deviceName = req.params.deviceName;
-    var resolution = req.params.resolution;
-    var arr = new Array();
-    Common.redisClient.ZREVRANGE("d_" + deviceName, '0', '-1', function(err, replies) {
-
-        if (err || replies.length === 0) {
-            Common.redisClient.ZREVRANGE("r_" + resolution, '0', '-1', function(err, replies) {
-                if (err || replies.length === 0) {
-                    res.send(arr);
-                    return;
-                }
-                replies.forEach(function(reply, i) {
-                    arr.push(reply);
-                    if ((i + 1) === replies.length) {
-                        res.send(arr);
-                    }
-                });
-            });
-            return;
-        }
-
-        replies.forEach(function(reply, i) {
-
-            arr.push(reply);
-            if ((i + 1) === replies.length) {
-                res.send(arr);
-            }
-        });
-        //
-    });
-}
-
 function downloadFunc(req, res, next) {
 
     var dtype = req.params.dtype;
@@ -550,7 +512,7 @@ function buildServerObject(server) {
     server.get('/startsession', internalRequests.forwardGetRequestt);
     server.get('/getResource', internalRequests.forwardGetRequestt);
 
-    server.get('/getResourceListByDevice', getResourceListByDevice);
+    server.get('/getResourceListByDevice', internalRequests.forwardGetRequestt);
     server.get('/html/player/common.js', require('./webCommon.js'));
     server.get('/download', downloadFunc);
     server.post('/file/uploadToSession', internalRequests.upload);
@@ -642,11 +604,12 @@ function buildServerObject(server) {
                     });
                     res.write("404 Not Found\n");
                     res.end();
-                    Common.redisClient.zincrby("missing_res", 1, req.url);
+                    internalRequests.addMissingResource(req.url);
                     return;
                 }
                 else{
-                    userConnectionStatics(req, pathname);
+
+                    internalRequests.updateUserConnectionStatics(req.params.deviceName, req.params.resolution, pathname);
                 }
             });
         //handle web client resources
@@ -659,34 +622,17 @@ function buildServerObject(server) {
                     });
                     res.write("404 Not Found\n");
                     res.end();
-                    Common.redisClient.zincrby("missing_res", 1, req.url);
+                    internalRequests.addMissingResource(req.url);
                     return;
                 }
                 else{
-                    userConnectionStatics(req, pathname);
+                    internalRequests.updateUserConnectionStatics(req.params.deviceName, req.params.resolution, pathname);
+
                 }
             });
         }
     });
 }
-
-function userConnectionStatics(req, pathname) {
-    var deviceName = req.params.deviceName;
-    var resolution = req.params.resolution;
-    if (deviceName != null || resolution != null) {
-        if (pathname.indexOf("/html/player/extres/") === 0)
-            pathname = pathname.substr(20);
-        if (deviceName != null && deviceName.length > 0) {
-            Common.redisClient.sadd("devices", deviceName);
-            Common.redisClient.zincrby("d_" + deviceName, 1, pathname);
-        }
-        if (resolution != null && resolution.length > 0) {
-            Common.redisClient.sadd("resolutions", resolution);
-            Common.redisClient.zincrby("r_" + resolution, 1, pathname);
-        }
-    }
-}
-
 
 Common.loadCallback = mainFunction;
 if (module) {

@@ -396,10 +396,14 @@ function captureDeviceNetworkDetails(req,res,next) {
     if ((req.url.indexOf("/html/player/extres/") >= 0) || (req.url.indexOf("//html/player/extres/") >= 0) || req.url.indexOf("getResource") >= 0 || req.url.indexOf("checkStreamsFile") >= 0)  {
         next();
     } else {
-        captureDeviceDetails.updateNetworkDeviceDetails(req, function(err) {
+        internalRequests.updateNetworkDeviceDetails(req, function(err, resObj) {
 	    if (err) {
-	        logger.error(err);
+	        logger.error("captureDeviceNetworkDetails: " + err);
 	    }
+
+        if(resObj.status === 1){
+            logger.error("captureDeviceNetworkDetails: " + resObj.message);
+        }
 	    next();
 	    return;
         });
@@ -505,7 +509,7 @@ function buildServerObject(server) {
     server.get('/resetPasscode', internalRequests.forwardGetRequest);
     server.get('/activate', internalRequests.forwardGetRequest);
     server.get('/validate', internalRequests.forwardGetRequest);
-    server.get('/captureDeviceDetails', internalRequests.forwardGetRequest);
+    server.get('/captureDeviceDetails', internalRequests.captureDeviceDetails);
     server.get('/resendUnlockPasswordLink', internalRequests.forwardGetRequest);
     server.get('/activationLink', internalRequests.forwardGetRequest);
     server.get('/unlockPassword', internalRequests.forwardGetRequest);

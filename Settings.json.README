@@ -19,12 +19,6 @@
 
 {
  "serverurl": "https://<YOUR LAB>.nubosoftware.com/",       # url of your server
-"redisConf": {
-    "host": "127.0.0.1",
-    "port": 6379,
-    "password": "password",
-    "db": 0
-},
  "cassandraHost": "localhost:9160",
  "nfsserver": "<YOURUSERNAME>@192.168.122.1",               # ssh-like syntax
  "default_gateway": "<YOUR.MACHINE.GATEWAY.IP>:7890",       # don't use it... insecure
@@ -94,9 +88,6 @@
  "publicurl": <server public URL >,            # address used in nubomanagement-public
  "internalurl": <server internal URL>          # address used for internal access
  encryptedParameters: {                        # parameters to encrypt
-    "redisConf" : {
-        "password" : 1
-    }
  },
  encryptConf: false                            # if set to true paramters will be encrypted 
  "internalServerCredentials": {                # credentials for internal server requests in https

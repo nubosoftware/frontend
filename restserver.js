@@ -238,7 +238,7 @@ var mainFunction = function(err, firstTimeLoad) {
             },
             function(callback) {
                 if(Common.username) {
-                    require('child_process').execFile("id", [Common.username], function(error, stdout, stderr) {
+                    require('child_process').execFile("/usr/bin/id", [Common.username], function(error, stdout, stderr) {
                         if(error) {
                             logger.error("Cannot get uid/gid of " + Common.username + "\nstderr:\n" + stderr + "\nerr:\n" + error);
                             callback(err);

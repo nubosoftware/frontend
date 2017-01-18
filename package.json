@@ -18,7 +18,6 @@
     "nubo-validateConstraints": "0.0.18",
     "permission-parser": "0.0.7",
     "querystring": "0.2.0",
-    "redis": "2.6.0-1",
     "request": "2.72.0",
     "restify": "4.0.4",
     "sequelize": "2.0.0-rc4",

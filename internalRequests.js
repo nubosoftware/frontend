@@ -14,36 +14,6 @@ function getOptions() {
     return options;
 }
 
-function createOrReturnUserAndDomain(email, logger, callback) {
-    var options = getOptions();
-    options.path = "/createOrReturnUserAndDomain" + "?email=" + email;
-
-    http.doGetRequest(options, function(err, resData) {
-        if (err) {
-            callback(err);
-            return;
-        }
-
-        var resObjData;
-        try {
-            resObjData = JSON.parse(resData);
-        } catch (e) {
-            callback(e);
-            return;
-        }
-
-        if (resObjData.status === 1) {
-            callback(null, resObjData.resObj, resObjData.userObj, resObjData.orgObj);
-        } else if (resObjData.status === 0) {
-            callback(resObjData.message);
-        } else {
-            callback("unknown status code");
-        }
-
-        return;
-    });
-}
-
 function forwardCheckStreamFile(loginToken, streamFileName, callback) {
 
     var resObjData;
@@ -127,41 +97,6 @@ function getStreamsFile(req, res, next) {
     req.pipe(connector);
     req.resume();
     return;
-}
-
-function setAdminInDB(email, orgdomain, callback) {
-    console.log('internalREquests: email: ' + email);
-    var options = getOptions();
-    options.path = "/setAdminInDB" + "?email=" + email + "&orgdomain=" + orgdomain;
-    console.log('internalREquests: options: ' + options);
-
-    http.doGetRequest(options, function(err, resData) {
-        if (err) {
-            console.log('internalRequests err: ' + err);
-            callback(err);
-            return;
-        }
-
-        var resObjData;
-        console.log('resObjData: ' + resData);
-        try {
-            resObjData = JSON.parse(resData);
-            console.log('resObjData: ' + resObjData);
-        } catch (e) {
-            callback(e);
-            return;
-        }
-
-        if (resObjData.status === 1) {
-            callback(null, resObjData.resObj, resObjData.userObj, resObjData.orgObj);
-        } else if (resObjData.status === 0) {
-            callback(resObjData.message);
-        } else {
-            callback("unknown status code");
-        }
-
-        return;
-    });
 }
 
 function forwardGetRequest(req, res, next) {
@@ -361,11 +296,9 @@ function updateNetworkDeviceDetails(req, callback) {
 
 
 module.exports = {
-    createOrReturnUserAndDomain: createOrReturnUserAndDomain,
     forwardGetRequest: forwardGetRequest,
     forwardCheckStreamFile: forwardCheckStreamFile,
     getStreamsFile : getStreamsFile,
-    setAdminInDB : setAdminInDB,
     checkLoginToken: checkLoginToken,
     addMissingResource: addMissingResource,
     updateUserConnectionStatics: updateUserConnectionStatics,

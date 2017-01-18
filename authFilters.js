@@ -1,8 +1,5 @@
 var async = require('async');
-var Login = require('./login.js');
-var sessionModule = require('./session.js');
 var Common = require('./common.js');
-var Session = sessionModule.Session;
 var internalRequests = require('./internalRequests.js');
 
 var filters = {

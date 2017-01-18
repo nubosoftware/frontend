@@ -463,6 +463,99 @@ function checkLoginToken(loginToken, callback) {
     });
 }
 
+function addMissingResource(resource) {
+    var options = getOptions();
+    options.path = "/addMissingResource";
+    options.method = "POST";
+
+    var postData = JSON.stringify({
+        resource: resource
+    });
+
+    options.headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Length': postData.length
+    };
+
+    http.doPostRequest(options, postData, function(err, resData) {
+        if (err) {
+            logger.error("addMissingResource: " + err);
+            return;
+        }
+
+        var resObjData;
+        try {
+            resObjData = JSON.parse(resData);
+            console.log(resObjData)
+        } catch (e) {
+            logger.error("addMissingResource: " + e);
+            return;
+        }
+
+        if (resObjData.status === Common.STATUS_OK) {
+            return;
+        }
+
+        if (resObjData.status === Common.STATUS_ERROR) {
+            logger.error("addMissingResource: " + resObjData.message);
+        } else {
+            logger.error("addMissingResource: unknown status code");
+        }
+
+        return;
+    });
+}
+
+function updateUserConnectionStatics(deviceName, resolution, pathname) {
+
+    if(!deviceName && !resolution){
+        return;
+    }
+
+    var options = getOptions();
+    options.path = "/updateUserConnectionStatics";
+    options.method = "POST";
+
+    var postData = JSON.stringify({
+        deviceName: deviceName,
+        resolution: resolution,
+        pathname: pathname
+    });
+
+    options.headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Length': postData.length
+    };
+
+    http.doPostRequest(options, postData, function(err, resData) {
+        if (err) {
+            logger.error("updateUserConnectionStatics: " + err);
+            return;
+        }
+
+        var resObjData;
+        try {
+            resObjData = JSON.parse(resData);
+            console.log(resObjData)
+        } catch (e) {
+            logger.error("updateUserConnectionStatics: " + e);
+            return;
+        }
+
+        if (resObjData.status === Common.STATUS_OK) {
+            return;
+        }
+
+        if (resObjData.status === Common.STATUS_ERROR) {
+            logger.error("updateUserConnectionStatics: " + resObjData.message);
+        } else {
+            logger.error("updateUserConnectionStatics: unknown status code");
+        }
+
+        return;
+    });
+}
+
 module.exports = {
     createOrReturnUserAndDomain: createOrReturnUserAndDomain,
     createDomainForUser: createDomainForUser,
@@ -476,5 +569,7 @@ module.exports = {
     getStreamsFile : getStreamsFile,
     setAdminInDB : setAdminInDB,
     checkLoginToken: checkLoginToken,
+    addMissingResource: addMissingResource,
+    updateUserConnectionStatics: updateUserConnectionStatics,
     upload: upload
 }

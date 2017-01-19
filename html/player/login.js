@@ -225,7 +225,6 @@ $(function() {
 });
 
 function getSessionId() {
-
     // console.log("navigator.userAgent: " + navigator.userAgent);
     if (navigator.userAgent.indexOf(' OPR/') >= 0) {
         browserType = "opera";
@@ -297,23 +296,41 @@ function formatPage() {
         }
     });
 
-    var displayNuboBar = true;
-    if (Common.displayNuboBar != undefined ) {
-        displayNuboBar = Common.displayNuboBar;
+    var recordingOption = false;
+    if (Common.recordingOption != undefined) {
+        recordingOption = Common.recordingOption;
+    }
+    if (recordingOption) {
+        $("#recordingsbtn").css('visibility', 'visible');
+    } else {
+        $("#recordingsbtn").css('visibility', 'hidden');
     }
 
-    if (displayNuboBar) {
-        $("#nuboToolBar").css('visibility', 'visible');
+    var displayFullScreen = false;
+    if (Common.displayFullScreen != undefined) {
+        displayFullScreen = Common.displayFullScreen;
+    }
+    if (displayFullScreen) {
+        $("#nuboToolBar").css('visibility', 'hidden');
+        $("#maindiv").css('width', '100%');
+        $("#maindiv").css('height', '100%');
 
         $("#datadiv").css('position', 'absolute');
-        $("#datadiv").css('left', '0');
-        $("#datadiv").css('top', '46px');
-        $("#datadiv").css('bottom', '0');
-        $("#datadiv").css('width', '100%');
-     } else {
-        $("#nuboToolBar").css('visibility', 'hidden');
         $("#datadiv").css('width', '100%');
         $("#datadiv").css('height', '100%');
+        $("#datadiv").css('top', '0');
+    } else {
+        $("#nuboToolBar").css('visibility', 'visible');
+        $("#toolbardiv").css('width', '1024px');
+        $("#toolbardiv").css('height', '45px');
+
+        $("#maindiv").css('width', '1024px');
+        $("#maindiv").css('height', '768px');
+
+        $("#datadiv").css('position', 'absolute');
+        $("#datadiv").css('width', '100%');
+        $("#datadiv").css('height', '100%');
+        $("#datadiv").css('top', '45px');
     }
 
     // console.log("formatPage. wallpaperColor: " + wallpaperColor + ", wallpaperImage: " + wallpaperImage);
@@ -1704,7 +1721,6 @@ $(function() {
         },
 
         checkPasscode : function() {
-
             var url = mgmtURL + "checkPasscode?loginToken=" + encodeURIComponent(loginToken) + "&passcode=" + encodeURIComponent(enterPasscode);
             if (DEBUG) {
                 console.log("checkPasscode. " + url);

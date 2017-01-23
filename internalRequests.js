@@ -102,6 +102,8 @@ function getStreamsFile(req, res, next) {
 function forwardGetRequest(req, res, next) {
     var options = getOptions();
     options.path = req.url;
+    options.headers = {};
+    options.headers['x-client-ip'] = req.realIP;
     res.contentType = 'json';
 
     http.doGetRequest(options, function(err, resData) {
@@ -269,7 +271,7 @@ function updateNetworkDeviceDetails(req, callback) {
     options.path = "/captureDeviceDetails?" + querystring.stringify({
         activationKey: req.params.activationKey,
         sessionid: req.params.sessionid,
-        remoteAddress: req.connection.remoteAddress,
+        remoteAddress: req.realIP,
         remotePort: req.connection.remotePort
     });
 

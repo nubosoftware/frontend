@@ -13,6 +13,7 @@ if (Common.withService) {
             "maximum": 255
         }
     };
+
 } else {
     userNameFormat = constraints.emailConstrRequested
 }
@@ -42,15 +43,11 @@ var filter = {
                     }
                 },
                 "deviceName": constraints.ExcludeSpecialCharactersOptional,
-                "alreadyUser": {
-                    "presence": false,
-                    "inclusion": ["Y", "N"]
-                },
+                "alreadyUser": constraints.Y_N_boolConstrOptional,
                 "first": constraints.ExcludeSpecialCharactersOptional,
                 "last": constraints.ExcludeSpecialCharactersOptional,
                 "title": constraints.ExcludeSpecialCharactersOptional,
                 "deviceType": {
-                    "presence": false,
                     "inclusion": ["iPhone", "iPad", "Web", "Android"]
                 },
                 "silentActivation": {
@@ -67,14 +64,7 @@ var filter = {
                         "maximum": 255
                     }
                 },
-                "playerVersion": {
-                    "presence": false,
-                    "format": "^[0-9]+[.0-9a-z-]+$",
-                    "length": {
-                        "minimum": 3,
-                        "maximum": 255
-                    }
-                },
+                "playerVersion": constraints.playerVersionConstrOptional,
                 "additionalDeviceInfo": constraints.ExcludeSpecialCharactersOptional
             }
         }, {
@@ -92,13 +82,7 @@ var filter = {
             "constraints": {
                 "sessionid": constraints.sessionIdConstrOptional,
                 "token": constraints.tokenConstrRequested,
-                "cloneActivation": {
-                    "presence": true,
-                    "format": "^[a-z0-9]+$",
-                    "length": {
-                        "maximum": 96
-                    }
-                }
+                "cloneActivation": constraints.activationConstrRequested
             }
         }, {
             "path": "/validate",
@@ -202,14 +186,7 @@ var filter = {
             "path": '/SmsNotification/sendSmsNotificationFromRemoteServer',
             "constraints": {
                 "sessionid": constraints.sessionIdConstrOptional,
-                "toPhone": {
-                    "presence": true,
-                    "format": "^[0-9-+]+$",
-                    "length": {
-                        "minimum": 9,
-                        "maximum": 36
-                    }
-                },
+                "toPhone": constraints.phoneNumberConstrRequested,
                 "body": {
                     "presence": true,
                     "format": "^[.0-9a-zA-Z_\\-]+$",
@@ -344,28 +321,14 @@ var filter = {
             "path": "/getStreamsFile",
             "constraints": {
                 "loginToken": constraints.requestedLoginTokenConstr,
-                "streamName": {
-                    "format": "^[.a-zA-Z0-9_]+$",
-                    "length": {
-                        "minimum": 1,
-                        "maximum": 255
-                    }
-                },
-                "isLive": {
-                    "inclusion": ["true", "false"]
-                }
+                "streamName": constraints.pathConstrRequested,
+                "isLive": constraints.boolConstrRequested
             }
         }, {
             "path": "/checkStreamsFile",
             "constraints": {
                 "loginToken": constraints.requestedLoginTokenConstr,
-                "streamName": {
-                    "format": "^[.a-zA-Z0-9_]+$",
-                    "length": {
-                        "minimum": 1,
-                        "maximum": 255
-                    }
-                }
+                "streamName": constraints.pathConstrRequested
             }
         }
 

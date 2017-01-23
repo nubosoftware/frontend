@@ -342,7 +342,12 @@ var validator;
 
 function getValidator(){
     if (!(validator instanceof authFilterValidator)) {
-        validator =  new authFilterValidator(['LOGINTOKEN'], authFilterExcludes.excludeList());
+        if (Common.withService) {
+            validator = new authFilterValidator(['LOGINTOKEN','SESSID'], authFilterExcludes.excludeList());
+        }
+        else{
+            validator = new authFilterValidator(['LOGINTOKEN'], authFilterExcludes.excludeList());
+        }
     }
 
     return validator;
@@ -495,12 +500,9 @@ function buildServerObject(server) {
 // --------------------------------------------------------------------------------------------
 
     // depreacted
-    // var Activate = require("./activate.js");
-    // server.get('/registerOrg', Activate.registerOrg);
-
-    // depreacted
-    server.get('/sendEmailForUnknownJobTitle', SendEmailForUnknownJobTitle.func);
-
+    if (!Common.withService) {
+        server.get('/sendEmailForUnknownJobTitle', SendEmailForUnknownJobTitle.func);
+    }
 //--------------------------------------------------------------------------------------------
 
 	server.get('/authenticateUser', internalRequests.forwardGetRequest);
@@ -557,10 +559,12 @@ function buildServerObject(server) {
         cache : 10
     });
 
-    var resourcesfile = new nodestatic.Server(Common.nfshomefolder, {
-        cache : 10
-    });
-
+    var resourcesfile;
+    if (!Common.withService) {
+        resourcesfile = new nodestatic.Server(Common.nfshomefolder, {
+            cache: 10
+        });
+    }
     var isPermittedUrl = function(url) {
         var match;
         match = url.match('^.*/html/(.*)');
@@ -599,7 +603,7 @@ function buildServerObject(server) {
         var pathname = urlObj.pathname;
 
         //handle apps resoureces
-        if (pathname.indexOf("/html/player/extres/") === 0 || pathname.indexOf("//html/player/extres/") === 0) {
+        if (!Common.withService &&  (pathname.indexOf("/html/player/extres/") === 0 || pathname.indexOf("//html/player/extres/") === 0)) {
             resourcesfile.serve(req, res, function(err, result) {
                 if (err) { 
                     logger.error("Error serving " + req.url + " - " + err.message);
@@ -630,7 +634,9 @@ function buildServerObject(server) {
                     return;
                 }
                 else{
-                    internalRequests.updateUserConnectionStatics(req.params.deviceName, req.params.resolution, pathname);
+                    if (!Common.withService) {
+                        internalRequests.updateUserConnectionStatics(req.params.deviceName, req.params.resolution, pathname);
+                    }
 
                 }
             });

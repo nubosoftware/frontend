@@ -158,6 +158,31 @@ function checkLoginToken(loginToken, callback) {
     });
 }
 
+function checkSessionId(sessionid, callback) {
+    var options = getOptions();
+    options.path = options.path = "/checkSessionId" + "?sessionid=" + sessionid;
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            callback(err);
+            return;
+        }
+
+        var resObjData;
+        try {
+            resObjData = JSON.parse(resData);
+
+        } catch (e) {
+            callback(e);
+            return;
+        }
+
+        callback(null, resObjData);
+
+        return;
+    });
+}
+
 function addMissingResource(resource) {
     var options = getOptions();
     options.path = "/addMissingResource";
@@ -306,5 +331,6 @@ module.exports = {
     updateUserConnectionStatics: updateUserConnectionStatics,
     upload: upload,
     updateNetworkDeviceDetails: updateNetworkDeviceDetails,
-    captureDeviceDetails : captureDeviceDetails
+    captureDeviceDetails : captureDeviceDetails,
+    checkSessionId: checkSessionId
 }

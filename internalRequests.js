@@ -133,55 +133,6 @@ function forwardGetRequest(req, res, next) {
 
 }
 
-function checkLoginToken(loginToken, callback) {
-    var options = getOptions();
-    options.path = options.path = "/checkLoginToken" + "?loginToken=" + loginToken;
-
-    http.doGetRequest(options, function(err, resData) {
-        if (err) {
-            callback(err);
-            return;
-        }
-
-        var resObjData;
-        try {
-            resObjData = JSON.parse(resData);
-
-        } catch (e) {
-            callback(e);
-            return;
-        }
-
-        callback(null, resObjData);
-
-        return;
-    });
-}
-
-function checkSessionId(sessionid, callback) {
-    var options = getOptions();
-    options.path = options.path = "/checkSessionId" + "?sessionid=" + sessionid;
-    http.doGetRequest(options, function(err, resData) {
-        if (err) {
-            callback(err);
-            return;
-        }
-
-        var resObjData;
-        try {
-            resObjData = JSON.parse(resData);
-
-        } catch (e) {
-            callback(e);
-            return;
-        }
-
-        callback(null, resObjData);
-
-        return;
-    });
-}
-
 function addMissingResource(resource) {
     var options = getOptions();
     options.path = "/addMissingResource";
@@ -324,11 +275,9 @@ module.exports = {
     forwardGetRequest: forwardGetRequest,
     forwardCheckStreamFile: forwardCheckStreamFile,
     getStreamsFile : getStreamsFile,
-    checkLoginToken: checkLoginToken,
     addMissingResource: addMissingResource,
     updateUserConnectionStatics: updateUserConnectionStatics,
     upload: upload,
     updateNetworkDeviceDetails: updateNetworkDeviceDetails,
     captureDeviceDetails : captureDeviceDetails,
-    checkSessionId: checkSessionId
 }

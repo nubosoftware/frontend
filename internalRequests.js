@@ -161,7 +161,6 @@ function checkLoginToken(loginToken, callback) {
 function checkSessionId(sessionid, callback) {
     var options = getOptions();
     options.path = options.path = "/checkSessionId" + "?sessionid=" + sessionid;
-
     http.doGetRequest(options, function(err, resData) {
         if (err) {
             callback(err);
@@ -294,7 +293,6 @@ function captureDeviceDetails(req, res, next) {
 function updateNetworkDeviceDetails(req, callback) {
     var options = getOptions();
     options.path = "/captureDeviceDetails?" + querystring.stringify({
-        activationKey: req.params.activationKey,
         sessionid: req.params.sessionid,
         remoteAddress: req.realIP,
         remotePort: req.connection.remotePort

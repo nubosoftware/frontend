@@ -15,8 +15,6 @@ var logger = Common.logger;
 
 var SendEmailForUnknownJobTitle = require('./sendEmailForUnknownJobTitle.js');
 var ThreadedLogger = require('./ThreadedLogger.js');
-var authFilterExcludes = require('./authFilterExcludes.js');
-var authFilterValidator = require('./authFilterValidator.js');
 var Notifications = require('./Notifications.js');
 var SmsNotification = require('./SmsNotification.js');
 var internalRequests = require('./internalRequests.js');
@@ -340,64 +338,6 @@ function yescache(req, res, next) {
   next();
 }
 
-var validator;
-
-function getValidator(){
-    if (!(validator instanceof authFilterValidator)) {
-        if (Common.withService) {
-            validator = new authFilterValidator(['LOGINTOKEN','SESSID'], authFilterExcludes.excludeList());
-        }
-        else{
-            validator = new authFilterValidator(['LOGINTOKEN'], authFilterExcludes.excludeList());
-        }
-    }
-
-    return validator;
-}
-
-function authValidate(req, res, next) {
-    var urlObj = url.parse(req.url);
-    var pathname = urlObj.pathname;
-    var htmlPageMatch = new RegExp('^/?/html/player/images/');  //admin can add wallpaper images to this folder
-    var isHtml = htmlPageMatch.exec(pathname);
-
-    if (isHtml)  {
-        next();
-    } else {
-        req.nubodata = {};
-        getValidator().validate(req, function(err, status, msg) {
-            if (err) {
-                if(Common.authValidatorPermittedMode){
-                    logger.error("authValidate: " + err + ", URL: " + req.url + " (permitted mode, passing request)");
-                    next();
-                    return;
-                }
-
-                logger.error("authValidate: " + err + ", URL: " + req.url);
-
-                res.contentType = 'json';
-                res.send({
-                    status: 0,
-                    message: "bad request"
-                });
-                return;
-            } else if(status !== Common.STATUS_OK){
-                var resMessage = msg ? " message: " + msg : '';
-                logger.debug("authValidate: URL: " + req.url + " status: " + status + resMessage);
-                res.contentType = 'json';
-                res.send({
-                    status: status,
-                    message: resMessage
-                });      
-                return;
-            } else {
-                next();
-                return;
-            }
-        });
-    }
-}
-
 function captureDeviceNetworkDetails(req,res,next) {
     // skip irrelevant requets to reduce calls to DB
     if ((req.url.indexOf("/html/player/") >= 0) || req.url.indexOf("getResource") >= 0 || req.url.indexOf("checkStreamsFile") >= 0)  {
@@ -488,9 +428,8 @@ function buildServerObject(server) {
 
     server.use(accesslogger);
     server.use(nocache);
-    server.use(authValidate);
     if (Common.withService) {
-	server.use(captureDeviceNetworkDetails);
+	   server.use(captureDeviceNetworkDetails);
     } 
     // server.use(Common.restify.gzipResponse());
     server.use(Common.restify.CORS({

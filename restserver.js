@@ -35,6 +35,8 @@ var mainFunction = function(err, firstTimeLoad) {
         return;
     }
 
+    refresh_filter();
+
     if (!firstTimeLoad)// execute the following code only in the first time
         return;
 
@@ -398,7 +400,7 @@ function authValidate(req, res, next) {
 
 function captureDeviceNetworkDetails(req,res,next) {
     // skip irrelevant requets to reduce calls to DB
-    if ((req.url.indexOf("/html/player/extres/") >= 0) || (req.url.indexOf("//html/player/extres/") >= 0) || req.url.indexOf("getResource") >= 0 || req.url.indexOf("checkStreamsFile") >= 0)  {
+    if ((req.url.indexOf("/html/player/") >= 0) || req.url.indexOf("getResource") >= 0 || req.url.indexOf("checkStreamsFile") >= 0)  {
         next();
     } else {
         internalRequests.updateNetworkDeviceDetails(req, function(err, resObj) {
@@ -454,8 +456,6 @@ var refresh_filter = function() {
 
     filterObj.reload(obj.rules, {permittedMode: obj.permittedMode});
 };
-
-refresh_filter();
 
 //wrapper for old client
 function filterObjUseHandlerWrapper(req, res, next){

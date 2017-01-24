@@ -1,22 +1,7 @@
 "use strict";
-var constraints = require("nubo-validateConstraints");
+
 var Common = require("./common.js");
-
-var userNameFormat;
-
-if (Common.withService) {
-    userNameFormat = {
-        "presence": true,
-        "format": "^[a-zA-Z0-9.@_\\-]+$",
-        "length": {
-            "minimum": 1,
-            "maximum": 255
-        }
-    };
-
-} else {
-    userNameFormat = constraints.emailConstrRequested
-}
+var constraints = require("nubo-validateConstraints")(Common.withService);
 
 var filter = {
     "permittedMode": true,
@@ -33,7 +18,7 @@ var filter = {
             "path": "/activate",
             "constraints": {
                 "sessionid": constraints.sessionIdConstrOptional,
-                "email": constraints.emailConstrRequested,
+                "email": constraints.userNameConstrRequested,
                 "deviceid": constraints.deviceIdConstrRequested,
                 "imsi": {
                     "format": "^[0-9a-zA-Z]+$",
@@ -150,7 +135,7 @@ var filter = {
             "constraints": {
                 "sessionid": constraints.sessionIdConstrOptional,
                 "loginemailtoken": constraints.requestedLoginTokenConstr,
-                "email": userNameFormat
+                "email": constraints.emailConstrRequested
             }
         }, {
             "path": "/file/uploadToSession",
@@ -286,9 +271,8 @@ var filter = {
         }, {
             "path": '/captureDeviceDetails',
             "constraints": {
-                "sessionid": constraints.sessionIdConstrOptional,
-                "session": constraints.sessionIdConstrRequested,
-                "activationKey": constraints.tokenConstrRequested
+                "sessionid": constraints.sessionIdConstrRequested,
+                "activationKey": constraints.activationConstrRequested
             }
         }, {
             "path": '/download',

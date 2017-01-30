@@ -11,6 +11,9 @@ var nodeHttps = require('https');
 function getOptions() {
     var options = {};
     _.extend(options, Common.internalServerCredentials.options);
+    options.headers = {};
+    options.headers['fe-user'] = Common.backendAuth.user;
+    options.headers['fe-pass'] = Common.backendAuth.password;
     return options;
 }
 
@@ -82,7 +85,7 @@ function getStreamsFile(req, res, next) {
     var options = getOptions();
     console.log("SharonLog url = " + req.url)
     options.path = "/readStreamFile" + "?loginToken=" + loginToken + "&streamFileName=" + streamName + "&isLive="+isLive;
-    options.headers = req.headers;
+    _.extend(options.headers,req.headers);
     options.method = req.method;
     options.agent = false;
     var request;
@@ -102,7 +105,6 @@ function getStreamsFile(req, res, next) {
 function forwardGetRequest(req, res, next) {
     var options = getOptions();
     options.path = req.url;
-    options.headers = {};
     options.headers['x-client-ip'] = req.realIP;
     res.contentType = 'json';
 
@@ -192,10 +194,11 @@ function updateUserConnectionStatics(deviceName, resolution, pathname) {
         pathname: pathname
     });
 
-    options.headers = {
+    var headers = {
         'Content-Type': 'application/json; charset=utf-8',
         'Content-Length': postData.length
     };
+    _.extend(options.headers, headers);
 
     http.doPostRequest(options, postData, function(err, resData) {
         if (err) {

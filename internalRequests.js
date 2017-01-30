@@ -55,10 +55,10 @@ function upload(req, res, next) {
     req.pause();
 
     var options = url.parse(req.url);
-    options.headers = req.headers;
     options.method = req.method;
     options.agent = false;
     _.extend(options, getOptions());
+    _.extend(options.headers,req.headers);
 
     var request;
     if (options.key) request = nodeHttps.request;

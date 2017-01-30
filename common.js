@@ -81,13 +81,20 @@ var Common = {
             "authKey": 1
         },
         "registerOrgPassword": 1,
-        "RemoteServers" : "*"
+        "RemoteServers" : "*",
+        "backendAuth" : {
+            "password" : 1
+        }
     },
     encryptConf: false,
     exitJobs: [],
     authValidatorPermittedMode: false,
     allowOnlyImportedADusers : false,
-    disableIPBlockMechanism : false
+    disableIPBlockMechanism : false,
+    backendAuth:{
+        user: "",
+        password : ""
+    }
 };
 
 try {

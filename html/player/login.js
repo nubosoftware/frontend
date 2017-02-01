@@ -306,31 +306,33 @@ function formatPage() {
         $("#recordingsbtn").css('visibility', 'hidden');
     }
 
-    var displayFullScreen = false;
-    if (Common.displayFullScreen != undefined) {
-        displayFullScreen = Common.displayFullScreen;
-    }
-    if (displayFullScreen) {
-        $("#nuboToolBar").css('visibility', 'hidden');
-        $("#maindiv").css('width', '100%');
-        $("#maindiv").css('height', '100%');
+    if (!mobilecheck()) {
+        var displayFullScreen = false;
+        if (Common.displayFullScreen != undefined) {
+            displayFullScreen = Common.displayFullScreen;
+        }
+        if (displayFullScreen) {
+            $("#nuboToolBar").css('visibility', 'hidden');
+            $("#maindiv").css('width', '100%');
+            $("#maindiv").css('height', '100%');
 
-        $("#datadiv").css('position', 'absolute');
-        $("#datadiv").css('width', '100%');
-        $("#datadiv").css('height', '100%');
-        $("#datadiv").css('top', '0');
-    } else {
-        $("#nuboToolBar").css('visibility', 'visible');
-        $("#toolbardiv").css('width', '1024px');
-        $("#toolbardiv").css('height', '45px');
+            $("#datadiv").css('position', 'absolute');
+            $("#datadiv").css('width', '100%');
+            $("#datadiv").css('height', '100%');
+            $("#datadiv").css('top', '0');
+        } else {
+            $("#nuboToolBar").css('visibility', 'visible');
+            $("#toolbardiv").css('width', '1024px');
+            $("#toolbardiv").css('height', '45px');
 
-        $("#maindiv").css('width', '1024px');
-        $("#maindiv").css('height', '768px');
+            $("#maindiv").css('width', '1024px');
+            $("#maindiv").css('height', '768px');
 
-        $("#datadiv").css('position', 'absolute');
-        $("#datadiv").css('width', '100%');
-        $("#datadiv").css('height', '100%');
-        $("#datadiv").css('top', '45px');
+            $("#datadiv").css('position', 'absolute');
+            $("#datadiv").css('width', '100%');
+            $("#datadiv").css('height', '100%');
+            $("#datadiv").css('top', '45px');
+        }
     }
 
     // console.log("formatPage. wallpaperColor: " + wallpaperColor + ", wallpaperImage: " + wallpaperImage);

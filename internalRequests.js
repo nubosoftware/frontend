@@ -144,10 +144,12 @@ function addMissingResource(resource) {
         resource: resource
     });
 
-    options.headers = {
+    var reqHeaders = {
         'Content-Type': 'application/json; charset=utf-8',
         'Content-Length': postData.length
     };
+
+    _.extend(options.headers,reqHeaders);
 
     http.doPostRequest(options, postData, function(err, resData) {
         if (err) {

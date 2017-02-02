@@ -844,7 +844,8 @@ $(function() {
             window.location.hash = "createPlayer";
         },
         checkActivationLink : function() {
-            var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token) + "&cloneActivation=" + encodeURIComponent(this.cloneActivation);
+            var cloneActivationParam = this.cloneActivation ? "&cloneActivation=" + encodeURIComponent(this.cloneActivation) : "";
+            var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token) + cloneActivationParam;
             if (DEBUG) {
                 console.log("activationLink. " + url);
             }
@@ -924,7 +925,8 @@ $(function() {
 
         },
         checkResetLink : function() {
-            var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token) + "&cloneActivation=" + encodeURIComponent(this.cloneActivation);
+            var cloneActivationParam = this.cloneActivation ? "&cloneActivation=" + encodeURIComponent(this.cloneActivation) : "";
+            var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token) + cloneActivationParam;
 
             if (DEBUG) {
                 console.log("checkResetLink. " + url);

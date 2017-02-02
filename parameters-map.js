@@ -67,7 +67,7 @@ var filter = {
             "constraints": {
                 "sessionid": constraints.sessionIdConstrOptional,
                 "token": constraints.tokenConstrRequested,
-                "cloneActivation": constraints.activationConstrRequested
+                "cloneActivation": constraints.activationConstrOptional
             }
         }, {
             "path": "/validate",

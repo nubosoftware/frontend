@@ -46,7 +46,7 @@ js_buildid := 1
 node_modules_version := 1.3.1
 node_modules_buildid := 1
 webplayer_version := 1.3.1
-webplayer_buildid := 1
+webplayer_buildid := 2
 
 
 nubomanagement-public:

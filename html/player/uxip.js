@@ -3244,7 +3244,6 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             errorAndClose();
             return;
         }
-
         NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.roundTripData), processId, wndId, getNuboLongAsFloat(time));
     };
 
@@ -3280,9 +3279,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             mBadRTTCounter++;
             if (mBadRTTCounter >= MAX_BAD_RTT_SEQUENCE) {
                 Log.e(TAG, "BAD RoundTripData, " + mBadRTTCounter + " times of RTT > " + RTT_THRESHOLD_TO_CLOSE_SOCKET);
+                Log.e(TAG, "roundTripDataAck. Ignore bad rtt");
                 mBadRTTCounter = 0;
                 //AsiM - TODO: check if I need to restart after closing sockets
-                errorAndClose();
+                //errorAndClose();
             }
         } else {
             mBadRTTCounter = 0;

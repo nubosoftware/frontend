@@ -222,7 +222,7 @@ var filter = {
                     }
                 },
                 "notifyTime": constraints.ExcludeSpecialCharactersOptional,
-                "notifyTitle": constraints.ExcludeSpecialCharactersOptional,
+                "notifyTitle": constraints.openTextConstrOptional,
                 "deviceType": {
                     "presence": true,
                     "inclusion": ["iPhone", "iPad", "Web", "Android"]

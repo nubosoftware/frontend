@@ -31,32 +31,34 @@ $(eval $1_buildid=$(shell echo $($1_tag) | sed 's/.*\(1\.2\.[0-9]*\)\.\([0-9]*\)
 $(eval $1_buildid=$(shell if [ `echo "$($1_tag)" | grep -E "\-g[a-f0-9]{7}$$"` ]; then echo $($1_buildid)+1 | bc; else echo $($1_buildid); fi))
 endef
 
+$(eval $(call get_project_version,public))
+$(eval $(call get_project_version,common))
+$(eval $(call get_current_version,js))
+$(eval $(call get_current_version,node_modules))
+$(eval $(call get_current_version,webplayer))
+
+
 nubomanagement-public:
-	$(call get_project_version,public)
 	@echo "public version $(public_version) $(public_buildid)"
 	make $(nubo_proj_dir)/rpms/latest/nubomanagement-public-$(public_version)-$(public_buildid).x86_64.rpm
 	make $(nubo_proj_dir)/debs/latest/nubomanagement-public-$(public_version)-$(public_buildid).deb
 
 nubomanagement-public-common:
-	$(call get_project_version,common)
 	@echo "common version $(common_version) $(common_buildid)"
 	make $(nubo_proj_dir)/rpms/latest/nubomanagement-public-common-$(common_version)-$(common_buildid).x86_64.rpm
 	make $(nubo_proj_dir)/debs/latest/nubomanagement-public-common-$(common_version)-$(common_buildid).deb
 
 nubomanagement-public-js:
-	$(call get_current_version,js)
 	@echo "js version $(js_version) $(js_buildid)"
 	make $(nubo_proj_dir)/rpms/latest/nubomanagement-public-js-$(js_version)-$(js_buildid).x86_64.rpm
 	make $(nubo_proj_dir)/debs/latest/nubomanagement-public-js-$(js_version)-$(js_buildid).deb
 
 nubomanagement-public-node_modules:
-	$(call get_current_version,node_modules)
 	@echo "node_modules version $(node_modules_version) $(node_modules_buildid)"
 	make $(nubo_proj_dir)/rpms/latest/nubomanagement-public-node_modules-$(node_modules_version)-$(node_modules_buildid).x86_64.rpm
 	make $(nubo_proj_dir)/debs/latest/nubomanagement-public-node-modules-$(node_modules_version)-$(node_modules_buildid).deb
 
 nubomanagement-public-webplayer:
-	$(call get_current_version,webplayer)
 	@echo "webplayer version $(webplayer_version) $(webplayer_buildid)"
 	make $(nubo_proj_dir)/rpms/latest/nubomanagement-public-webplayer-$(webplayer_version)-$(webplayer_buildid).x86_64.rpm
 	make $(nubo_proj_dir)/debs/latest/nubomanagement-public-webplayer-$(webplayer_version)-$(webplayer_buildid).deb
@@ -80,9 +82,6 @@ cp $(nubo_proj_dir)/nubomanagement-public/rpmbuild/RPMS/$(cur_arch)/$(pkgname)-$
 endef
 
 $(nubo_proj_dir)/rpms/latest/nubomanagement-public-common-%.rpm:
-	$(call get_current_version,js)
-	$(call get_current_version,node_modules)
-	$(call get_current_version,webplayer)
 	$(eval versions_line=\
 	--define "Js_Version $(js_version)-$(js_buildid)" \
 	--define "Node_modules_Version $(node_modules_version)-$(node_modules_buildid)" \
@@ -117,9 +116,6 @@ fakeroot dpkg-deb -b debbuild/$(pkgname) $(nubo_proj_dir)/debs/latest/$(pkgname)
 endef
 
 $(nubo_proj_dir)/debs/latest/nubomanagement-public-common-%.deb:
-	$(call get_current_version,js)
-	$(call get_current_version,node_modules)
-	$(call get_current_version,webplayer)
 	$(eval versions_line=\
 	Js_Version=$(js_version).$(js_buildid) \
 	Node_modules_Version=$(node_modules_version).$(node_modules_buildid) \

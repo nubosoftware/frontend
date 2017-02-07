@@ -40,7 +40,7 @@ var filter = {
                         "within": [" ", "true", "false"]
                     }
                 },
-                "signature": constraints.ExcludeSpecialCharactersOptional,
+                "signature": constraints.ExcludeSpecialCharactersRequested,
                 "regid": {
                     "presence": false,
                     "format": "^[.a-zA-Z0-9_-]+$",
@@ -73,7 +73,7 @@ var filter = {
             "path": "/validate",
             "constraints": {
                 "sessionid": constraints.sessionIdConstrOptional,
-                "username": constraints.ExcludeSpecialCharactersOptional,
+                "username": constraints.ExcludeSpecialCharactersRequested,
                 "deviceid": constraints.deviceIdConstrRequested,
                 "activationKey": constraints.tokenConstrRequested,
                 "playerVersion": constraints.playerVersionConstrRequested,
@@ -222,7 +222,7 @@ var filter = {
                     }
                 },
                 "notifyTime": constraints.ExcludeSpecialCharactersOptional,
-                "notifyTitle": constraints.ExcludeSpecialCharactersOptional,
+                "notifyTitle": constraints.openTextConstrOptional,
                 "deviceType": {
                     "presence": true,
                     "inclusion": ["iPhone", "iPad", "Web", "Android"]

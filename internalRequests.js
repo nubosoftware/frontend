@@ -6,6 +6,7 @@ var logger = Common.logger;
 var _ = require('underscore');
 var nodeHttp = require('http');
 var nodeHttps = require('https');
+var fs = require('fs');
 
 
 function getOptions() {
@@ -276,6 +277,58 @@ function updateNetworkDeviceDetails(req, callback) {
 }
 
 
+function forwardActivationLink(req, res, next) {
+    var options = getOptions();
+    options.path = req.url;
+    options.headers['x-client-ip'] = req.realIP;
+    res.contentType = 'json';
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            res.send({
+                status: Common.STATUS_ERROR,
+                message: "Internal error"
+            });
+            return;
+        }
+
+        var resObjData;
+        try {
+            resObjData = JSON.parse(resData);
+        } catch (e) {
+            res.send({
+                status: Common.STATUS_ERROR,
+                message: "Internal error"
+            });
+            return;
+        }
+
+        logger.info("forwardActivationLink: status: " + resObjData.status + ", message: " + resObjData.message);
+        if (resObjData.status == 0) {
+            fs.readFile("html/player/activateDevice.html", function (error, page) {
+                if (error) {
+                     res.write(resData);
+                } else {
+                    res.writeHead(200, { 'Content-Type': 'text/html' });
+                    res.write(page);
+                }
+                res.end();
+            });
+        } else {
+            fs.readFile("html/player/activateErrorDevice.html", function (error, page) {
+                if (error) {
+                    res.write(resData);
+                } else {
+                    res.writeHead(200, { 'Content-Type': 'text/html' });
+                    res.write(page);
+                }
+                res.end();
+            });
+        }
+        return;
+    });
+}
+
 module.exports = {
     forwardGetRequest: forwardGetRequest,
     forwardCheckStreamFile: forwardCheckStreamFile,
@@ -285,4 +338,5 @@ module.exports = {
     upload: upload,
     updateNetworkDeviceDetails: updateNetworkDeviceDetails,
     captureDeviceDetails : captureDeviceDetails,
+    forwardActivationLink: forwardActivationLink
 }

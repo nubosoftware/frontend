@@ -622,6 +622,16 @@ function UXIPReader(nubocache) {
                     if (!rsRet.canRead)
                         return result;
                     fontPath = rsRet.value;
+
+                    if (fontPath != undefined && fontPath.indexOf('cache') > -1) {
+                        var fontData = this.readByteArr();
+                        if (fontData != null && fontData.dataLen > 0) {
+                            var font = fontPath.replace('cache ','');
+                            var len = fontData.dataLen;
+                            var base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(fontData.data)));
+                            result.p.fileContent = base64String;
+                        }
+                    }
                 }
                 var fontFamilyName = "";
                 if (((compressedData.hi >> 23) & 0x01) == 1) {

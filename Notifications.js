@@ -133,14 +133,17 @@ function sendNotificationFromRemoteServer(req, res) {
  * Deliver the push notification to remote server (gateway)
  * Detailed of the gateway are located in Settings.json
  */
-function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, callback) {
+function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, callback) {
     var urlstr = Common.NotificationGateway.url+"?"+ querystring.stringify({
         deviceType: deviceType,
         pushRegID: pushRegID,
         notifyTitle: notifyTitle,
         notifyTime: notifyTime.toString(),
         notifyLocation: notifyLocation,
+        enableVibrate: enableVibrate,
         type: type,
+        enableSound: enableSound,
+        showFullNotif: showFullNotif,
         serverID: Common.NotificationGateway.serverID,
         serverAuthKey: Common.NotificationGateway.authKey
     });
@@ -189,7 +192,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
     }
 
     if (Common.NotificationGateway) {
-        sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, callback);
+        sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, callback);
         return;
     }
     

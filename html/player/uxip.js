@@ -2,7 +2,6 @@
  * UXIP Protocol implementation in Java Script
  *uxipObj
  */
-
 var psDisconnect = 0, psInit = 1, psConnected = 2, psDisconnecting = 3, psError = 4;
 var keyboardProcessID = 0;
 
@@ -48,7 +47,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     	updateScreenOrientation, drawBitmapMatrix, drawTextOnCanvas, drawPosTextOnCanvas, setTextAttFromPaint, drawTextRun, 
     	sendRoundTripDataCommand, prepareViewCache, roundTripDataAck, outgoingCall, drawPath, drawPoints, toast, setTopTask, 
         setWindowPos, getColorFromInt, setShaderToGrdColorStop, clearProcessCacheAck, setPackageName, getFontFromAsset,
-        createWebSocket;
+        getFontFromCache, createWebSocket;
 
     var writer = new UXIPWriter(function(buffer) {
         ws.send(buffer);
@@ -1239,8 +1238,13 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     setTextAttFromPaint = function(ctx, paint) {
         var fontFamily = "";
 
-        if (paint.fontPath != null && paint.fontPath.length > 0 && paint.fontPath.indexOf('assets') > -1) {
-            fontFamily = getFontFromAsset(paint.fontPath);
+        if (paint.fontPath != null && paint.fontPath.length > 0) {
+            if (paint.fontPath.indexOf('assets') > -1) {
+                fontFamily = getFontFromAsset(paint.fontPath);
+            }
+            else if (paint.fontPath.indexOf('cache') > -1) {
+                fontFamily = getFontFromCache(paint.fontPath, paint.fileContent);
+            }
         }
 
         if (fontFamily == null || fontFamily.length == 0) {
@@ -1267,9 +1271,13 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         }
 
         var fontStr = fontStyle + paint.textSize + "px " + fontFamily;
-        // Log.e(TAG, "fontStr=" + fontStr + " paint.textScaleX = " + paint.textScaleX);
         ctx.font = fontStr;
-        var fcolor = "#" + paint.color.toString(16);
+
+        var color = paint.color.toString(16);
+        while (color.length < 6) {
+            color = '0' + color;
+        }
+        var fcolor = '#' + color;
 
         ctx.fillStyle = fcolor;
         switch(paint.textAlign) {
@@ -1284,6 +1292,35 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             break;
         }
 
+    };
+
+    getFontFromCache = function(cacheFontPath, fileContent) {
+        var fontData = fontCache[cacheFontPath];
+
+        if (fontData == null) {
+            var fontFamily = cacheFontPath.replace(' ','_').trim();
+
+            if (fileContent != undefined) {
+                var fontUrl = "url(data:font/opentype;base64," + fileContent + " )";
+
+                var f = new FontFace(fontFamily, fontUrl, {});
+                f.load().then(function (loadedFace) {
+                    document.fonts.add(loadedFace);
+
+                    // save font data
+                    fontData = {};
+                    fontData.path = cacheFontPath;
+                    fontData.fontFamily = fontFamily;
+                    fontData.fileContent = loadedFace;
+                    fontCache[cacheFontPath] = fontData;
+                    return fontFamily;
+                });
+            } else {
+                return "";
+            }
+        } else {
+            return fontData.fontFamily;
+        }
     };
 
     getFontFromAsset = function(assetFontPath) {

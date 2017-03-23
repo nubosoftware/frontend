@@ -113,6 +113,8 @@ Common.logger = new (winston.Logger)({
     }), new winston.transports.File({
         filename : __dirname + '/log/' + loggerName,
         handleExceptions : true,
+        maxsize: 100*1024*1024, //100MB
+        maxFiles: 4,
         json : false
     })],
     exceptionHandlers : [new (winston.transports.Console)({
@@ -131,6 +133,9 @@ try {
     logger.add(winston.transports.Syslog, {
         app_name : "nubomanagement-public",
         handleExceptions : true,
+        localhost: null,
+        protocol: "unix",
+        path: "/dev/log",
         json : true
     });
 } catch(e) {

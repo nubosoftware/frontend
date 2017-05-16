@@ -148,7 +148,7 @@ function UXIPReader(nubocache) {
     this.readUInt32 = function() {
         var ret = currentDataView.getUint32(offset);
         this.incrementOffsetAfterRead(4);
-        return ret;
+       return ret;
     };
 
     this.readLong = function() {
@@ -653,10 +653,70 @@ function UXIPReader(nubocache) {
                     }
                 }
             }
+
+            // color filter
+            if (((compressedData.hi >> 26) & 0x01) == 1) {
+                result.p.isColorFilter = true;
+
+                var porterDuffMode = ((compressedData.hi >> 27) & 0x1F);
+                if (porterDuffMode >= 0 && porterDuffMode <= 17) {
+                    result.p.globalCompositeOperation = this.convertPorterDuffMode(porterDuffMode);
+                }
+
+                var colorFilter = this.readUInt32();
+                result.p.color = (colorFilter & 0xFFFFFF );
+                result.p.alpha = colorFilter >>> 24;
+            } else {
+                result.p.isColorFilter = false;
+            }
         }
+
         result.canRead = true;
         return result;
     };
+
+    this.convertPorterDuffMode = function (porterDuffMode) {
+        var globalCompositeOperation = "";
+        switch (porterDuffMode) {
+            case 1:
+                globalCompositeOperation = "copy";
+                break;
+            case 2:
+                globalCompositeOperation = "";
+                break;
+            case 3:
+                globalCompositeOperation = "source-over";
+                break;
+            case 4:
+                globalCompositeOperation = "destination-over";
+                break;
+            case 5:
+                globalCompositeOperation = "source-in";
+                break;
+            case 6:
+                globalCompositeOperation = "destination-in";
+                break;
+            case 7:
+                globalCompositeOperation = "source-out";
+                break;
+            case 8:
+                globalCompositeOperation = "destination-out";
+                break;
+            case 9:
+                globalCompositeOperation = "source-atop";
+                break;
+            case 10:
+                globalCompositeOperation = "destination-atop";
+                break;
+            case 11:
+                globalCompositeOperation = "xor";
+                break;
+            default:
+                globalCompositeOperation = "";
+                break;
+        }
+        return globalCompositeOperation;
+    }
 
     this.readNinePatchChunkCache = function(processId) {
         var result = {

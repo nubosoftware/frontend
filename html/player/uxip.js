@@ -27,7 +27,6 @@ var fontCache = {};
 
 function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     "use strict";
-
     var UXIPself = this;
     var protocolState = psDisconnect;
     var msgTimer = null;
@@ -36,10 +35,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     var ws = null;
     var currentProcessId = null;
     var zlibReader = new ZlibReader();
-    
+
     var handle_message, moreData, errorAndClose, getInitResponse, getDrawCommand, initProtocol, prepKeyboardLayout, 
     	popWindow, PushWindow, setWndId, ShowWindow, HideWindow, setWallpaperByID, toggleSearch, toggleMenu, drawBitmapIntoCanvas, 
-    	prepareCanvasForPaint, setDirtyRect, writeTransaction, drawColor1, saveLayer, restoreLayer, drawText, drawText, drawText1, 
+        prepareCanvasForPaint, setDirtyRect, writeTransaction, drawColor1, saveLayer, restoreLayer, drawText, drawText1,
     	drawRect, drawBitmap, saveLayerAlpha, drawLine, drawLines, drawRect1, drawRoundRect, drawBitmap1, setDensity, 
     	ninePatchDraw, drawBitmap6, drawPosText1, drawPosText2, drawBitmap8, readNotification, updateWallpaperOffset, 
     	initPopupContentView, handleKeyEvent, dispatchKeyEvent, removeProcess, drawWebView, printArr, ninePatch_Draw, 
@@ -47,7 +46,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     	updateScreenOrientation, drawBitmapMatrix, drawTextOnCanvas, drawPosTextOnCanvas, setTextAttFromPaint, drawTextRun, 
     	sendRoundTripDataCommand, prepareViewCache, roundTripDataAck, outgoingCall, drawPath, drawPoints, toast, setTopTask, 
         setWindowPos, getColorFromInt, setShaderToGrdColorStop, clearProcessCacheAck, setPackageName, getFontFromAsset,
-        getFontFromCache, createWebSocket;
+        getFontFromCache, createWebSocket,
+        drawOval, drawArc, drawCircle,
+        drawEllipse, convertToHTMLColor, applyColorFilter;
 
     var writer = new UXIPWriter(function(buffer) {
         ws.send(buffer);
@@ -85,6 +86,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     mParentNode = parentNode;
     mWidth = width;
     mHeight = height;
+
+    // keyboard input action
+    var mImeOptions = 1;
 
     //parentNode.onmouseup = this.mouseEvent;
     //parentNode.onmousedown = this.mouseEvent;
@@ -261,6 +265,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
 
     this.keyEvent = function(eventt, processId, wndId, src) {
+        // console.log("uxip.keyEvent event.type: " + event.type + ", keyCode: " + event.keyCode);
         if (eventt.type == "keypress") {
             var chr = getChar(eventt);
             if (isMobile) {
@@ -292,7 +297,12 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 specialKey = KeyEvent.KEYCODE_DEL;
                 break;
             case 9:
-                specialKey = KeyEvent.KEYCODE_TAB;
+                if (mImeOptions == 5) {  // keyboard input action next
+                    specialKey = KeyEvent.KEYCODE_TAB;
+                } else {
+                    specialKey = -1;
+                }
+
                 break;
             case 13:
                 specialKey = KeyEvent.KEYCODE_ENTER;
@@ -383,6 +393,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 // Log.d("specialKey: "+specialKey);
                 eventt.preventDefault();
                 var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
+
                 handleKeyEvent(processId, wndId, {
                     name : "KeyEvent",
                     action : eventaction,
@@ -682,8 +693,8 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             mWidth, mHeight, mDensityDpi, // write all int
             mXDpi, mYDpi, mScaledDensity, // write all float
             mRotation, mNavBarHeightPortrait, mNavBarHeightLandscape, mNavBarWidth, romClientType, 17, // write all int
-            'web', '1.2.0.82', '1.2', // write all string
-            82, (4 * mHeight * mWidth), -1, "",getDeviceId()); // write int, int, int , dataIntent withservice
+            'web', '1.2.0.91', '1.2', // write all string
+            91, (4 * mHeight * mWidth), -1, "",getDeviceId()); // write int, int, int , dataIntent withservice
         NuboOutputStreamMgr.getInstance().setIsPlayerLogin(false);
 
         //ws.send(buffer2);
@@ -886,7 +897,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             if (DEBUG_PROTOCOL_NETWORK) {
                 reader.printState("after header read");
             }
-
+            // Log.e(TAG, "CMDCODE: " + cmdcode);
             switch (cmdcode) {
             case DrawCmd.setDirtyRect:
                 func = setDirtyRect;
@@ -964,6 +975,17 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             case DrawCmd.drawBitmapMatrix:
                 func = drawBitmapMatrix;
                 break;
+
+            case DrawCmd.drawOval:
+                func = drawOval;
+                break;
+            case DrawCmd.drawArc:
+                func = drawArc;
+                break;
+            case DrawCmd.drawCircle:
+                func = drawCircle;
+                break;
+
             case DrawCmd.popWindow:
                 func = popWindow;
                 break;
@@ -1078,6 +1100,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                     } else {
                         var transactionSize = reader.getTransactionSize();
                         if (transactionSize != bytesCount) {
+                            Log.e(TAG + DEBUG_PROTOCOL_NETWORK_STR, "cmdcode : " + cmdcode);
                             Log.e(TAG + DEBUG_PROTOCOL_NETWORK_STR, "Error read incorrect number of bytes. required: " + bytesCount + ", actual: " + transactionSize);
                             if (transactionSize > bytesCount) {
                                 errorAndClose();
@@ -1175,7 +1198,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         if (mode == 0) {
             ctx.clearRect(0, 0, mWidth, mHeight);
         } else {
-            var fcolor = "#" + color.toString(16);
+            var fcolor = convertToHTMLColor(color.toString(16));
             ctx.fillStyle = fcolor;
             ctx.fillRect(0, 0, mWidth, mHeight);
         }
@@ -1270,15 +1293,11 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             break;
         }
 
-        var fontStr = fontStyle + paint.textSize + "px " + fontFamily;
+        var textSize = paint.textSize - 0.7;
+        var fontStr = fontStyle + textSize + "px " + fontFamily;
         ctx.font = fontStr;
 
-        var color = paint.color.toString(16);
-        while (color.length < 6) {
-            color = '0' + color;
-        }
-        var fcolor = '#' + color;
-
+        var fcolor = convertToHTMLColor(paint.color.toString(16));
         ctx.fillStyle = fcolor;
         switch(paint.textAlign) {
         case Align.LEFT:
@@ -1601,6 +1620,18 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         }
     };
 
+    convertToHTMLColor = function (aColor) {
+        var color = aColor;
+        if (color.length > 6) {
+            Log.e(TAG, "convertToHTMLColor.error. color: " + aColor);
+        } else {
+            while (color.length < 6) {
+                color = '0' + color;
+            }
+        }
+        return '#' + color;
+    }
+
     drawRect = function(processId, wndId, cmd) {
         //Log.v(TAG, "drawRect. processId=" + processId + ", wndId=" + wndId);
         var bm = reader.readBoundsAndMatrix();
@@ -1744,7 +1775,8 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var oldFillStyle = ctx.fillStyle;
         var oldStrokeStyle = ctx.strokeStyle;
         var oldAlpha = ctx.globalAlpha;
-        var fcolor = "#" + p.color.toString(16);
+
+        var fcolor = convertToHTMLColor(p.color.toString(16));
 
         //Log.v(TAG, "fillStyle=" + fcolor);
         if (grd == null) {
@@ -1820,16 +1852,35 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         });
     };
 
+    applyColorFilter = function(img, paint, width, height) {
+        if (paint != null && paint.isColorFilter) {
+            var canvas2 = document.createElement('canvas');
+            canvas2.width = width;
+            canvas2.height = height;
+            var ctx2 = canvas2.getContext("2d");
+
+            ctx2.drawImage(img, 0, 0, width, height);
+
+            ctx2.fillStyle = convertToHTMLColor(paint.color.toString(16));
+            ctx2.globalCompositeOperation = paint.globalCompositeOperation;
+            ctx2.fillRect(0, 0, width, height);
+            return canvas2;
+        } else {
+            return img;
+        }
+    }
+
     drawBitmapIntoCanvas = function(processId, wndId, bm, src, dst, matrix, p, bitmap, left, top, chunk, drawBitmapType) {
         var img = document.createElement("img");
         if (PRINT_DRAW_COMMANDS) {
             Log.d(TAG, "drawBitmapIntoCanvas. bitmap.bitmapType: "+bitmap.bitmapType +", drawBitmapType: "+drawBitmapType);
         }
+
         img.onload = function(e) {
-            //Log.v(TAG,"image loaded! "+img.src);
-            //Log.e(TAG,"src: "+JSON.stringify(src));
-            //Log.e(TAG,"dst: "+JSON.stringify(dst));
-            //Log.e(TAG,"bm: "+JSON.stringify(bm));
+            // Log.v(TAG,"image loaded! "+img.src);
+            // Log.e(TAG,"src: "+JSON.stringify(src));
+            // Log.e(TAG,"dst: "+JSON.stringify(dst));
+            // Log.e(TAG,"bm: "+JSON.stringify(bm));
             // bm: {"canRead":true,"bounds":{"canRead":true,"isNull":false,"left":-34,"top":-34,"right":70,"bottom":70},
             //"matrix":{"canRead":true,"isNull":false,"arr":[1,0,650,0,1,1010,0,0,1]}}
 
@@ -1838,7 +1889,8 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
             if (ctx != null) {
                 if (drawBitmapType == DrawBitmapType.ninePatch) {//nine patch image
-                    ninePatch_Draw(ctx, dst, img, chunk);
+                    ninePatch_Draw(ctx, dst, img, chunk, p);
+
                 } else if (drawBitmapType == DrawBitmapType.webView) {//Web view draw
                     var sn = wm.getWindow(processId, wndId);
                     //		check which case is drawn and update matrix and clipBounds accordingly:
@@ -1869,7 +1921,11 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                     } else {
                         Log.e("webView std case! sn.bounds:" + JSON.stringify(sn.bounds) + ", sn.matrix:" + JSON.stringify(sn.matrix) + ", img.height=" + img.height);
                     }
-                    ctx.drawImage(img, 0, 0);
+                    // ctx.drawImage(img, 0, 0);
+                    var newImage = applyColorFilter(img, p, img.width, img.height);
+                    ctx.drawImage(newImage, 0, 0);
+
+
                 } else {// std image (no nine patch)
                     if (drawBitmapType == DrawBitmapType.bitmapShader) {
                         if (matrix != null && !matrix.isNull) {
@@ -1887,22 +1943,34 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                         // }
                         // }
                     } else if (drawBitmapType == DrawBitmapType.drawBitmapMatrix) {
+
                         if (matrix != null && !matrix.isNull) {
                             // ctx.transform(matrix.arr[0], matrix.arr[3], matrix.arr[1], matrix.arr[4], matrix.arr[2], matrix.arr[5]);
                             ctx.setTransform(matrix.arr[0], matrix.arr[3], matrix.arr[1], matrix.arr[4], matrix.arr[2], matrix.arr[5]);
                         }
-                        ctx.drawImage(img, left, top);
+                        // ctx.drawImage(img, left, top);
+                        var newImage = applyColorFilter(img, p, img.width, img.height);
+                        ctx.drawImage(newImage, left, top);
+
                     } else if (src == null || dst == null) {
-                        ctx.drawImage(img, left, top);
+
+                        // ctx.drawImage(img, left, top);
+                        var newImage = applyColorFilter(img, p, img.width, img.height);
+                        ctx.drawImage(newImage, left, top);
+
                     } else {
                         if (!src.isNull) {
                             var srcWidth = (src.right - src.left) > img.width ? img.width : (src.right - src.left);
                             var srcHeight = (src.bottom - src.top) > img.height ? img.height : (src.bottom - src.top);
-                            ctx.drawImage(img, src.left, src.top, srcWidth, srcHeight, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top));
+
+                            // ctx.drawImage(img, src.left, src.top, srcWidth, srcHeight, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top));
+                            var newImage = applyColorFilter(img, p, (dst.right - dst.left), (dst.bottom - dst.top));
+                            ctx.drawImage(newImage, src.left, src.top, srcWidth, srcHeight, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top));
+
                         } else {
-                            ctx.drawImage(img, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top));
+                            var newImage = applyColorFilter(img, p, (dst.right - dst.left), (dst.bottom - dst.top));
+                            ctx.drawImage(newImage, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top));
                         }
-                        // ctx.drawImage(img, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top));
                     }
                 }
                 ctx.restore();
@@ -1976,6 +2044,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         if (PRINT_DRAW_COMMANDS) {
             Log.d(TAG, "drawBitmap. processId=" + processId + ", wndId=" + wndId);
         }
+
         var bm = reader.readBoundsAndMatrix();
         if (!bm.canRead)
             return false;
@@ -2052,7 +2121,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
         if (ctx == null)
             return true;
-        var fcolor = "#" + p.color.toString(16);
+
+        var fcolor = convertToHTMLColor(p.color.toString(16));
+
         //Log.v(TAG, "fillStyle=" + fcolor);
         ctx.fillStyle = fcolor;
         ctx.beginPath();
@@ -2093,7 +2164,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
         if (ctx == null)
             return true;
-        var fcolor = "#" + p.color.toString(16);
+
+        var fcolor = convertToHTMLColor(p.color.toString(16));
+
         //Log.v(TAG, "fillStyle=" + fcolor);
         ctx.fillStyle = fcolor;
         //drawLines(ctx,pts.arr, offset, count, paint);
@@ -2119,11 +2192,12 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     };
 
     drawBitmap1 = function(processId, wndId) {
-        //Log.v(TAG, "drawBitmap1. processId=" + processId + ", wndId=" + wndId);
+        // Log.v(TAG, "drawBitmap1. processId=" + processId + ", wndId=" + wndId);
         // Bitmap bitmap, float left, float top, Paint paint
         // rawBitmap(Bitmap bitmap, Rect src, Rect dst, Paint paint) {
 
         var bm = reader.readBoundsAndMatrix();
+
         if (!bm.canRead)
             return false;
         var bitmapRet = reader.readBitmapCache(processId);
@@ -2136,8 +2210,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var top = reader.readFloat();
 
         var paintRet = reader.readPaint(processId);
-        if (!paintRet.canRead)
+        if (!paintRet.canRead) {
             return false;
+        }
         var p = paintRet.p;
 
         //if (Settings.disableOutput)
@@ -2154,9 +2229,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             drawCmdLog.paint = p;
             drawCmdLog.bitmap = bitmap;
         }
-
         drawBitmapIntoCanvas(processId, wndId, bm, null, null, null, p, bitmap, left, top, null, DrawBitmapType.stdBitmap);
-
         return true;
     };
 
@@ -2200,7 +2273,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         return (srcSpace * stretchySpaceRemaining / numStrechyPixelsRemaining);
     };
 
-    ninePatch_Draw = function(ctx, location, img, chunk) {
+    ninePatch_Draw = function(ctx, location, img, chunk, paint) {
 
         var dst = {};
         var src = {};
@@ -2334,7 +2407,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 if (drawFlag) {
                     //Log.e(TAG,"drawStretchyPatch. src:"+JSON.stringify(src)+", dst:"+JSON.stringify(dst)+
                     //  ", initColor:"+initColor+", color:"+color);
-                    drawStretchyPatch(ctx, src, dst, img, initColor, color);
+                    drawStretchyPatch(ctx, src, dst, img, initColor, color, paint);
                     //drawStretchyPatch(canvas, src, dst, bitmap, *paint, initColor,
                     //                  color, hasXfer);
 
@@ -2356,9 +2429,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
     };
 
-    drawStretchyPatch = function(ctx, src, dst, img, initColor, colorHint) {
+    drawStretchyPatch = function(ctx, src, dst, img, initColor, colorHint, paint) {
         // diabling this is for now. Under tracking to see if 9patch related issues will appear.
-        if (false && colorHint != Res_png_9patch.NO_COLOR) {
+        if (colorHint > 1) { //if (false && colorHint != Res_png_9patch.NO_COLOR) {
             //((SkPaint*)&paint)->setColor(modAlpha(colorHint, paint.getAlpha()));
             //canvas->drawRect(dst, paint);
             //((SkPaint*)&paint)->setColor(initColor);
@@ -2367,7 +2440,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             ctx.beginPath();
             var color = (colorHint & 0xFFFFFF );
             var alpha = colorHint >>> 24;
-            var fcolor = "#" + color.toString(16);
+
+            var fcolor = convertToHTMLColor(color.toString(16));
+
             //Log.e(TAG,"Fill Color: "+fcolor+", alpha:"+alpha);
             ctx.fillStyle = fcolor;
             var w = dst.right - dst.left;
@@ -2403,7 +2478,12 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             var dw = (dst.right - dst.left);
             var dh = (dst.bottom - dst.top);
             //Log.e(TAG,"drawImage sw="+sw+", sh="+sh+", dw="+dw+", dh="+dh);
-            ctx.drawImage(img, src.left, src.top, sw, sh, dst.left, dst.top, dw, dh);
+
+            // ctx.drawImage(img, src.left, src.top, sw, sh, dst.left, dst.top, dw, dh);
+            var newImage = applyColorFilter(img, paint, img.width, img.height);
+            ctx.drawImage(newImage, src.left, src.top, sw, sh, dst.left, dst.top, dw, dh);
+
+
             //ctx.drawImage(img,src.left,src.top,sw, sh, dst.left, dst.top, sw, sh);
             //    SLOW_CASE:
             //        canvas->drawBitmapRect(bitmap, &src, dst, &paint);
@@ -2466,12 +2546,18 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var bitmapDensity = reader.readInt();
         var canvasDensity = reader.readInt();
 
+        var paint = null;
+        var paintRet = reader.readPaint(processId);
+        if (paintRet.canRead) {
+            paint = paintRet.p;
+        }
+
         if (status.retVal == NuboStatus.FAIL) {
             Log.v(TAG, "NinePatchDraw1: bitmap could not be retrieved");
             return true;
         }
 
-        drawBitmapIntoCanvas(processId, wndId, bm, null, location, null, null, mBitmap, 0, 0, chunk, DrawBitmapType.ninePatch);
+        drawBitmapIntoCanvas(processId, wndId, bm, null, location, null, paint, mBitmap, 0, 0, chunk, DrawBitmapType.ninePatch);
         //Log.e(TAG, "ninePatchDraw. bitmap:" + JSON.stringify(status) + ", ninePatchRet:" + JSON.stringify(ninePatchRet));
         if (writeToDrawCmdLog) {
             drawCmdLog.bm = bm;
@@ -2555,18 +2641,15 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var bm = reader.readBoundsAndMatrix();
         if (!bm.canRead)
             return false;
-
         var rsRet = reader.readCachedString(processId);
         if (!rsRet.canRead)
             return false;
         var textRes = rsRet.value;
-
         var posXRet = reader.readCachedFloatArray(processId);
         if (!posXRet.canRead) {
             return false;
         }
         var posX = posXRet.floatArr;
-
         if (!reader.canReadBytes(4))
             return false;
         var posY = reader.readFloat();
@@ -2575,6 +2658,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         if (!paintRet.canRead)
             return false;
         var paint = paintRet.p;
+
+        if (posX == null || posX.length <= 0) {
+            return true;
+        }
 
         var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
         if (ctx == null)
@@ -2618,6 +2705,274 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
         return true;
     };
+
+    drawOval = function(processId, wndId) {
+        // Log.e(TAG, "drawOval. processId: " + processId + ", wndId: " + wndId);
+        var bm = reader.readBoundsAndMatrix();
+        if (!bm.canRead)
+            return false;
+
+        var rect = reader.readRectF();
+        if (!rect.canRead) {
+            return false;
+        }
+
+        var paintRet = reader.readPaint(processId);
+        if (!paintRet.canRead) {
+            return false;
+        }
+        if (paintRet.p == null) {
+            Log.e(TAG, "drawOval. PAINT IS NULL");
+            return true;
+        }
+        var paint = paintRet.p;
+
+       if (paint != null && paint.shader != null) {
+           var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
+           if (ctx == null) {
+               Log.e(TAG, "drawOval. ERROR ctx is NULL");
+               return true;
+           }
+
+           if (paint.shader.stype == ShaderType.LinearGradient) {
+                var x0 = paint.shader.x0;
+                var y0 = paint.shader.y0;
+                var x1 = paint.shader.x1;
+                var y1 = paint.shader.y1;
+                if (paint.shader.localMatrix != null && paint.shader.localMatrix.arr != null) {
+                    var ma = paint.shader.localMatrix.arr;
+                    x0 = paint.shader.x0 * ma[0] + paint.shader.y0 * ma[3] + ma[2];
+                    y0 = paint.shader.x0 * ma[1] + paint.shader.y0 * ma[4] + ma[5];
+                    x1 = paint.shader.x1 * ma[0] + paint.shader.y1 * ma[3] + ma[2];
+                    y1 = paint.shader.x1 * ma[1] + paint.shader.y1 * ma[4] + ma[5];
+                }
+                var w = right - left;
+                var h = bottom - top;
+
+                ctx.rect(left, top, w, h);
+                grd = ctx.createLinearGradient(x0, y0, x1, y1);
+                setShaderToGrdColorStop(paint.shader.positions, paint.shader.colors, grd);
+                ctx.fillStyle = grd;
+                ctx.fill();
+                ctx.restore();
+                return true;
+            } else if (paint.shader.stype == ShaderType.BitmapShader) {
+                var bitmap = paint.shader.bitmap;
+                var tileX = paint.shader.tileX;
+                var tileY = paint.shader.tileY;
+                var localMatrix = paint.shader.localMatrix;
+                if (tileX != 1 || tileY != 1) {
+                    Log.e(TAG, "drawOval.BitmapShader:: unimplemented tile types. tileX = " + tileX + " tileY = " + tileY);
+                }
+                drawBitmapIntoCanvas(processId, wndId, bm, null, null, p.shader.localMatrix, paint, bitmap, 0, 0, null, DrawBitmapType.bitmapShader);
+                return true;
+            } else if (paint.shader.stype == ShaderType.RadialGradient) {
+                var endRadius = Math.sqrt(paint.shader.x * paint.shader.x + paint.shader.y * paint.shader.y);
+                var grd = ctx.createRadialGradient(paint.shader.x, paint.shader.y, 0, paint.shader.x, paint.shader.y, endRadius);
+                setShaderToGrdColorStop(paint.shader.positions, paint.shader.colors, grd);
+                return true;
+            }
+        }
+
+        var left = Math.round(rect.left);
+        var top = Math.round(rect.top);
+        var right = Math.round(rect.right);
+        var bottom = Math.round(rect.bottom);
+
+        // before continuing, make sure that the rect will be drawn in bounds.
+        // first check if the rect and bounds are legal
+        if (left >= right || top >= bottom || bm.bounds.left >= bm.bounds.right || bm.bounds.top >= bm.bounds.bottom) {
+            Log.e(TAG, "drawOval. rect and bounds are not legal");
+            return true;
+        }
+
+        // check if there is intersection between the rects
+        if (bottom < bm.bounds.top || bm.bounds.bottom < top || right < bm.bounds.left || bm.bounds.right < left) {
+            Log.e(TAG, "drawOval. there is no intersection between the rects");
+            return true;
+        }
+
+        var cx = Math.round((left + right)/2);
+        var cy = Math.round((top + bottom)/2);
+        var radius = Math.min(right-left, bottom-top)/2;
+
+        drawEllipse(processId, wndId, bm, cx, cy, radius, paint);
+        return true;
+    };
+
+    drawArc = function(processId, wndId) {
+        // Log.e(TAG, "drawArc. processId: " + processId + ", wndId: " + wndId);
+        var bm = reader.readBoundsAndMatrix();
+        if (!bm.canRead)
+            return false;
+
+        var oval = reader.readRectF();
+        if (!oval.canRead) {
+            return false;
+        }
+
+        var startAngle = reader.readFloat();
+        var sweeoAngle = reader.readFloat();
+
+        var useCenter = reader.readBoolean();
+
+        var paintRet = reader.readPaint(processId);
+        if (!paintRet.canRead)
+            return false;
+        var paint = paintRet.p;
+
+        var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
+        if (ctx == null) {
+            Log.e(TAG, "drawArc. ERROR ctx is NULL");
+            return true;
+        }
+
+        var left = Math.round(oval.left);
+        var top = Math.round(oval.top);
+        var right = Math.round(oval.right);
+        var bottom = Math.round(oval.bottom);
+
+        // before continuing, make sure that the rect will be drawn in bounds.
+        // first check if the rect and bounds are legal
+        if (left >= right || top >= bottom || bm.bounds.left >= bm.bounds.right || bm.bounds.top >= bm.bounds.bottom) {
+            Log.e(TAG, "drawArc. rect and bounds are not legal");
+            return true;
+        }
+
+        // check if there is intersection between the rects
+        if (bottom < bm.bounds.top || bm.bounds.bottom < top || right < bm.bounds.left || bm.bounds.right < left) {
+            Log.e(TAG, "drawArc. there is no intersection between the rects");
+            return true;
+        }
+
+        var cx = Math.round((left + right)/2);
+        var cy = Math.round((top + bottom)/2);
+        var radius = Math.min(right-left, bottom-top)/2;
+        ctx.fillStyle = convertToHTMLColor(paint.color.toString(16));
+
+        ctx.arc(cx, cy, radius, 0, 2*Math.PI);
+
+        switch (paint.style) {
+            case 0:
+                ctx.fill();
+                break;
+            case 1:
+                ctx.stroke();
+                break;
+            case 2:
+                ctx.fill();
+                ctx.stroke();
+                break;
+        }
+        ctx.restore();
+        return true;
+    };
+
+    drawCircle = function(processId, wndId) {
+        // Log.e(TAG, "drawCircle. processId: " + processId + ", wndId: " + wndId);
+        var bm = reader.readBoundsAndMatrix();
+        if (!bm.canRead)
+            return false;
+
+        var cx = reader.readFloat();
+        var cy = reader.readFloat();
+        var radius = reader.readFloat();
+
+        var paintRet = reader.readPaint(processId);
+        if (!paintRet.canRead)
+            return false;
+        var paint = paintRet.p;
+
+        if (cx < bm.bounds.left || cx > bm.bounds.right || cy < bm.bounds.top || cy > bm.bounds.bottom) {
+            Log.e(TAG, "drawCircle. there is no intersection between the rects");
+            return true;
+        }
+
+       if (paint != null && paint.shader != null) {
+           var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
+           if (ctx == null) {
+               Log.e(TAG, "drawCircle. ERROR ctx is NULL");
+               return true;
+           }
+
+           if (paint.shader.stype == ShaderType.LinearGradient) {
+                var x0 = paint.shader.x0;
+                var y0 = paint.shader.y0;
+                var x1 = paint.shader.x1;
+                var y1 = paint.shader.y1;
+                if (paint.shader.localMatrix != null && paint.shader.localMatrix.arr != null) {
+                    var ma = paint.shader.localMatrix.arr;
+                    x0 = paint.shader.x0 * ma[0] + paint.shader.y0 * ma[3] + ma[2];
+                    y0 = paint.shader.x0 * ma[1] + paint.shader.y0 * ma[4] + ma[5];
+                    x1 = paint.shader.x1 * ma[0] + paint.shader.y1 * ma[3] + ma[2];
+                    y1 = paint.shader.x1 * ma[1] + paint.shader.y1 * ma[4] + ma[5];
+                }
+                var w = right - left;
+                var h = bottom - top;
+
+                ctx.rect(left, top, w, h);
+                grd = ctx.createLinearGradient(x0, y0, x1, y1);
+                setShaderToGrdColorStop(paint.shader.positions, paint.shader.colors, grd);
+                ctx.fillStyle = grd;
+                ctx.fill();
+                ctx.restore();
+                return true;
+            } else if (paint.shader.stype == ShaderType.BitmapShader) {
+                var bitmap = paint.shader.bitmap;
+                var tileX = paint.shader.tileX;
+                var tileY = paint.shader.tileY;
+                var localMatrix = paint.shader.localMatrix;
+                if (tileX != 1 || tileY != 1) {
+                    Log.e(TAG, "drawCircle:BitmapShader: unimplemented tile types. tileX = " + tileX + " tileY = " + tileY);
+                }
+                drawBitmapIntoCanvas(processId, wndId, bm, null, null, p.shader.localMatrix, paint, bitmap, 0, 0, null, DrawBitmapType.bitmapShader);
+                return true;
+            } else if (paint.shader.stype == ShaderType.RadialGradient) {
+                var endRadius = Math.sqrt(paint.shader.x * paint.shader.x + paint.shader.y * paint.shader.y);
+                var grd = ctx.createRadialGradient(paint.shader.x, paint.shader.y, 0, paint.shader.x, paint.shader.y, endRadius);
+                setShaderToGrdColorStop(paint.shader.positions, paint.shader.colors, grd);
+                return true;
+            }
+        }
+
+        drawEllipse(processId, wndId, bm, cx, cy, radius, paint);
+        return true;
+    };
+
+    drawEllipse = function (processId, wndId, bm, cx, cy, radius, paint) {
+        var color = convertToHTMLColor(paint.color.toString(16));
+
+        if (color == '#000000') {
+            return;
+        }
+
+        var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
+        if (ctx == null) {
+            Log.e(TAG, "drawEllipse. ERROR ctx is NULL");
+            return;
+        }
+
+        ctx.fillStyle = color;
+        // ctx.ellipse(cx, cy, radius, radius, 45*Math.PI/180, 0, 2*Math.PI);
+        ctx.translate(cx, cy);
+        ctx.rotate(45*Math.PI/180);
+        ctx.scale(radius, radius);
+        ctx.arc(0, 0, 1, 0, 2*Math.PI);
+
+        switch (paint.style) {
+            case 0:
+                ctx.fill();
+                break;
+            case 1:
+                ctx.stroke();
+                break;
+            case 2:
+                ctx.fill();
+                ctx.stroke();
+                break;
+        }
+        ctx.restore();
+    }
 
     drawBitmap8 = function(processId, wndId) {
         if (PRINT_DRAW_COMMANDS) {
@@ -2730,7 +3085,8 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var oldFillStyle = ctx.fillStyle;
         var oldStrokeStyle = ctx.strokeStyle;
         var oldAlpha = ctx.globalAlpha;
-        var fcolor = "#" + p.color.toString(16);
+
+        var fcolor = convertToHTMLColor(p.color.toString(16));
 
         var curPoint = 0;
         var Points = path.points;
@@ -3056,6 +3412,8 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var nonAndroidInputAction = reader.readByte();
         var nonAndroidIsSuggestionOn = reader.readBoolean();
 
+        mImeOptions = nonAndroidInputAction;
+
         var text = reader.readCachedString(processId);
         if (!text.canRead) {
             return false;
@@ -3071,6 +3429,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 oldInputText = "";
             }
         }
+
         isPrepareKeyboard = true;
         return true;
     };
@@ -3187,13 +3546,13 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var sn = wm.getWindow(currentProcessId, 0);
         if (sn == null)
             return;
-            
+
         handleKeyEvent(currentProcessId, sn.wndId, {
             name : "KeyEvent",
             action : KeyEvent.ACTION_DOWN,
             keyCode : KeyEvent.KEYCODE_BACK
         });
-        
+
         //new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
         handleKeyEvent(currentProcessId, sn.wndId, {
             name : "KeyEvent",
@@ -3542,6 +3901,10 @@ DrawCmd.drawPath = 26;
 DrawCmd.drawPoints = 27;
 DrawCmd.countLocationUpdates = 28;
 DrawCmd.setPackageName = 29;
+DrawCmd.drawOval = 30;
+DrawCmd.drawArc = 31;
+DrawCmd.drawCircle = 32;
+DrawCmd.drawPath2 = 33;
 
 DrawCmd.toast = 83;
 
@@ -3765,7 +4128,7 @@ KeyEvent.KEYCODE_SHIFT_LEFT = 59;
 /** Key code constant: Right Shift modifier key. */
 KeyEvent.KEYCODE_SHIFT_RIGHT = 60;
 /** Key code constant: Tab key. */
-KeyEvent.KEYCODE_TAB = 61;
+KeyEvent.KEYCODE_TAB = 66;  //61;
 /** Key code constant: Start Button key.
  * On a game controller, the button labeled Start. */
 KeyEvent.KEYCODE_BUTTON_START = 108;

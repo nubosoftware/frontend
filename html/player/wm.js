@@ -345,10 +345,48 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             }
         };
         sn.keyEvent = function(e) {
-            console.log("key event");
+            // console.log("key event event.type: " + event.type + ", keyCode: " + event.keyCode);
             var evtobj = e || event;
             mUxip.keyEvent(evtobj, sn.processId, sn.wndId, this);
         };
+
+        var wheeling;
+        var lastEvtobj;
+
+        sn.mouseWheelEvent = function(e) {
+            var evtobj = e || event;
+            if (evtobj.type == "mousewheel" || evtobj.type == "DOMMouseScroll") {
+                var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+
+                // up: delta > 0; down: delta < 0
+                if (delta == 0) {
+                    return;
+                }
+                lastEvtobj = evtobj;
+                evtobj.action = 2;
+                if (!wheeling) {   // start wheeling
+                    evtobj.action = 0;
+                 }
+
+                 clearTimeout(wheeling);
+                 wheeling = setTimeout(function() {  // stop wheeling
+                    wheeling = undefined;
+
+                    lastEvtobj.type == "mousewheel"
+                    lastEvtobj.action = 1;
+                    NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, lastEvtobj);
+                    lastEvtobj = null;
+                 }, 250);
+
+                evtobj.name = "MouseWheel";
+                evtobj.src = this;
+                evtobj.preventDefault();
+                evtobj.delta = delta;
+                NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
+                return;
+            }
+        }
+
         sn.touchEvent = function(e) {
             var evtobj = e || event;
 
@@ -358,7 +396,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
             if (evtobj.type != "mousemove") {
 
-                if (evtobj.type == "touchend" || evtobj.type == "touchcancel") {
+                 if (evtobj.type == "touchend" || evtobj.type == "touchcancel") {
                     lastMouseDownTouchTime = null;
                 } else if (evtobj.type == "touchstart") {
                     lastMouseDownTouchTime = new Date().getTime();
@@ -368,7 +406,6 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             }
             evtobj.lastMouseDownTouchTime = lastMouseDownTouchTime;
             NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
-
         };
 
         sn.canvas.onmouseup = sn.mouseEvent;
@@ -382,6 +419,8 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         sn.canvas.addEventListener("touchcancel", sn.touchEvent, false);
         sn.canvas.addEventListener("touchleave", sn.touchEvent, false);
         sn.canvas.addEventListener("touchmove", sn.touchEvent, false);
+        sn.canvas.addEventListener("mousewheel", sn.mouseWheelEvent, false);      // IE9, Chrome, Safari, Opera
+        sn.canvas.addEventListener("DOMMouseScroll", sn.mouseWheelEvent, false);  // Firefox
 
         sn.dirtyCanvas = null;
         sn.matrix = {

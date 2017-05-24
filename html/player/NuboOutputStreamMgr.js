@@ -80,6 +80,8 @@ var NuboOutputStreamMgr = (function(window, undefined) {
                         writer.writeLongAsFloat(arg.val);
                     } else if (arg.name === 'nuboByte') {
                         writer.writeByte(arg.val);
+                    } else if (arg.name === 'MouseWheel') {
+                        mUxip.mousewheel(arg);
                     }
                 }
 

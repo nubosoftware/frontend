@@ -472,6 +472,12 @@ function UXIPReader(nubocache) {
             }
             var tile = ((compressedData.lo >> 20) & 0x00000003);
 
+            var m = this.readMatrix();
+            if (!m.canRead) {
+                shader.canRead = false;
+                return shader;
+            }
+
             return {
                 canRead : true,
                 stype : ShaderType.RadialGradient,

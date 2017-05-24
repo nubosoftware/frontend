@@ -412,7 +412,6 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     var lastTouchY;
 
     this.mouseEvent = function(eventt) {
-
         var lastMouseDownTouchTime = eventt.lastMouseDownTouchTime;
         // Log.d(TAG, "mouseEvent. event.type = " + eventt.type + " lastMouseDownTouchTime=" + lastMouseDownTouchTime);
 
@@ -447,7 +446,6 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         } else if (eventt.type == "mousemove") {
             action = 2;
         }
-
         writer.writeInt(action);
 
         writer.writeInt(0);
@@ -506,27 +504,13 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         return true;
     };
 
-    this.touchEvent = function(eventt/*, processId, wndId, src*/) {
-        //eventt.preventDefault();
-        var lastMouseDownTouchTime = eventt.lastMouseDownTouchTime;
-        //Log.d(TAG, "touchEvent. processId=" + processId + ", wndId=" + wndId + " event.type = " + eventt.type + " lastMouseDownTouchTime=" + lastMouseDownTouchTime);
-
-        /*
-        if (eventt.type == "mousemove" && lastMouseDownTouchTime == null) {
-                    return true;
-                }*/
+    this.touchEvent = function(eventt) {
         
-
-        //if (protocolState != psConnected)
-            //return;
+//        Log.e(TAG, "touchEvent. eventt.type: " + eventt.type);
+        var lastMouseDownTouchTime = eventt.lastMouseDownTouchTime;
 
         var src = eventt.src;
         var rect = src.getBoundingClientRect();
-
-        /*
-        writer.writeInt(PlayerCmd.touchEvent);
-                writer.writeInt(processId);
-                writer.writeInt(wndId);*/
         
         writer.writeBoolean(false);
         var timevar = {
@@ -535,34 +519,28 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         };
         writer.writeLong(timevar);
         writer.writeLong(timevar);
-        // Log.d("eventt.touches.length: "+eventt.touches.length+", eventt.changedTouches: "+eventt.changedTouches.length);
+
         writer.writeInt(eventt.changedTouches.length); // number of touches
         var action;
 
         if (eventt.type == "touchend" || eventt.type == "touchcancel") {
-            //lastMouseDownTouchTime = null;
             lastTouchX = null;
             lastTouchY = null;
             action = 1;
         } else if (eventt.type == "touchstart") {
-            //if (lastMouseDownTouchTime == null) {
-                //lastMouseDownTouchTime = new Date().getTime();
-                //action = 0;
-            //}
             action = 0;
         } else if (eventt.type == "touchmove") {
             action = 2;
         }
+
         writer.writeInt(action);
 
         for (var i=0; i < eventt.changedTouches.length; i++) {
             var touch =  eventt.changedTouches[i];
-            // Log.d("touch.identifier: "+touch.identifier);
-            writer.writeInt(/*touch.identifier*/i);
-            //properties.id
-            writer.writeInt(1);
-            //properties.toolType
+            writer.writeInt(i);  // id
+            writer.writeInt(1);  // toolType
         }
+
         for (var i=0; i < eventt.changedTouches.length; i++) {
             var touch =  eventt.changedTouches[i];
             var left = touch.clientX - rect.left - src.clientLeft + src.scrollLeft;
@@ -572,54 +550,140 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 lastTouchX = left;
                 lastTouchY = top;
             }
-            Log.v(TAG, "touchPoint.  type=" + eventt.type + ", timeStamp=" + eventt.timeStamp + ", left=" + left + ", top=" + top+", force:"+touch.force);
-            writer.writeFloat(0);
-            //coords.orientation
-            writer.writeFloat(touch.force ? touch.force : 0.73);
-            //coords.pressure);
-            writer.writeFloat(0.26);
-            //coords.size);
-            writer.writeFloat(90);
-            //coords.toolMajor);
-            writer.writeFloat(90);
-            //coords.toolMinor);
-            writer.writeFloat(90);
-            //coords.touchMajor);
-            writer.writeFloat(90);
-            //coords.touchMinor);
-            writer.writeFloat(left);
-            //coords.x
-            writer.writeFloat(top);
-            //coords.y
+//            Log.v(TAG, "touchPoint.  type: " + eventt.type + ", timeStamp: " + eventt.timeStamp +
+//                  ", left: " + left + ", top: " + top + ", force: " +touch.force);
+
+            if (action != 2) {
+                writer.writeFloat(0);     // orientation
+                writer.writeFloat(90);    // toolMajor
+                writer.writeFloat(90);    // toolMinor
+                writer.writeFloat(90);    // touchMajor
+                writer.writeFloat(90);    // touchMinor
+            }
+
+            writer.writeFloat(touch.force ? touch.force : 0.73);   // pressure;
+            writer.writeFloat(0.26);  // size
+            writer.writeFloat(left);  // coords.x
+            writer.writeFloat(top);   // coords.y
         }
-        writer.writeInt(0);
-        //e.getMetaState());
-        writer.writeInt(0);
-        //e.getButtonState());
-        writer.writeFloat(2);
-        //e.getXPrecision());
-        writer.writeFloat(2);
-        //e.getYPrecision());
-        writer.writeInt(0);
-        //e.getEdgeFlags());
-        writer.writeInt(4098);
-        //touchscreen...    //e.getSource());
-        writer.writeInt(0);
-        //e.getFlags());
+
+        writer.writeFloat(2);  // XPrecision
+        writer.writeFloat(2);  // YPrecision
+
+        if (action != 2) {
+            writer.writeInt(0);  // MetaState
+            writer.writeInt(0);  // ButtonState
+            writer.writeInt(0);    // EdgeFlags
+            writer.writeInt(4098);  // touchscreen
+            writer.writeInt(0);    // Flags
+        }
+
         if (action == 2) { // move event
             var now = new Date().getTime();
             var interval = now - lastMouseDownTouchTime;
             lastMouseDownTouchTime = now;
             var velocityX = (left - lastTouchX) / interval;
             var velocityY = (top - lastTouchY) / interval;
+
             writer.writeFloat(velocityX);
             writer.writeFloat(velocityY);
         }
 
-        // Log.d("WRITE OLD");
-        //writer.flush();
         return true;
     };
+
+    var wheeldelta = {
+        x: 0,
+        y: 0
+    };
+    var lastMouseDownTouchTime = 0;
+    var lastTouchX = 0, lastTouchY = 0;
+
+    this.mousewheel = function(eventt) {
+//      up: delta > 0, down: delta < 0
+//      Log.e(TAG, "mousewheel. eventt.type: " + eventt.type + ", eventt.action: " + eventt.action + ", eventt.delta: " + eventt.delta);
+
+        if (eventt.type != "mousewheel" && eventt.type != "DOMMouseScroll" && eventt.type != "wheel") {
+            writer.writeBoolean(true);
+            return true;
+        }
+
+        var src = eventt.src;
+        var rect = src.getBoundingClientRect();
+
+        var action = eventt.action; // 0-ACTION_DWON; 1-ACTION_UP; 2-ACTION_MOVE
+        if (action == 0) {
+            wheeldelta.x = eventt.clientX - rect.left;
+            wheeldelta.y = eventt.clientY - rect.top;
+
+            lastTouchX = 0;
+            lastTouchY = 0;
+            lastMouseDownTouchTime = 0;
+        } else if (action == 2) {
+            if (eventt.delta < 0) {
+                wheeldelta.y -= 15;
+            } else {
+                wheeldelta.y += 15;
+            }
+        }
+
+        writer.writeBoolean(false); // 1
+        var timevar = {
+             hi : 0,
+             lo : 0
+        };
+
+        writer.writeLong(timevar);  // 2 down time
+        writer.writeLong(timevar);  // 3 event time
+        writer.writeInt(1);         // 4 number of touches
+        writer.writeInt(action);    // 5 action
+        writer.writeInt(0);         // 6 id
+        writer.writeInt(1);         // 7 tool type
+
+        if (action != 2) {
+            writer.writeFloat(0);       // orientation
+            writer.writeFloat(90);      // toolMajor
+            writer.writeFloat(90);      // toolMinor
+            writer.writeFloat(90);      // touchMajor
+            writer.writeFloat(90);      // touchMinor
+        }
+
+        writer.writeFloat(0.73);    // pressure
+        writer.writeFloat(0.26);    // size
+
+        var left = wheeldelta.x;  // + rect.left;
+        var top = wheeldelta.y;   // + rect.top;
+
+        writer.writeFloat(left);    // coords.x
+        writer.writeFloat(top);     // coords.y
+        writer.writeFloat(2);       // XPrecision
+        writer.writeFloat(2);       // YPrecision
+
+        if (action != 2) {
+            writer.writeInt(0);         // MetaState
+            writer.writeInt(0);         // ButtonState
+            writer.writeInt(0);         // EdgeFlags
+            writer.writeInt(4098);      // touchscreen
+            writer.writeInt(0);         // flags
+        }
+
+        if (action == 2) {
+            var now = new Date().getTime();
+            var interval = eventt.timeStamp - lastMouseDownTouchTime;
+            var velocityX = (left - lastTouchX) / interval;
+            var velocityY = (top - lastTouchY) / interval;
+
+            writer.writeFloat(velocityX);
+            writer.writeFloat(velocityY);
+        }
+
+        // save data
+        lastMouseDownTouchTime = eventt.timeStamp;
+        lastTouchX = left;
+        lastTouchY = top;
+
+        return true;
+    }
 
     errorAndClose = function() {
         protocolState = psError;
@@ -2925,7 +2989,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 if (tileX != 1 || tileY != 1) {
                     Log.e(TAG, "drawCircle:BitmapShader: unimplemented tile types. tileX = " + tileX + " tileY = " + tileY);
                 }
-                drawBitmapIntoCanvas(processId, wndId, bm, null, null, p.shader.localMatrix, paint, bitmap, 0, 0, null, DrawBitmapType.bitmapShader);
+                drawBitmapIntoCanvas(processId, wndId, bm, null, null, paint.shader.localMatrix, paint, bitmap, 0, 0, null, DrawBitmapType.bitmapShader);
                 return true;
             } else if (paint.shader.stype == ShaderType.RadialGradient) {
                 var endRadius = Math.sqrt(paint.shader.x * paint.shader.x + paint.shader.y * paint.shader.y);
@@ -3192,7 +3256,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             return false;
         }
         var show = reader.readBoolean();
-        Log.e(TAG, "showSoftKeyboard. processId=" + processId + ", wndId=" + wndId + ", show=" + show);
+        // Log.e(TAG, "showSoftKeyboard. processId=" + processId + ", wndId=" + wndId + ", show=" + show);
 
         // notify platform on keyboard state
         // check if need to pass currentProcessId instead
@@ -3200,10 +3264,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         keyboardProcessID = processId;
 
         if (show) {
-            Log.e(TAG,"open edVirtualKeyboard");
-            $( window ).scroll(function() {
-                Log.d("$( window ).scrollTop(): "+$( window ).scrollTop());
-            });
+            // Log.e(TAG,"open edVirtualKeyboard");
+            // $( window ).scroll(function() {
+                // Log.d("$( window ).scrollTop(): "+$( window ).scrollTop());
+            // });
             $("#edVirtualKeyboard").css({top: lastTouchY, left: lastTouchX, position:'fixed'});
             var input = document.querySelector('#edVirtualKeyboard');
             var focus = function() {

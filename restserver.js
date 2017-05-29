@@ -464,6 +464,7 @@ function buildServerObject(server) {
     server.post('/file/uploadToSession', internalRequests.upload);
     server.post('/file/uploadToLoginToken', internalRequests.upload);
     server.post('/file/uploadDummyFile', internalRequests.upload);
+    server.post('/file/uploadFileToLoginToken', internalRequests.upload);
 
     if (Common.isHandlingMediaStreams) {
         server.get('/getStreamsFile' , internalRequests.getStreamsFile);

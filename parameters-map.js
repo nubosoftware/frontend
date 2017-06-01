@@ -168,6 +168,24 @@ var filter = {
                 "destPath": constraints.pathConstrOptional,
                 "isMedia": constraints.boolConstrOptional
             }
+        },{
+            "path": "/file/uploadFileToLoginToken",
+            "constraints": {
+                "sessionid": constraints.sessionIdConstrOptional,
+                "loginToken": constraints.requestedLoginTokenConstr,
+                "existsOnSDcard": {
+                    "inclusion": {
+                        "within": ["external://", "internal://"]
+                    }
+                },
+                "dontChangeName": {
+                    "inclusion": {
+                        "within": ["true", "false"]
+                    }
+                },
+                "destPath": constraints.pathConstrOptional,
+                "isMedia": constraints.boolConstrOptional
+            }
         }, {
             "path": '/SmsNotification/sendSmsNotificationFromRemoteServer',
             "constraints": {

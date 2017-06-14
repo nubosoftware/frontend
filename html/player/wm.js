@@ -28,7 +28,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         return -1;
     };
 
-    this.clearPopupCanvas = function(processId, wndId, x, y) {
+    this.clearPopupCanvas = function(processId, wndId, x, y, width, height) {
         var sn = this.getWindow(processId, wndId);
         if (sn.ctx == null) {
             Log.e(TAG, "clearPopupCanvas: no popup window");
@@ -37,12 +37,16 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         if (sn.popup_x == null) {
             sn.popup_x = x;
             sn.popup_y = y;
+            sn.popup_w = width;
+            sn.popup_h = height;
             return;
         }
         // clean popup's canvas only if popup is on different position onscreen.
-        if (sn.popup_x != x || sn.popup_y != y) {
+        if (sn.popup_x != x || sn.popup_y != y || sn.popup_w != width || sn.popup_h != height) {
             sn.popup_x = x;
             sn.popup_y = y;
+            sn.popup_w = width;
+            sn.popup_h = height;
             sn.ctx.clearRect(0, 0, sn.canvas.width, sn.canvas.height);
         }
     };

@@ -3532,7 +3532,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
         // Log.d(TAG, "initPopupContentView. onScreenX=" + onScreenX + ", onScreenY=" + onScreenY + ", decorHeight=" + decorHeight + ", decorWidth=" + decorWidth);
         // platform doesn't clean popup's window.
-        wm.clearPopupCanvas(processId, wndId, onScreenX, onScreenY);
+        wm.clearPopupCanvas(processId, wndId, onScreenX, onScreenY, decorWidth, decorHeight);
         //wm.updateWinLocation(processId,wndId,onScreenX,onScreenY,decorWidth,decorHeight);
         return true;
     };

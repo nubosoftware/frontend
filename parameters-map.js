@@ -12,7 +12,7 @@ var filter = {
             "path": "/sendEmailForUnknownJobTitle",
             "constraints": {
                 "sessionid": constraints.requestedSessionIdConstr,
-                "jobTitle": constraints.ExcludeSpecialCharactersRequested
+                "jobTitle": constraints.openTextConstrOptional
             }
         }, {
             "path": "/activate",
@@ -31,7 +31,7 @@ var filter = {
                 "alreadyUser": constraints.Y_N_boolConstrOptional,
                 "first": constraints.ExcludeSpecialCharactersOptional,
                 "last": constraints.ExcludeSpecialCharactersOptional,
-                "title": constraints.ExcludeSpecialCharactersOptional,
+                "title": constraints.openTextConstrOptional,
                 "deviceType": {
                     "inclusion": ["iPhone", "iPad", "Web", "Android"]
                 },
@@ -43,14 +43,15 @@ var filter = {
                 "signature": constraints.ExcludeSpecialCharactersRequested,
                 "regid": {
                     "presence": false,
-                    "format": "^[.a-zA-Z0-9_-]+$",
+                    "format": "^[.a-zA-Z0-9_\\-()]+$",
                     "length": {
                         "minimum": 1,
                         "maximum": 255
                     }
                 },
                 "playerVersion": constraints.playerVersionConstrOptional,
-                "additionalDeviceInfo": constraints.ExcludeSpecialCharactersOptional
+                "additionalDeviceInfo": constraints.ExcludeSpecialCharactersOptional,
+                "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional
             }
         }, {
             "path": "/registerOrg",
@@ -68,7 +69,7 @@ var filter = {
                 "sessionid": constraints.sessionIdConstrOptional,
                 "token": constraints.tokenConstrRequested,
                 "cloneActivation": constraints.activationConstrOptional,
-                "email": constraints.emailConstrRequested
+                "email": constraints.emailConstrOptional
             }
         }, {
             "path": "/validate",
@@ -78,7 +79,8 @@ var filter = {
                 "deviceid": constraints.deviceIdConstrRequested,
                 "activationKey": constraints.tokenConstrRequested,
                 "playerVersion": constraints.playerVersionConstrRequested,
-                "timeZone": constraints.timeZoneConstrOptional
+                "timeZone": constraints.timeZoneConstrOptional,
+                "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional
             }
         }, {
             "path": "/startsession",
@@ -193,7 +195,7 @@ var filter = {
                 "toPhone": constraints.phoneNumberConstrRequested,
                 "body": {
                     "presence": true,
-                    "format": "^[.0-9a-zA-Z_\\-]+$",
+                    "format": "^[.0-9a-zA-Z_\\- ]+$",
                     "length": {
                         "minimum": 1,
                         "maximum": 255
@@ -223,7 +225,7 @@ var filter = {
                 "type": {
                     "presence": true
                 },
-                "notifyLocation": constraints.ExcludeSpecialCharactersOptional,
+                "notifyLocation": constraints.openTextConstrOptional,
                 "serverID": {
                     "presence": true,
                     "format": "^[0-9a-zA-Z]+$",

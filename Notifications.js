@@ -82,6 +82,10 @@ function sendNotificationFromRemoteServer(req, res) {
         return;
     }
 
+    if (notifyLocation != null && notifyLocation.indexOf("#!#offline") != -1) {
+        notifyLocation = notifyLocation.replace("#!#offline",'');
+    }
+
     if (Common.withService) {
         var ip = req.params.ip;
         var port = req.params.port;

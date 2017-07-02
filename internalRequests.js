@@ -232,51 +232,6 @@ function updateUserConnectionStatics(deviceName, resolution, pathname) {
     });
 }
 
-function captureDeviceDetails(req, res, next) {
-    res.contentType = 'json';
-    var msg = 'OK';
-    var status = 0;
-
-    updateNetworkDeviceDetails(req, function(err, resObj) {
-        if (err) {
-            msg = 'Internal Error';
-            status = 1;
-        }
-
-        res.send(resObj);
-    });
-}
-
-function updateNetworkDeviceDetails(req, callback) {
-    var options = getOptions();
-    options.path = "/captureDeviceDetails?" + querystring.stringify({
-        sessionid: req.params.sessionid,
-        remoteAddress: req.realIP,
-        remotePort: req.connection.remotePort
-    });
-
-    http.doGetRequest(options, function(err, resData) {
-        if (err) {
-            logger.error("updateNetworkDeviceDetails: " + err);
-            callback(err);
-            return;
-        }
-
-        var resObjData;
-        try {
-            resObjData = JSON.parse(resData);
-        } catch (e) {
-            logger.error("updateNetworkDeviceDetails: " + e);
-            callback(e);
-            return;
-        }
-
-        callback(null, resObjData);
-        return;
-    });
-}
-
-
 function forwardActivationLink(req, res, next) {
     var options = getOptions();
     options.path = req.url;
@@ -336,7 +291,5 @@ module.exports = {
     addMissingResource: addMissingResource,
     updateUserConnectionStatics: updateUserConnectionStatics,
     upload: upload,
-    updateNetworkDeviceDetails: updateNetworkDeviceDetails,
-    captureDeviceDetails : captureDeviceDetails,
     forwardActivationLink: forwardActivationLink
 }

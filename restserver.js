@@ -338,26 +338,6 @@ function yescache(req, res, next) {
   next();
 }
 
-function captureDeviceNetworkDetails(req,res,next) {
-    // skip irrelevant requets to reduce calls to DB
-    if ((req.url.indexOf("/html/player/") >= 0) || req.url.indexOf("getResource") >= 0 || req.url.indexOf("checkStreamsFile") >= 0)  {
-        next();
-    } else {
-        internalRequests.updateNetworkDeviceDetails(req, function(err, resObj) {
-	    if (err) {
-	        logger.error("captureDeviceNetworkDetails: " + err);
-	    }
-
-        if(resObj.status === 1){
-            logger.error("captureDeviceNetworkDetails: " + resObj.message);
-        }
-	    next();
-	    return;
-        });
-    }
-}
-
-
 var cnt = 0;
 
 var accesslogger = accesslog({
@@ -428,9 +408,6 @@ function buildServerObject(server) {
 
     server.use(accesslogger);
     server.use(nocache);
-    if (Common.withService) {
-	   server.use(captureDeviceNetworkDetails);
-    } 
     // server.use(Common.restify.gzipResponse());
     server.use(Common.restify.CORS({
         origins: Common.allowedOrigns, // defaults to ['*']
@@ -450,7 +427,7 @@ function buildServerObject(server) {
     server.get('/resetPasscode', internalRequests.forwardGetRequest);
     server.get('/activate', internalRequests.forwardGetRequest);
     server.get('/validate', internalRequests.forwardGetRequest);
-    server.get('/captureDeviceDetails', internalRequests.captureDeviceDetails);
+    server.get('/notificationPolling', internalRequests.forwardGetRequest);
     server.get('/resendUnlockPasswordLink', internalRequests.forwardGetRequest);
     // server.get('/activationLink', internalRequests.forwardGetRequest);
     server.get('/activationLink', internalRequests.forwardActivationLink);

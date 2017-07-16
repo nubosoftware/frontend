@@ -282,6 +282,14 @@ var filter = {
                 "deviceName": constraints.ExcludeSpecialCharactersOptional,
                 "resolution": constraints.ExcludeSpecialCharactersOptional
             }
+        } , {
+        "path": '/notificationPolling',
+            "constraints": {
+                "activationKey": constraints.tokenConstrRequested,
+                "username": constraints.userNameConstrOptional,
+                "timestamp": constraints.timeStampConstrOptional,
+                "sessionid": constraints.sessionIdConstrOptional
+            }
         }, {
             "path": '/getResource',
             "constraints": {

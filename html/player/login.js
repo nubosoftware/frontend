@@ -196,6 +196,7 @@ var orgName = "";
 var authType = 0;
 var clientProperties = [];
 var uploadExternalWallpaper = true;
+
 var passcodeType = 0;   // 0-passcode; 1-password
 var passcodeMinChars = 6;
 var oldPassword = "";
@@ -214,6 +215,10 @@ var playbackScale;
 var playbackFile;
 var playbackStartTime;
 var passcodeExpired = false;
+
+var WRITE_TRANSACTION_TIMEOUT = 900000;
+var passcodeTimeout = WRITE_TRANSACTION_TIMEOUT;
+
 
 // console.log("Starting login.js");
 $(function() {
@@ -598,6 +603,7 @@ $(function() {
         },
         checkValidation : function() {
             if (settings.get("activationKey") == "") {
+                window.location.hash = "error";
                 return;
             }
             var url = mgmtURL + "validate?username=" + encodeURIComponent(settings.get("workEmail")) +
@@ -623,18 +629,15 @@ $(function() {
 
                     uploadExternalWallpaper = settings.get("uploadExternalWallpaper");
                     if (uploadExternalWallpaper == null || uploadExternalWallpaper) {
-                        var clientProperties = data.clientProperties;
-                        for (var key in clientProperties) {
-                            if (DEBUG) {
-                                console.log(key + " : " + clientProperties[key]);
-                            }
-                            if (key.localeCompare("wallpaper") == 0) {
-                                wallpaperColor = "";
-                                wallpaperImage = mgmtURL + clientProperties[key];
-                                uploadExternalWallpaper = false;
-                                break;
-                            }
+                        if (data.clientProperties["wallpaper"]) {
+                            wallpaperColor = "";
+                            wallpaperImage = mgmtURL + data.clientProperties["wallpaper"];
+                            uploadExternalWallpaper = false;
                         }
+                    }
+
+                    if (data.clientProperties["passcodeTimeout"] && data.clientProperties["passcodeTimeout"] > 0) {
+                        passcodeTimeout = data.clientProperties["passcodeTimeout"] * 1000;
                     }
 
                     settings.set({
@@ -687,15 +690,12 @@ $(function() {
                             this.timeoutId = setTimeout(validationView.checkValidation, 2000);
                         }
                     } else {
-                        if (DEBUG) {
-                            console.log("checkValidation error");
-                        }
                         console.log("checkValidation. error " + data.status + ", " + data.message);
                         this.timeoutId = 0;
                         pendingValidation = false;
-                        settings.set({
-                            activationKey : ""
-                        });
+                        // settings.set({
+                        //     activationKey : ""
+                        // });
                         window.location.hash = "error";
                     }
                 } else if (data.status == 301) {
@@ -1716,7 +1716,6 @@ $(function() {
             // console.log("passcodeView.deleteChar  enterPasscode: " + enterPasscode);
             if (enterPasscode.length >= 1) {
                 enterPasscode = enterPasscode.substr(0, enterPasscode.length - 1);
-                console.log("passcodeView.deleteChar  enterPasscode: " + enterPasscode);
                 $('#enterPasscode').val(enterPasscode);
             }
         },
@@ -2878,7 +2877,7 @@ $(function() {
             var width = datadiv.offsetWidth;
             var height = datadiv.offsetHeight + (mobilecheck() ? 90 : 45);
             // console.log("width: " + width + ", height: " + height);
-            uxip = new UXIP(datadiv, width, height);
+            uxip = new UXIP(datadiv, width, height, passcodeTimeout);
             uxip.PlayerView = this;
 
             var firstLogin = settings.get("firstGatewayConnection");
@@ -3019,7 +3018,7 @@ $(function() {
             $("div#recordingTimeLbl").css("width",300 / playbackScale + "px");
             $("div#recordingTimeLbl").css("top",playbackHeight - Math.round(30 / playbackScale) );
             // console.log("width: " + width + ", height: " + height);
-            uxip = new UXIP(datadiv, width, height, true);
+            uxip = new UXIP(datadiv, width, height, passcodeTimeout, true);
             uxip.PlayerView = this;
 
             var parser = document.createElement('a');

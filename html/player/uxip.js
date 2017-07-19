@@ -11,6 +11,7 @@ var RTT_THRESHOLD_TO_CLOSE_SOCKET = 2500;
 var mBadRTTCounter = 0;
 var MAX_BAD_RTT_SEQUENCE = 5;
 var WRITE_TRANSACTION_TIMEOUT = 900000;
+var TIMER_CHECK_TIMEOUT = 10000;
 var SOCKET_READ_TIMEOUT = 30000;
 
 // debug parameters
@@ -25,7 +26,7 @@ var writeToDrawCmdLog = false;
 var resCache = {};
 var fontCache = {};
 
-function UXIP(parentNode, width, height, playbackMode, playbackFile) {
+function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playbackFile) {
     "use strict";
     var UXIPself = this;
     var protocolState = psDisconnect;
@@ -62,6 +63,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     var domObj;
     var lastProcessID, lastWndID;
     var mWidth, mHeight, mParentNode;
+    var mOrgPasscodeTimeout = WRITE_TRANSACTION_TIMEOUT;
     var wm;
     var waitForDraw = false;
     var lastExtractedText = "";
@@ -86,6 +88,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     mParentNode = parentNode;
     mWidth = width;
     mHeight = height;
+
+    if (passcodeTimeout > 0) {
+        mOrgPasscodeTimeout = passcodeTimeout;
+    }
 
     // keyboard input action
     var mImeOptions = 1;
@@ -184,7 +190,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 ws.close();
             }
             clearTimer(timeoutid);
-            timeoutid = setInterval(checkTimeOut, 12000);
+            timeoutid = setInterval(checkTimeOut, TIMER_CHECK_TIMEOUT);  // check if timeout every 10 seconds
         };
 
         ws.onclose = function(e) {
@@ -236,7 +242,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             Log.d("checkTimeOut.");
         }
 
-        if (diff > WRITE_TRANSACTION_TIMEOUT) {
+        if (diff > mOrgPasscodeTimeout) {
             Log.e(TAG + " WRITE_TRANSACTION_TIMEOUT");
             errorAndClose();
             window.location.reload();

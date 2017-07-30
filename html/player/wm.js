@@ -4,13 +4,21 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
     // private variables
     var parentNode, mWidth, mHeight, mUxip, currLocationHash;
 
-    var mMaxZIndex = 0, TAG = 'wm';
+    var wm = this;
+
+    var mMaxZIndex = 0,
+        TAG = 'wm';
 
     //private funcs
     var fFindWndByWndId, fFindWndByNuboWndId, fRemoveWindowStack, fSetCSS;
 
     var mWindowsStackManager = {};
     var taskManager = new TaskManager(uxip);
+
+    var surfaceManager = {};
+    var mediaManager = {};
+    var mediaCurrHash = null;
+
 
     fFindWndByWndId = function(ws, wndId) {
         for (var i = ws.length - 1; i >= 0; i--) {
@@ -54,7 +62,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
     this.getWindow = function(processId, wndId) {
         var processIDHash = processId.toString(16);
         var ws = mWindowsStackManager[processIDHash];
-        if (ws == null) {//  process not found
+        if (ws == null) { //  process not found
             Log.e(TAG, "Process not found in window manager: " + processId);
             return null;
         }
@@ -90,7 +98,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
     this.updateWndId = function(processId, wndId, nuboWndId) {
         var processIDHash = processId.toString(16);
         var ws = mWindowsStackManager[processIDHash];
-        if (ws == null) {//  process not found
+        if (ws == null) { //  process not found
             Log.e(TAG, "Process not found in window manager: " + processId);
             return;
         }
@@ -106,7 +114,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         var processIDHash = processId.toString(16);
 
         var ws = mWindowsStackManager[processIDHash];
-        if (ws == null) {//  process not found
+        if (ws == null) { //  process not found
             Log.e(TAG, "Process not found in window manager: " + processId);
             return;
         }
@@ -123,7 +131,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         // remove node from task list
         taskManager.removeWndFromTask(sn);
 
-        parentNode.removeChild(sn.canvas);
+        parentNode.removeChild(sn.panel);
 
         // return if window stack is empty
         return ws.length == 0;
@@ -236,7 +244,8 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         if (ws != null) {
             for (var i = 0; i < ws.length; i++) {
                 var sn = ws[i];
-                $("#" + sn.canvas.id).hide();
+                $("#" + sn.panel.id).hide();
+                ("#" + sn.panel.id).hide();
             }
         }
     };
@@ -248,6 +257,8 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             sn.y = onScreenY;
             sn.width = decorWidth;
             sn.height = decorHeight;
+            sn.panel.setAttribute('width', sn.width);
+            sn.panel.setAttribute('height', sn.height);
             sn.canvas.setAttribute('width', sn.width);
             sn.canvas.setAttribute('height', sn.height);
             fSetCSS(sn);
@@ -256,16 +267,16 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
     fSetCSS = function(sn) {
         var cssObj = {
-            'position' : 'absolute',
-            'visibility' : (sn.visible ? 'visible' : 'hidden' ),
-            'left' : sn.x + 'px',
-            'top' : sn.y + 'px',
-            'width' : sn.width + 'px',
-            'height' : sn.height + 'px',
-            'z-index' : sn.zindex
+            'position': 'absolute',
+            'visibility': (sn.visible ? 'visible' : 'hidden'),
+            'left': sn.x + 'px',
+            'top': sn.y + 'px',
+            'width': sn.width + 'px',
+            'height': sn.height + 'px',
+            'z-index': sn.zindex
         };
 
-        $("#" + sn.canvas.id).css(cssObj);
+        $("#" + sn.panel.id).css(cssObj);
     };
 
     this.moveTaskToTop = function(taskId) {
@@ -291,17 +302,23 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         var processIDHash = processId.toString(16);
         var wndIdIDHash = wndId.toString(16);
         var ws = mWindowsStackManager[processIDHash];
-        if (ws == null) {// new process
+        if (ws == null) { // new process
             ws = new Array();
             mWindowsStackManager[processIDHash] = ws;
         }
         var sn = {};
+        sn.panel = document.createElement('span');
+
         sn.canvas = document.createElement('canvas');
         sn.x = 0;
         sn.y = 0;
         sn.width = mWidth;
         sn.height = mHeight;
         sn.visible = false;
+
+        sn.panel.setAttribute('width', sn.width);
+        sn.panel.setAttribute('height', sn.height);
+        sn.panel.id = "p_" + processIDHash + '_' + wndIdIDHash;
 
         sn.canvas.setAttribute('width', sn.width);
         sn.canvas.setAttribute('height', sn.height);
@@ -349,7 +366,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             }
         };
         sn.keyEvent = function(e) {
-            // console.log("key event event.type: " + event.type + ", keyCode: " + event.keyCode);
+            console.log("key event event.type: " + event.type + ", keyCode: " + event.keyCode);
             var evtobj = e || event;
             mUxip.keyEvent(evtobj, sn.processId, sn.wndId, this);
         };
@@ -368,19 +385,19 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                 }
                 lastEvtobj = evtobj;
                 evtobj.action = 2;
-                if (!wheeling) {   // start wheeling
+                if (!wheeling) { // start wheeling
                     evtobj.action = 0;
-                 }
+                }
 
-                 clearTimeout(wheeling);
-                 wheeling = setTimeout(function() {  // stop wheeling
+                clearTimeout(wheeling);
+                wheeling = setTimeout(function() { // stop wheeling
                     wheeling = undefined;
 
                     lastEvtobj.type == "mousewheel"
                     lastEvtobj.action = 1;
                     NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, lastEvtobj);
                     lastEvtobj = null;
-                 }, 250);
+                }, 250);
 
                 evtobj.name = "MouseWheel";
                 evtobj.src = this;
@@ -400,7 +417,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
             if (evtobj.type != "mousemove") {
 
-                 if (evtobj.type == "touchend" || evtobj.type == "touchcancel") {
+                if (evtobj.type == "touchend" || evtobj.type == "touchcancel") {
                     lastMouseDownTouchTime = null;
                 } else if (evtobj.type == "touchstart") {
                     lastMouseDownTouchTime = new Date().getTime();
@@ -418,24 +435,27 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         sn.canvas.onkeypress = sn.keyEvent;
         sn.canvas.onkeydown = sn.keyEvent;
         sn.canvas.onkeyup = sn.keyEvent;
+        sn.panel.onkeypress = sn.keyEvent;
+        sn.panel.onkeydown = sn.keyEvent;
+        sn.panel.onkeyup = sn.keyEvent;
         sn.canvas.addEventListener("touchstart", sn.touchEvent, false);
         sn.canvas.addEventListener("touchend", sn.touchEvent, false);
         sn.canvas.addEventListener("touchcancel", sn.touchEvent, false);
         sn.canvas.addEventListener("touchleave", sn.touchEvent, false);
         sn.canvas.addEventListener("touchmove", sn.touchEvent, false);
-        sn.canvas.addEventListener("mousewheel", sn.mouseWheelEvent, false);      // IE9, Chrome, Safari, Opera
-        sn.canvas.addEventListener("DOMMouseScroll", sn.mouseWheelEvent, false);  // Firefox
+        sn.canvas.addEventListener("mousewheel", sn.mouseWheelEvent, false); // IE9, Chrome, Safari, Opera
+        sn.canvas.addEventListener("DOMMouseScroll", sn.mouseWheelEvent, false); // Firefox
 
         sn.dirtyCanvas = null;
         sn.matrix = {
-            isNull : true
+            isNull: true
         };
         sn.bounds = {
-            isNull : true
+            isNull: true
         };
         mMaxZIndex++;
         sn.zindex = mMaxZIndex;
-        sn.canvas.setAttribute('tabindex', mMaxZIndex);
+        sn.panel.setAttribute('tabindex', mMaxZIndex);
         sn.taskId = taskManager.getTaskId(taskIdAndPos);
         sn.posInTask = taskManager.getPosInTask(taskIdAndPos);
         sn.parentWndId = parentWndId;
@@ -464,9 +484,12 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         }
 
         if (parentNode.childNodes.length == 0)
-            parentNode.appendChild(sn.canvas);
+            parentNode.appendChild(sn.panel);
         else
-            parentNode.insertBefore(sn.canvas, parentNode.childNodes[0]);
+            parentNode.insertBefore(sn.panel, parentNode.childNodes[0]);
+        sn.panel.appendChild(sn.canvas);
+
+
         fSetCSS(sn);
 
         window.location.hash = "ppage/" + mMaxZIndex;
@@ -483,7 +506,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                 break;
             taskManager.removeWndFromTask(sn);
             Log.v(TAG, "Remove canvas " + sn.canvas.id);
-            parentNode.removeChild(sn.canvas);
+            parentNode.removeChild(sn.panel);
         }
     };
 
@@ -524,7 +547,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
     this.removeProcess = function(processId) {
         var processIDHash = processId.toString(16);
         var ws = mWindowsStackManager[processIDHash];
-        if (ws == null) {// new process
+        if (ws == null) { // new process
             Log.e(TAG, "Process not found in window manager: " + processId);
             return;
         }
@@ -561,6 +584,214 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         return 0;
     };
 
+    // video functions
+    this.createNewSurfaceView = function(processId, surfaceHashInt, data) {
+        var sn = this.getWindow(processId, data.parentWndId);
+        if (sn == null) {
+            Log.e(TAG, "createNewSurfaceView: wndId not found: " + wndId);
+            return;
+        }
+        var surfaceHash = surfaceHashInt.toString(16);
+        surfaceManager[surfaceHash] = data;
+        // hack to make the backgound black and not the wallpaper
+        sn.panel.style.backgroundColor = '#000000';
+
+        if (data.visible && mediaCurrHash) {
+            var mediaPlayer = mediaManager[mediaCurrHash];
+            if (!mediaPlayer) {
+                Log.e(TAG, "Not found mediaCurrHash..");
+                return;
+            }
+            if (mediaPlayer.videoObj && mediaPlayer.surfaceHash == surfaceHash) {
+                this.mediaUpdateSurface(mediaPlayer, data);
+            } else {
+                Log.e(TAG, "Error mediaPlayer.surfaceHash not match surfaceHash");
+            }
+        }
+    };
+
+    this.newMediaPlayer = function(processId, objectType, objectHashInt) {
+        Log.e(TAG, "newMediaPlayer: " + objectHashInt);
+        var mediaPlayer = {
+            processId: processId,
+            objectType: objectType,
+            objectHash: objectHashInt.toString(16),
+            objectHashInt: objectHashInt,
+            videoObj: document.createElement('video')
+        };
+
+        mediaManager[mediaPlayer.objectHash] = mediaPlayer;
+    };
+
+    this.attachSurfaceToMediaPlayer = function(processId, mediaPlayerHashInt, surfaceHashInt) {
+        var mediaPlayerHash = mediaPlayerHashInt.toString(16);
+        var mediaPlayer = mediaManager[mediaPlayerHash];
+        if (!mediaPlayer) {
+            Log.e(TAG, "Error attachSurfaceToMediaPlayer mediaPlayerHash not found");
+            return;
+        };
+        var surfaceHash = surfaceHashInt.toString(16);
+        mediaPlayer.surfaceHash = surfaceHash;
+
+
+        Log.e(TAG, "attachSurfaceToMediaPlayer: " + mediaPlayer.objectHash + ", surfaceHash: " + surfaceHash);
+    };
+    this.prepareMediaPlayer = function(processId, mediaPlayerHashInt, streamName) {
+        var mediaPlayerHash = mediaPlayerHashInt.toString(16);
+        var mediaPlayer = mediaManager[mediaPlayerHash];
+        if (!mediaPlayer) {
+            Log.e(TAG, "Error prepareMediaPlayer mediaPlayerHash not found");
+            return;
+        };
+        var data = surfaceManager[mediaPlayer.surfaceHash];
+        if (!data) {
+            Log.e(TAG, "Error prepareMediaPlayer surfaceHash not found");
+            return;
+        }
+        var sn = this.getWindow(mediaPlayer.processId, data.parentWndId);
+        if (sn == null) {
+            Log.e(TAG, "createNewSurfaceView: parentWndId not found: " + data.parentWndId);
+            return;
+        }
+
+        if (mediaCurrHash && mediaCurrHash != mediaPlayerHash) {
+            // remove current player
+
+        }
+        var isLive = "true";
+        if (mediaPlayer.totalDuration > 0) {
+            isLive = "false";
+        } else {
+            streamName += "_req.m3u8";
+        }
+        mediaCurrHash = mediaPlayerHash;
+        //https://nubo02.nubosoftware.com
+        var url = "/getStreamsFile?loginToken=" + encodeURIComponent(window.loginToken) + "&streamName=" + encodeURIComponent(streamName) + "&isLive=" + isLive;
+        mediaPlayer.url = mediaPlayer;
+        Log.e(TAG, "getStreamsFile. URL: " + url);
+        mediaPlayer.videoObj.id = "v_" + mediaPlayerHash;
+        mediaPlayer.videoObj.setAttribute('width', data.width);
+        mediaPlayer.videoObj.setAttribute('height', data.height);
+
+        var source = document.createElement('source');
+        source.setAttribute('src', url);
+        source.setAttribute('type', "application/x-mpegURL");
+        source.id = "source_" + mediaPlayer.videoObj.id;
+        mediaPlayer.videoObj.appendChild(source);
+        //mediaPlayer.videoObj.setAttribute('src', url);
+        //mediaPlayer.videoObj.setAttribute('type', "application/x-mpegURL");
+        //type="application/x-mpegURL"
+        if (mediaPlayer.autoplay) {
+            mediaPlayer.videoObj.setAttribute('autoplay', '');
+            mediaPlayer.autoplay = null;
+        }
+        mediaPlayer.videoObj.onprogress = function() {
+            //alert("Downloading video");
+            Log.e(TAG, "onprogress. Current Time: " + mediaPlayer.videoObj.currentTime + ", duration: " + mediaPlayer.videoObj.duration);
+            var progressInt = Math.floor(mediaPlayer.videoObj.currentTime * 1000);
+            NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.VideoProgress), mediaPlayer.processId, mediaPlayer.objectHashInt, progressInt);
+        };
+
+        mediaPlayer.videoObj.onended = function() {
+            Log.e(TAG, "Video ended!");
+            NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.VideoCompleteEvent), mediaPlayer.processId, mediaPlayer.objectHashInt);
+        };
+
+        sn.panel.insertBefore(mediaPlayer.videoObj, sn.canvas);
+        this.mediaUpdateSurface(mediaPlayer, data);
+
+
+        mediaPlayer.videojs = videojs(mediaPlayer.videoObj.id);
+
+        mediaPlayer.videojs.ready(function() {
+            //this.addClass('my-example');
+            wm.mediaUpdateSurface(mediaPlayer, data);
+            $("video#" + mediaPlayer.videoObj.id).css({
+                left: 0,
+                top: 0
+            });
+        });
+
+    };
+
+    this.mediaUpdateSurface = function(mediaPlayer, data) {
+        Log.e(TAG, "Update mediaUpdateSurface position and size");
+        var cssObj = {
+            'position': 'absolute',
+            'visibility': (data.visible ? 'visible' : 'hidden'),
+            'left': data.x + 'px',
+            'top': data.y + 'px',
+            'width': data.width + 'px',
+            'height': data.height + 'px',
+            'z-index': '-1'
+        };
+
+        $("#" + mediaPlayer.videoObj.id).css(cssObj);
+    };
+
+    this.startMediaPlayer = function(processId, mediaPlayerHashInt, totalDuration) {
+        var mediaPlayerHash = mediaPlayerHashInt.toString(16);
+        var mediaPlayer = mediaManager[mediaPlayerHash];
+        if (!mediaPlayer) {
+            Log.e(TAG, "Error prepareMediaPlayer mediaPlayerHash not found");
+            return;
+        };
+        mediaPlayer.totalDuration = totalDuration;
+
+        if (mediaPlayer.url) {
+            // start it
+            mediaPlayer.videoObj.play();
+        } else {
+            mediaPlayer.autoplay = true;
+        }
+    };
+
+    this.releaseMediaPlayer = function(processId, mediaPlayerHashInt) {
+        var mediaPlayerHash = mediaPlayerHashInt.toString(16);
+        var mediaPlayer = mediaManager[mediaPlayerHash];
+        if (!mediaPlayer) {
+            Log.e(TAG, "Error prepareMediaPlayer mediaPlayerHash not found");
+            return;
+        };
+        if (mediaCurrHash == mediaPlayerHash) {
+            mediaCurrHash = null;
+        }
+        mediaPlayer.videoObj.pause();
+        var data = surfaceManager[mediaPlayer.surfaceHash];
+        if (!data) {
+            Log.e(TAG, "Error releaseMediaPlayer surfaceHash not found");
+            return;
+        }
+        var sn = this.getWindow(mediaPlayer.processId, data.parentWndId);
+        if (sn == null) {
+            Log.e(TAG, "releaseMediaPlayer: parentWndId not found: " + data.parentWndId);
+            return;
+        }
+        mediaPlayer.videojs.dispose();
+        //sn.panel.removeChild(mediaPlayer.videoObj);
+    };
+    this.pauseVideo = function(processId, mediaPlayerHashInt) {
+        var mediaPlayerHash = mediaPlayerHashInt.toString(16);
+        var mediaPlayer = mediaManager[mediaPlayerHash];
+        if (!mediaPlayer) {
+            Log.e(TAG, "Error prepareMediaPlayer mediaPlayerHash not found");
+            return;
+        };
+        mediaPlayer.videoObj.pause();
+    };
+
+    this.seekToVideo = function(processId, mediaPlayerHashInt, msec) {
+        var mediaPlayerHash = mediaPlayerHashInt.toString(16);
+        var mediaPlayer = mediaManager[mediaPlayerHash];
+        if (!mediaPlayer) {
+            Log.e(TAG, "Error prepareMediaPlayer mediaPlayerHash not found");
+            return;
+        };
+        mediaPlayer.videoObj.currentTime = msec / 1000;
+
+    };
+
+
     //constructor
     parentNode = parentNodePrm;
     mWidth = widthPrm;
@@ -574,19 +805,19 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
     dropcanvas.id = "dropcanvas";
     parentNode.appendChild(dropcanvas);
     var dropcanvasCssObj = {
-        'position' : 'absolute',
-        'visibility' : 'hidden',
-        'left' : '0px',
-        'top' : '0px',
-        'width' : mWidth + 'px',
-        'height' : mHeight + 'px',
-        'z-index' : '10000'
+        'position': 'absolute',
+        'visibility': 'hidden',
+        'left': '0px',
+        'top': '0px',
+        'width': mWidth + 'px',
+        'height': mHeight + 'px',
+        'z-index': '10000'
     };
 
     $("#dropcanvas").css(dropcanvasCssObj);
     $("#dropcanvas").dropzone({
-        url : mgmtURL + "/file/uploadToSession?session=" + session,
-        accept : function(file, done) {
+        url: mgmtURL + "/file/uploadToSession?session=" + session,
+        accept: function(file, done) {
             console.log("file: ", file);
             done();
         }
@@ -736,8 +967,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
 }
 
-function Log() {
-}
+function Log() {}
 
 Log.v = function(tag, msg) {
     console.log("[" + tag + "] " + msg);
@@ -877,6 +1107,8 @@ function TaskManager(uxip) {
         return taskAndPos & POS_IN_TASK_MASK;
     };
 
+
+
     getTaskIdHash = function(taskId) {
         return taskId.toString(16) + "_";
     };
@@ -886,4 +1118,3 @@ function TaskManager(uxip) {
     //private funcs
     var getTaskIdHash;
 }
-

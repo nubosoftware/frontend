@@ -20,10 +20,10 @@ var startsWith = function(str, searchString){
 };*/
 
 if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function(searchString, position){
-      position = position || 0;
-      return this.substr(position, searchString.length) === searchString;
-  };
+    String.prototype.startsWith = function(searchString, position) {
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
 }
 
 
@@ -55,6 +55,7 @@ $.fn.localize = function(isWatermark) {
 
     });
 };
+
 function track() {
     var params = {};
     params.u = document.location.href;
@@ -86,102 +87,103 @@ function track() {
 }
 
 var WallpaperColorList = [{
-    "id" : "0",
-    "color" : "#74B52A"
-}, // hotgreen
-{
-    "id" : "1",
-    "color" : "#58AE61"
-}, // grass
-{
-    "id" : "2",
-    "color" : "#C5C52E"
-}, // myYellow
-{
-    "id" : "3",
-    "color" : "#6D40AF"
-}, // eggplant
-{
-    "id" : "4",
-    "color" : "#9627A8"
-}, // purple
-{
-    "id" : "5",
-    "color" : "#C92A95"
-}, // pink
-{
-    "id" : "6",
-    "color" : "#E23A44"
-}, // red
-{
-    "id" : "7",
-    "color" : "#DB932A"
-}, // orange
-{
-    "id" : "8",
-    "color" : "#4B47B1"
-}, // noir
-{
-    "id" : "9",
-    "color" : "#1D64BD"
-}, // blue
-{
-    "id" : "10",
-    "color" : "#35A7D8"
-}, // sky
-{
-    "id" : "11",
-    "color" : "#4FAEAA"
-}, // ocean
-{
-    "id" : "12",
-    "color" : "#5ECAA6"
-} // 12
+        "id": "0",
+        "color": "#74B52A"
+    }, // hotgreen
+    {
+        "id": "1",
+        "color": "#58AE61"
+    }, // grass
+    {
+        "id": "2",
+        "color": "#C5C52E"
+    }, // myYellow
+    {
+        "id": "3",
+        "color": "#6D40AF"
+    }, // eggplant
+    {
+        "id": "4",
+        "color": "#9627A8"
+    }, // purple
+    {
+        "id": "5",
+        "color": "#C92A95"
+    }, // pink
+    {
+        "id": "6",
+        "color": "#E23A44"
+    }, // red
+    {
+        "id": "7",
+        "color": "#DB932A"
+    }, // orange
+    {
+        "id": "8",
+        "color": "#4B47B1"
+    }, // noir
+    {
+        "id": "9",
+        "color": "#1D64BD"
+    }, // blue
+    {
+        "id": "10",
+        "color": "#35A7D8"
+    }, // sky
+    {
+        "id": "11",
+        "color": "#4FAEAA"
+    }, // ocean
+    {
+        "id": "12",
+        "color": "#5ECAA6"
+    } // 12
 ];
 
 var WallpaperImageList = [{
-    "id" : "0",
-    "image" : "images/stars.jpg"
+    "id": "0",
+    "image": "images/stars.jpg"
 }, {
-    "id" : "1",
-    "image" : "images/candy.jpg"
+    "id": "1",
+    "image": "images/candy.jpg"
 }, {
-    "id" : "2",
-    "image" : "images/pacman.jpg"
+    "id": "2",
+    "image": "images/pacman.jpg"
 }, {
-    "id" : "3",
-    "image" : "images/cars.jpg"
+    "id": "3",
+    "image": "images/cars.jpg"
 }, {
-    "id" : "4",
-    "image" : "images/under.jpg"
+    "id": "4",
+    "image": "images/under.jpg"
 }, {
-    "id" : "5",
-    "image" : "images/delicate.jpg"
+    "id": "5",
+    "image": "images/delicate.jpg"
 }, {
-    "id" : "6",
-    "image" : "images/spray.jpg"
+    "id": "6",
+    "image": "images/spray.jpg"
 }, {
-    "id" : "7",
-    "image" : "images/picasso.jpg"
+    "id": "7",
+    "image": "images/picasso.jpg"
 }, {
-    "id" : "8",
-    "image" : "images/jeans.jpg"
+    "id": "8",
+    "image": "images/jeans.jpg"
 }, {
-    "id" : "9",
-    "image" : "images/flowers.jpg"
+    "id": "9",
+    "image": "images/flowers.jpg"
 }, {
-    "id" : "10",
-    "image" : "images/motor.jpg"
+    "id": "10",
+    "image": "images/motor.jpg"
 }, {
-    "id" : "11",
-    "image" : "images/barcode.jpg"
+    "id": "11",
+    "image": "images/barcode.jpg"
 }, {
-    "id" : "12",
-    "image" : "images/ILove.jpg"
+    "id": "12",
+    "image": "images/ILove.jpg"
 }];
 
 var WebmailList = ["gmail", "hotmail", "yahoo", "zoho", "icloud", "aim", "windowslive", "gmx", "fastmail", "bigstring",
-                   "gawab", "inbox.com", "lavabit", "zapak", "hotpop", "myway", "are2"];
+    "gawab", "inbox.com", "lavabit", "zapak", "hotpop", "myway", "are2"
+];
 
 var DEBUG = false;
 var mgmtURL;
@@ -196,8 +198,7 @@ var orgName = "";
 var authType = 0;
 var clientProperties = [];
 var uploadExternalWallpaper = true;
-
-var passcodeType = 0;   // 0-passcode; 1-password
+var passcodeType = 0; // 0-passcode; 1-password
 var passcodeMinChars = 6;
 var oldPassword = "";
 var pendingValidation = false;
@@ -215,10 +216,6 @@ var playbackScale;
 var playbackFile;
 var playbackStartTime;
 var passcodeExpired = false;
-
-var WRITE_TRANSACTION_TIMEOUT = 900000;
-var passcodeTimeout = WRITE_TRANSACTION_TIMEOUT;
-
 
 // console.log("Starting login.js");
 $(function() {
@@ -245,7 +242,8 @@ function getSessionId() {
 }
 
 function get_browser_version() {
-    var ua = navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+    var ua = navigator.userAgent,
+        tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
 
     if (/trident/i.test(M[1])) {
         tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
@@ -262,7 +260,7 @@ function get_browser_version() {
 
     M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, '-?'];
 
-    if (( tem = ua.match(/version\/(\d+)/i)) != null) {
+    if ((tem = ua.match(/version\/(\d+)/i)) != null) {
         M.splice(1, 1, tem[1]);
     }
 
@@ -375,15 +373,15 @@ $(function() {
 
     var Settings = Backbone.Model.extend({
 
-        initialize : function() {
+        initialize: function() {
 
             this.set({
-                id : 1,
-                firstName : "",
-                lastName : "",
-                jobTitle : "",
-                workEmail : "",
-                deviceID : ""
+                id: 1,
+                firstName: "",
+                lastName: "",
+                jobTitle: "",
+                workEmail: "",
+                deviceID: ""
             });
             this.fetch();
 
@@ -412,22 +410,23 @@ $(function() {
             if (wallpaperColor == null || wallpaperColor == "") {
                 wallpaperColor = "#58585A";
                 this.set({
-                    "wallpaperColor" : wallpaperColor
+                    "wallpaperColor": wallpaperColor
                 });
                 this.save();
             }
+            //wallpaperColor = "#000000";
 
             wallpaperImage = this.get("wallpaperImage");
             if (wallpaperImage == undefined || wallpaperImage == "") {
                 wallpaperImage = "images/stars.jpg";
                 this.set({
-                    "wallpaperImage" : wallpaperImage
+                    "wallpaperImage": wallpaperImage
                 });
                 this.save();
             }
 
         },
-        sync : function(method, model) {
+        sync: function(method, model) {
             // console.log("model.sync. " + method + ": " + JSON.stringify(model));
             try {
                 if (method == "read") {
@@ -442,7 +441,7 @@ $(function() {
                     localStorage.loginSettings = JSON.stringify(this.attributes);
                 }
             } catch (err) {
-                 console.log("Error in sync: " + err.message);
+                console.log("Error in sync: " + err.message);
             }
         }
     });
@@ -451,28 +450,27 @@ $(function() {
     globalSettings = settings;
 
     var isMobile = {
-        Android : function() {
+        Android: function() {
             return navigator.userAgent.match(/Android/i) ? true : false;
         },
-        BlackBerry : function() {
+        BlackBerry: function() {
             return navigator.userAgent.match(/BlackBerry/i) ? true : false;
         },
-        iOS : function() {
+        iOS: function() {
             return navigator.userAgent.match(/iPhone|iPad|iPod/i) ? true : false;
         },
-        Windows : function() {
+        Windows: function() {
             return navigator.userAgent.match(/IEMobile/i) ? true : false;
         },
-        any : function() {
+        any: function() {
             return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows());
         }
     };
 
     var DownloadView = Backbone.View.extend({
-        el : $("#maindiv"),
-        initialize : function() {
-        },
-        render : function() {
+        el: $("#maindiv"),
+        initialize: function() {},
+        render: function() {
             var template = _.template($("#download_template").html(), {});
             this.$el.html(template);
             formatPage();
@@ -484,7 +482,7 @@ $(function() {
                     $('#downloadStep1').css('visibility', 'visible');
                     $('#downloadStep2').css('visibility', 'visible');
                     $('#welcome').css('visibility', 'visible');
-                } else {// not enterprise acticvation
+                } else { // not enterprise acticvation
                     $('#welcome').css('visibility', 'hidden');
                     $('#downloadLink').css('visibility', 'hidden');
                     $('#downloadTwoSteps').css('visibility', 'hidden');
@@ -502,43 +500,43 @@ $(function() {
             }
 
         },
-        events : {
-            "click #downloadLink" : "downloadAndorid",
-            "click #downloadStep1" : "downloadIOS1",
-            "click #downloadStep2" : "downloadIOS2"
+        events: {
+            "click #downloadLink": "downloadAndorid",
+            "click #downloadStep1": "downloadIOS1",
+            "click #downloadStep2": "downloadIOS2"
         },
-        downloadAndorid : function(event) {
+        downloadAndorid: function(event) {
             window.location.href = '/download?dtype=APK';
         },
-        downloadIOS1 : function(event) {
+        downloadIOS1: function(event) {
             window.location.href = '/download?dtype=IOS1';
         },
-        downloadIOS2 : function(event) {
+        downloadIOS2: function(event) {
             window.location.href = '/download?dtype=IOS2';
         }
     });
 
     var GreetingsView = Backbone.View.extend({
-        el : $("#maindiv"),
-        initialize : function() {
+        el: $("#maindiv"),
+        initialize: function() {
             //this.render();
-//            demoActivation = false;
+            //            demoActivation = false;
         },
 
-        render : function() {
+        render: function() {
             var template = _.template($("#greeting_template").html(), {});
             this.$el.html(template);
             formatPage();
 
         },
-        events : {
-            "click #create" : "clickCreate",
-            "click #signin" : "clickAlready"
+        events: {
+            "click #create": "clickCreate",
+            "click #signin": "clickAlready"
         },
-        clickCreate : function(event) {
+        clickCreate: function(event) {
             window.location.hash = "createPlayer";
         },
-        clickAlready : function(event) {
+        clickAlready: function(event) {
             window.location.hash = "already";
         }
     });
@@ -566,18 +564,18 @@ $(function() {
     }
 
     var ValidationView = Backbone.View.extend({
-        el : $("#maindiv"),
-        initialize : function() {
+        el: $("#maindiv"),
+        initialize: function() {
             validationView = this;
             //this.render();
         },
-        timeoutId : 0,
-        render : function() {
+        timeoutId: 0,
+        render: function() {
             var template;
             if (pendingValidation) {
                 isSplashTemplate = false;
                 template = _.template($("#validation_template").html(), {
-                    activationEmail : settings.get("workEmail")
+                    activationEmail: settings.get("workEmail")
                 });
             } else {
                 isSplashTemplate = true;
@@ -588,28 +586,27 @@ $(function() {
             formatPage();
             this.timeoutId = setTimeout(this.checkValidation, 2000);
         },
-        events : {
-            "click #changeBtn" : "clickChange"
+        events: {
+            "click #changeBtn": "clickChange"
         },
-        clickChange : function(event) {
+        clickChange: function(event) {
             // Button clicked, you can access the element that was clicked with event.currentTarget
             //alert( "clickCreate" );
             settings.set({
-                workEmail : "",
-                activationKey : ""
+                workEmail: "",
+                activationKey: ""
             });
             settings.save();
             window.location.hash = "createPlayer";
         },
-        checkValidation : function() {
+        checkValidation: function() {
             if (settings.get("activationKey") == "") {
-                window.location.hash = "error";
                 return;
             }
             var url = mgmtURL + "validate?username=" + encodeURIComponent(settings.get("workEmail")) +
-                      "&deviceid=" + encodeURIComponent(settings.get("deviceID")) +
-                      "&activationKey=" + encodeURIComponent(settings.get("activationKey")) +
-                      "&playerVersion=" + playerVersion;
+                "&deviceid=" + encodeURIComponent(settings.get("deviceID")) +
+                "&activationKey=" + encodeURIComponent(settings.get("activationKey")) +
+                "&playerVersion=" + playerVersion;
             getJSON(url, function(data) {
                 if (DEBUG) {
                     console.log(JSON.stringify(data, null, 4));
@@ -629,24 +626,27 @@ $(function() {
 
                     uploadExternalWallpaper = settings.get("uploadExternalWallpaper");
                     if (uploadExternalWallpaper == null || uploadExternalWallpaper) {
-                        if (data.clientProperties["wallpaper"]) {
-                            wallpaperColor = "";
-                            wallpaperImage = mgmtURL + data.clientProperties["wallpaper"];
-                            uploadExternalWallpaper = false;
+                        var clientProperties = data.clientProperties;
+                        for (var key in clientProperties) {
+                            if (DEBUG) {
+                                console.log(key + " : " + clientProperties[key]);
+                            }
+                            if (key.localeCompare("wallpaper") == 0) {
+                                wallpaperColor = "";
+                                wallpaperImage = mgmtURL + clientProperties[key];
+                                uploadExternalWallpaper = false;
+                                break;
+                            }
                         }
                     }
 
-                    if (data.clientProperties["passcodeTimeout"] && data.clientProperties["passcodeTimeout"] > 0) {
-                        passcodeTimeout = data.clientProperties["passcodeTimeout"] * 1000;
-                    }
-
                     settings.set({
-                        'firstName' : data.firstName,
-                        'lastName' : data.lastName,
-                        'jobTitle' : data.jobTitle,
-                        'wallpaperImage' : wallpaperImage,
-                        'wallpaperColor' : wallpaperColor,
-                        'uploadExternalWallpaper' : uploadExternalWallpaper
+                        'firstName': data.firstName,
+                        'lastName': data.lastName,
+                        'jobTitle': data.jobTitle,
+                        'wallpaperImage': wallpaperImage,
+                        'wallpaperColor': wallpaperColor,
+                        'uploadExternalWallpaper': uploadExternalWallpaper
                     });
                     settings.save();
 
@@ -664,14 +664,14 @@ $(function() {
                     } else {
                         window.location.hash = "passcode";
                     }
-                } else if (data.status == 0) {//Pending
+                } else if (data.status == 0) { //Pending
                     var isValidationError = false;
                     var message = data.message;
                     if (message != undefined || message != "") {
                         message = message.toLowerCase();
                         var isUserPending = message.indexOf("activation pending");
                         if (isUserPending == -1) {
-                             isValidationError = true;
+                            isValidationError = true;
                         }
                     }
 
@@ -690,19 +690,22 @@ $(function() {
                             this.timeoutId = setTimeout(validationView.checkValidation, 2000);
                         }
                     } else {
+                        if (DEBUG) {
+                            console.log("checkValidation error");
+                        }
                         console.log("checkValidation. error " + data.status + ", " + data.message);
                         this.timeoutId = 0;
                         pendingValidation = false;
-                        // settings.set({
-                        //     activationKey : ""
-                        // });
+                        settings.set({
+                            activationKey: ""
+                        });
                         window.location.hash = "error";
                     }
                 } else if (data.status == 301) {
                     mgmtURL = data.mgmtURL;
 
                     if (mgmtURL.substr(mgmtURL.length - 1) != '/') {
-                            mgmtURL = mgmtURL + '/';
+                        mgmtURL = mgmtURL + '/';
                     }
                     if (DEBUG) {
                         console.log("checkValidation. status=301, mgmtURL: " + mgmtURL);
@@ -713,19 +716,19 @@ $(function() {
 
                     this.timeoutId = setTimeout(validationView.checkValidation, 0);
 
-                } else if (data.status == 2) {//Activation was denied
+                } else if (data.status == 2) { //Activation was denied
                     this.timeoutId = 0;
                     pendingValidation = false;
                     settings.set({
-                        activationKey : ""
+                        activationKey: ""
                     });
                     window.location.hash = "expired";
 
-                } else if (data.status == 3) {//Invalid player version
+                } else if (data.status == 3) { //Invalid player version
                     this.timeoutId = 0;
                     pendingValidation = false;
                     settings.set({
-                        activationKey : ""
+                        activationKey: ""
                     });
                     window.location.hash = "error";
 
@@ -738,9 +741,9 @@ $(function() {
                     this.timeoutId = 0;
                     pendingValidation = false;
                     settings.set({
-                        'errorType' : data.status,
-                        'adminName' : data.adminName,
-                        'adminEmail' : data.adminEmail
+                        'errorType': data.status,
+                        'adminName': data.adminName,
+                        'adminEmail': data.adminEmail
                     });
                     settings.save();
 
@@ -751,10 +754,10 @@ $(function() {
                     pendingValidation = false;
 
                     settings.set({
-                        'errorType' : data.status,
-                        'adminName' : data.adminName,
-                        'adminEmail' : data.adminEmail,
-                        'orgName' : data.orgName
+                        'errorType': data.status,
+                        'adminName': data.adminName,
+                        'adminEmail': data.adminEmail,
+                        'orgName': data.orgName
                     });
                     settings.save();
 
@@ -765,7 +768,7 @@ $(function() {
                     this.timeoutId = 0;
                     pendingValidation = false;
                     settings.set({
-                        activationKey : ""
+                        activationKey: ""
                     });
                     window.location.hash = "error";
                 }
@@ -777,19 +780,19 @@ $(function() {
     var activationLinkView = null;
 
     var ActivationLinkView = Backbone.View.extend({
-        el : $("#maindiv"),
-        initialize : function() {
+        el: $("#maindiv"),
+        initialize: function() {
             activationLinkView = this;
 
         },
-        token : null,
-        email : null,
-        cloneActivation : null,
-        timeoutId : 0,
-        afterValidation : false,
-        successActivation : false,
-        activationDeviceType : "",
-        render : function() {
+        token: null,
+        email: null,
+        cloneActivation: null,
+        timeoutId: 0,
+        afterValidation: false,
+        successActivation: false,
+        activationDeviceType: "",
+        render: function() {
             var template;
             if (!this.afterValidation) {
                 this.$el.html("");
@@ -822,7 +825,7 @@ $(function() {
             } else {
                 if (this.successActivation) {
                     template = _.template($("#welcome_template").html(), {
-                        "activationDeviceType" : this.activationDeviceType
+                        "activationDeviceType": this.activationDeviceType
                     });
                     this.$el.html(template);
                     formatPage();
@@ -841,15 +844,15 @@ $(function() {
             track();
 
         },
-        events : {
-            "click #createWebPlayer" : "clickCreate"
+        events: {
+            "click #createWebPlayer": "clickCreate"
         },
-        clickCreate : function(event) {
+        clickCreate: function(event) {
             //settings.set({activationKey: "" });
             //settings.save();
             window.location.hash = "createPlayer";
         },
-        checkActivationLink : function() {
+        checkActivationLink: function() {
             var cloneActivationParam = this.cloneActivation ? "&cloneActivation=" + encodeURIComponent(this.cloneActivation) : "";
             var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token) + cloneActivationParam;
             if (DEBUG) {
@@ -886,18 +889,18 @@ $(function() {
     var resetPasscodeLinkView = null;
 
     var ResetPasscodeLinkView = Backbone.View.extend({
-        el : $("#maindiv"),
-        initialize : function() {
+        el: $("#maindiv"),
+        initialize: function() {
             resetPasscodeLinkView = this;
         },
-        token : null,
-        email : null,
-        cloneActivation : null,
-        timeoutId : 0,
-        afterValidation : false,
-        successReset : false,
-        resetDeviceType : "",
-        render : function() {
+        token: null,
+        email: null,
+        cloneActivation: null,
+        timeoutId: 0,
+        afterValidation: false,
+        successReset: false,
+        resetDeviceType: "",
+        render: function() {
             var template;
             if (!this.afterValidation) {
                 this.$el.html("");
@@ -905,7 +908,7 @@ $(function() {
             } else {
                 if (this.successReset) {
                     template = _.template($("#resetPasscodeLink_template").html(), {
-                        "activationDeviceType" : this.resetDeviceType
+                        "activationDeviceType": this.resetDeviceType
                     });
                     this.$el.html(template);
                     formatPage();
@@ -930,7 +933,7 @@ $(function() {
             track();
 
         },
-        checkResetLink : function() {
+        checkResetLink: function() {
             var cloneActivationParam = this.cloneActivation ? "&cloneActivation=" + encodeURIComponent(this.cloneActivation) : "";
             var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token) + cloneActivationParam;
 
@@ -962,17 +965,17 @@ $(function() {
     var unlockPasscodeLinkView = null;
 
     var UnlockPasscodeLinkView = Backbone.View.extend({
-        el : $("#maindiv"),
-        initialize : function() {
+        el: $("#maindiv"),
+        initialize: function() {
             unlockPasscodeLinkView = this;
         },
-        token : null,
-        email : null,
-        cloneActivation : null,
-        timeoutId : 0,
-        afterValidation : false,
-        successUnlock : false,
-        render : function() {
+        token: null,
+        email: null,
+        cloneActivation: null,
+        timeoutId: 0,
+        afterValidation: false,
+        successUnlock: false,
+        render: function() {
             var template;
             if (!this.afterValidation) {
                 this.$el.html("");
@@ -999,7 +1002,7 @@ $(function() {
             track();
 
         },
-        checkUnlockLink : function() {
+        checkUnlockLink: function() {
             var url = mgmtURL + "unlockPassword?loginemailtoken=" + encodeURIComponent(this.token) + "&email=" + encodeURIComponent(this.email);
             if (DEBUG) {
                 console.log("checkUnlockLink. " + url);
@@ -1030,12 +1033,12 @@ $(function() {
     var createplayerView = null;
 
     var CreatePlayerView = Backbone.View.extend({
-        el : $("#maindiv"),
-        initialize : function() {
+        el: $("#maindiv"),
+        initialize: function() {
             //this.render();
             createplayerView = this;
         },
-        render : function() {
+        render: function() {
             var vars = settings.attributes;
             var template = _.template($("#create_player_template").html(), vars);
             this.$el.html(template);
@@ -1043,15 +1046,15 @@ $(function() {
             formatPage();
             $('#edFirstName').focus();
         },
-        events : {
-            "click #create_create" : "clickCreate",
-            "input #edJobTitle" : "jobKey",
-            "input input[type=text]" : "resetError",
-            "blur #edJobTitle" : "hideSuggestionList",
-            "mousedown .dropCommon" : "clickSuggestion",
-            "keydown input" : "keyDown"
+        events: {
+            "click #create_create": "clickCreate",
+            "input #edJobTitle": "jobKey",
+            "input input[type=text]": "resetError",
+            "blur #edJobTitle": "hideSuggestionList",
+            "mousedown .dropCommon": "clickSuggestion",
+            "keydown input": "keyDown"
         },
-        keyDown : function(event) {
+        keyDown: function(event) {
             // console.log("keyDown " + event.keyCode);
             if (event.keyCode == 13) {
                 var id = event.target.id;
@@ -1067,7 +1070,7 @@ $(function() {
 
             }
         },
-        resetError : function(event) {
+        resetError: function(event) {
             var id = event.target.id;
             // console.log("event.target.id=" + event.target.id);
             $('#' + id).removeClass("error");
@@ -1075,24 +1078,24 @@ $(function() {
             $(errID).text('');
 
         },
-        jobKey : function(event) {
+        jobKey: function(event) {
             var txt = $('#edJobTitle').val();
             // console.log("input. #edJobTitle=" + txt);
             this.openSuggestList(txt);
         },
-        hideSuggestionList : function() {
+        hideSuggestionList: function() {
             for (var i = 0; i < 4; i++) {
                 var spanname = '#drop' + (i + 1);
                 $(spanname).css('visibility', 'hidden');
             }
         },
-        clickSuggestion : function(event) {
+        clickSuggestion: function(event) {
             var id = event.target.id;
             // console.log("event.target.id=" + event.target.id);
             $('#edJobTitle').val($('#' + id).text());
 
         },
-        openSuggestList : function(txt) {
+        openSuggestList: function(txt) {
             //load job list once
             if (jobList == null) {
                 var thisObj = this;
@@ -1121,7 +1124,7 @@ $(function() {
             for (var i = 0; i < suggestions.length; i++) {
                 var spanname = '#drop' + (i + 1);
                 $(spanname).text(suggestions[i]);
-                if ((i + 1 ) == suggestions.length)
+                if ((i + 1) == suggestions.length)
                     $(spanname).addClass("roundDrop");
                 else
                     $(spanname).removeClass("roundDrop");
@@ -1130,7 +1133,7 @@ $(function() {
             }
 
         },
-        clickCreate : function(event) {
+        clickCreate: function(event) {
             // Button clicked, you can access the element that was clicked with event.currentTarget
             //alert( "clickCreate" );
             //window.location.hash = "createPlayer";
@@ -1156,11 +1159,11 @@ $(function() {
             var deviceID = 'web_default_' + browserType + '_' + workEmail;
 
             settings.set({
-                'firstName' : firstName,
-                'lastName' : lastName,
-                'jobTitle' : jobTitle,
-                'workEmail' : workEmail,
-                'deviceID' : deviceID
+                'firstName': firstName,
+                'lastName': lastName,
+                'jobTitle': jobTitle,
+                'workEmail': workEmail,
+                'deviceID': deviceID
             });
             settings.save();
 
@@ -1188,7 +1191,7 @@ $(function() {
                 $('#edWorkEmail').addClass("error");
             } else {
                 var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-                if (! re.test(workEmail)) {
+                if (!re.test(workEmail)) {
                     errInForm = true;
                     $('#WorkEmailErr').text(l("invalidWorkEmail"));
                     $('#edWorkEmail').addClass("error");
@@ -1197,7 +1200,7 @@ $(function() {
             if (!errInForm) {
                 var domain = workEmail.substring(workEmail.lastIndexOf("@") + 1);
                 if (domain != undefined && domain.length > 0) {
-                    for (var i=0; i<WebmailList.length; i++) {
+                    for (var i = 0; i < WebmailList.length; i++) {
                         if (domain.indexOf(WebmailList[i]) > -1) {
                             errInForm = true;
                             $('#WorkEmailErr').text(l("invalidWorkEmailWeb1") + " " + WebmailList[i] + " " + l("invalidWorkEmailWeb2"));
@@ -1217,7 +1220,7 @@ $(function() {
             this.activatePlayer();
 
         },
-        activatePlayer : function() {
+        activatePlayer: function() {
 
             var plain = settings.get("workEmail") + '_' + settings.get("deviceID");
             var signature = CryptoJS.HmacSHA1(plain, "1981abe0d32d93967648319b013b03f05a119c9f619cc98f");
@@ -1234,24 +1237,24 @@ $(function() {
                 }
                 if (data.status == 0) {
                     settings.set({
-                        'activationKey' : data.activationKey
+                        'activationKey': data.activationKey
                     });
                     settings.save();
                     window.location.hash = "validation";
 
-                } else if (data.status == 2) {// domain company not found
+                } else if (data.status == 2) { // domain company not found
                     $('#workEmailSendErr').text(l("emailNotExist"));
                     $('#workEmailSend').addClass("error");
                     $('#sendMeActivationCreateBtn').css('visibility', 'visible');
 
-                } else if (data.status == 3) {// existing user dose not allow - use full create player
+                } else if (data.status == 3) { // existing user dose not allow - use full create player
                     settings.set({
-                        "activationKey" : ""
+                        "activationKey": ""
                     });
                     settings.save();
                     window.location.hash = "createPlayer";
 
-                } else if (data.status == 301) {// change mgmtURL
+                } else if (data.status == 301) { // change mgmtURL
                     mgmtURL = data.mgmtURL;
 
                     if (mgmtURL.substr(mgmtURL.length - 1) != '/') {
@@ -1270,12 +1273,12 @@ $(function() {
     var alreadyUserView = null;
 
     var AlreadyUserView = Backbone.View.extend({
-        el : $("#maindiv"),
-        initialize : function() {
+        el: $("#maindiv"),
+        initialize: function() {
             //this.render();
             alreadyUserView = this;
         },
-        render : function() {
+        render: function() {
             var vars = settings.attributes;
             var template = _.template($("#already_template").html(), vars);
             this.$el.html(template);
@@ -1283,19 +1286,19 @@ $(function() {
             formatPage();
             $('workEmailSend').focus();
         },
-        events : {
-            "click #sendMeActivationBtn" : "sendMeActivationBtnClick",
-            "click #sendMeActivationCreateBtn" : "sendMeActivationCreateBtnClick",
-            "input input[type=text]" : "resetError",
-            "keydown input" : "keyDown"
+        events: {
+            "click #sendMeActivationBtn": "sendMeActivationBtnClick",
+            "click #sendMeActivationCreateBtn": "sendMeActivationCreateBtnClick",
+            "input input[type=text]": "resetError",
+            "keydown input": "keyDown"
         },
-        keyDown : function(event) {
+        keyDown: function(event) {
             if (event.keyCode == 13) {
                 this.sendMeActivationBtnClick(event);
                 return false;
             }
         },
-        resetError : function(event) {
+        resetError: function(event) {
             var id = event.target.id;
             // console.log("event.target.id=" + event.target.id);
             $('#' + id).removeClass("error");
@@ -1303,10 +1306,10 @@ $(function() {
             $(errID).text('');
 
         },
-        sendMeActivationCreateBtnClick : function(event) {
+        sendMeActivationCreateBtnClick: function(event) {
             window.location.hash = "createPlayer";
         },
-        sendMeActivationBtnClick : function(event) {
+        sendMeActivationBtnClick: function(event) {
             // Button clicked, you can access the element that was clicked with event.currentTarget
             //alert( "clickCreate" );
             //window.location.hash = "createPlayer";
@@ -1317,8 +1320,8 @@ $(function() {
             var deviceID = 'web_default_' + browserType + '_' + workEmail;
 
             settings.set({
-                'workEmail' : workEmail,
-                'deviceID' : deviceID
+                'workEmail': workEmail,
+                'deviceID': deviceID
             });
             settings.save();
             var errInForm = false;
@@ -1327,10 +1330,9 @@ $(function() {
                 errInForm = true;
                 $('#workEmailSendErr').text(l("emptyField"));
                 $('#workEmailSend').addClass("error");
-            }
-            else if (!Common.withService) {
+            } else if (!Common.withService) {
                 var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-                if (! re.test(workEmail)) {
+                if (!re.test(workEmail)) {
                     errInForm = true;
                     $('#workEmailSendErr').text(l("invalidWorkEmail"));
                     $('#workEmailSend').addClass("error");
@@ -1342,7 +1344,7 @@ $(function() {
             this.activatePlayer();
         },
 
-        activatePlayer : function() {
+        activatePlayer: function() {
 
             var plain = settings.get("workEmail") + '_' + settings.get("deviceID");
             var signature = CryptoJS.HmacSHA1(plain, "1981abe0d32d93967648319b013b03f05a119c9f619cc98f");
@@ -1360,7 +1362,7 @@ $(function() {
                 }
                 if (data.status == 0) {
                     settings.set({
-                        'activationKey' : data.activationKey
+                        'activationKey': data.activationKey
                     });
                     settings.save();
                     window.location.hash = "validation";
@@ -1369,19 +1371,19 @@ $(function() {
                     $('#workEmailSendErr').text(l("emailNotExist"));
                     $('#workEmailSend').addClass("error");
 
-                } else if (data.status == 2) {// domain company not found
+                } else if (data.status == 2) { // domain company not found
                     $('#workEmailSendErr').text(l("emailNotExist"));
                     $('#workEmailSend').addClass("error");
                     $('#sendMeActivationCreateBtn').css('visibility', 'visible');
 
-                } else if (data.status == 3) {// existing user dose not allow - use full create player
+                } else if (data.status == 3) { // existing user dose not allow - use full create player
                     settings.set({
-                        "activationKey" : ""
+                        "activationKey": ""
                     });
                     settings.save();
                     window.location.hash = "createPlayer";
 
-                } else if (data.status == 301) {// change mgmtURL
+                } else if (data.status == 301) { // change mgmtURL
                     mgmtURL = data.mgmtURL;
 
                     if (mgmtURL.substr(mgmtURL.length - 1) != '/') {
@@ -1398,26 +1400,26 @@ $(function() {
     });
 
     var AuthView = Backbone.View.extend({
-        el : $("#maindiv"),
-        initialize : function() {
+        el: $("#maindiv"),
+        initialize: function() {
             //this.render();
         },
-        render : function() {
+        render: function() {
             var template = _.template($("#auth_template").html(), {
-                userName : "",
-                passwordStr : ""
+                userName: "",
+                passwordStr: ""
             });
             this.$el.html(template);
             formatPage();
         },
-        events : {
-            "click #signInBtn" : "clickSignIn",
-            "input input" : "resetError",
-            "focus #authPassword" : "focusAuthPassword",
-            "blur #authPassword" : "blurAuthPassword",
-            "keydown input" : "keyDown"
+        events: {
+            "click #signInBtn": "clickSignIn",
+            "input input": "resetError",
+            "focus #authPassword": "focusAuthPassword",
+            "blur #authPassword": "blurAuthPassword",
+            "keydown input": "keyDown"
         },
-        keyDown : function(event) {
+        keyDown: function(event) {
             // console.log("keyDown " + event.keyCode);
 
             var viewName = location.hash;
@@ -1439,7 +1441,7 @@ $(function() {
 
             }
         },
-        resetError : function(event) {
+        resetError: function(event) {
             var id = event.target.id;
             // console.log("event.target.id=" + event.target.id);
             $('#' + id).removeClass("error");
@@ -1447,18 +1449,18 @@ $(function() {
             $(errID).text('');
 
         },
-        focusAuthPassword : function(event) {
+        focusAuthPassword: function(event) {
             $('input#authPassword').removeAttr("type");
             $('input#authPassword').prop('type', 'password');
         },
-        blurAuthPassword : function(event) {
+        blurAuthPassword: function(event) {
             var authPassword = ($('#authPassword').val() == l("passwordStr").trim() ? "" : $('#authPassword').val());
             if (authPassword == null || authPassword.length == 0) {
                 $('input#authPassword').removeAttr("type");
                 $('input#authPassword').prop('type', 'text');
             }
         },
-        clickSignIn : function(event) {
+        clickSignIn: function(event) {
 
             $('#authUserNameErr').text('');
             $('#authUserName').removeClass("error");
@@ -1504,7 +1506,7 @@ $(function() {
                 if (data.status == 0) {
                     $('#authPasswordErr').text(l("signIntext2"));
                     $('#authPassword').addClass("error");
-                } else if (data.status == 1) {          // success
+                } else if (data.status == 1) { // success
                     authenticationRequired = false;
                     if (passcodeType == 1) {
                         window.location.hash = "enterPassword";
@@ -1514,7 +1516,7 @@ $(function() {
                         window.location.hash = "passcode";
                     }
 
-                } else if (data.status == 2) {// expired login token
+                } else if (data.status == 2) { // expired login token
                     window.location.hash = "validation";
                 }
             }, 45000);
@@ -1546,9 +1548,9 @@ $(function() {
     var passcodeView = null;
 
     var PasscodeView = Backbone.View.extend({
-        el : $("#maindiv"),
-        changedNode : null,
-        initialize : function() {
+        el: $("#maindiv"),
+        changedNode: null,
+        initialize: function() {
             //this.render();
             passcodeView = this;
             enterPasscode = "";
@@ -1559,26 +1561,26 @@ $(function() {
             $(document).unbind('keydown').bind('keydown', this.on_keydown);
         },
 
-        render : function() {
+        render: function() {
             var imgURL = mgmtURL + "html/player/";
-            var template = _.template($("#passcode_template").html(), { });
+            var template = _.template($("#passcode_template").html(), {});
             document.getElementById('playerCSS').href = imgURL + "player.css";
             this.$el.html(template);
             formatPage();
         },
-        events : {
-            "click #forgotBtn" : "clickForgotBtn",
-            "mousedown .numKey" : "mousedown",
-            "mouseup .numKey" : "mouseup",
-            "mouseout .numKey" : "mouseout",
-            "click .numKey" : "click",
-            "click #btndel" : "click", // "click #keydel" : "click",
-            "touchend .numKey" : "click",
-            "touchend #btndel" : "click",
-            "touchend #forgotBtn" : "clickForgotBtn"
+        events: {
+            "click #forgotBtn": "clickForgotBtn",
+            "mousedown .numKey": "mousedown",
+            "mouseup .numKey": "mouseup",
+            "mouseout .numKey": "mouseout",
+            "click .numKey": "click",
+            "click #btndel": "click", // "click #keydel" : "click",
+            "touchend .numKey": "click",
+            "touchend #btndel": "click",
+            "touchend #forgotBtn": "clickForgotBtn"
         },
 
-        on_keydown : function(event) {
+        on_keydown: function(event) {
             var code = event.keyCode || event.which;
             // console.log("PasscodeView.on_keydown  code: " + code + ", enterPasscode: " + enterPasscode);
 
@@ -1587,21 +1589,21 @@ $(function() {
                 return;
             }
 
-            if (code == 8 || code == 46) {     // backspace
+            if (code == 8 || code == 46) { // backspace
                 this.deleteChar();
                 return false;
             }
         },
 
-        on_keypress : function(event) {
-            var code = event.keyCode|| event.which;
+        on_keypress: function(event) {
+            var code = event.keyCode || event.which;
             // console.log("PasscodeView.on_keypress code: " + code + " event.type: " + event.type);
 
             $('#passcodeErrMsg').css("visibility", "hidden");
             $('#passcodeErrMsg2').css("visibility", "hidden");
             $('#passwordExpired').css("visibility", "hidden");
 
-            if (code >= 48 && code <= 57) {// 1-9
+            if (code >= 48 && code <= 57) { // 1-9
                 enterPasscode = enterPasscode + String.fromCharCode(code);
                 // console.log("PasscodeView. passcode: " + enterPasscode);
 
@@ -1617,20 +1619,20 @@ $(function() {
                     $('#enterPasscode').val(enterPasscode);
                 }
 
-            } else if (code == 8 || code == 127) {// delete
+            } else if (code == 8 || code == 127) { // delete
                 this.deleteChar();
 
-            } else if (code == 13) {// enter/ok
+            } else if (code == 13) { // enter/ok
                 this.checkPasscode();
-            } 
+            }
 
         },
-        clickForgotBtn : function(event) {
+        clickForgotBtn: function(event) {
             // console.log("PasscodeView. click: " + event.target.id + " type: " + event.type);
             enterPasscode = "";
             window.location.hash = "resetpasscode";
         },
-        click : function(event) {
+        click: function(event) {
             // console.log("PasscodeView. click: " + event.target.id + " type: " + event.type);
 
             if (isMobile.any() == true && event.type == "click") {
@@ -1691,7 +1693,7 @@ $(function() {
             }
 
         },
-        mousedown : function(event) {
+        mousedown: function(event) {
             var id = event.target.id;
             if (id == "keyok") {
                 return;
@@ -1699,31 +1701,32 @@ $(function() {
             $('#' + id).css('color', '#FFFFFF');
             this.changedNode = $('#' + id);
         },
-        mouseup : function(event) {
+        mouseup: function(event) {
             if (this.changedNode != null) {
                 this.changedNode.css('color', '#333333');
                 this.changedNode = null;
             }
         },
-        mouseout : function(event) {
+        mouseout: function(event) {
             if (this.changedNode != null) {
                 this.changedNode.css('color', '#333333');
                 this.changedNode = null;
             }
         },
 
-        deleteChar : function() {
+        deleteChar: function() {
             // console.log("passcodeView.deleteChar  enterPasscode: " + enterPasscode);
             if (enterPasscode.length >= 1) {
                 enterPasscode = enterPasscode.substr(0, enterPasscode.length - 1);
+                console.log("passcodeView.deleteChar  enterPasscode: " + enterPasscode);
                 $('#enterPasscode').val(enterPasscode);
             }
         },
 
-       newLoginToken : function() {
+        newLoginToken: function() {
             var url = mgmtURL + "validate?deviceid=" + encodeURIComponent(settings.get("deviceID")) +
-            "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion +
-            "&username=" + encodeURIComponent(settings.get("workEmail"));
+                "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion +
+                "&username=" + encodeURIComponent(settings.get("workEmail"));
 
             if (DEBUG) {
                 console.log("newLoginToken. " + url);
@@ -1741,7 +1744,7 @@ $(function() {
             });
         },
 
-        checkPasscode : function() {
+        checkPasscode: function() {
             var url = mgmtURL + "checkPasscode?loginToken=" + encodeURIComponent(loginToken) + "&passcode=" + encodeURIComponent(enterPasscode);
             if (DEBUG) {
                 console.log("checkPasscode. " + url);
@@ -1752,14 +1755,14 @@ $(function() {
                     console.log(JSON.stringify(data, null, 4));
                 }
 
-                if (data.status == 0) {                 // failed
+                if (data.status == 0) { // failed
                     var isError = false;
                     var message = data.message;
                     if (message != undefined || message != "") {
                         message = message.toLowerCase();
                         var isInvalidPasscode = message.indexOf("invalid passcode");
                         if (isInvalidPasscode == -1) {
-                           isError = true;
+                            isError = true;
                         }
                     }
 
@@ -1772,37 +1775,37 @@ $(function() {
                         window.location.hash = "error";
                     }
 
-                } else if (data.status == 1) {          // success
+                } else if (data.status == 1) { // success
                     loggedIn = true;
                     window.location.hash = "player";
 
-                } else if (data.status == 2) {          // expired login token
+                } else if (data.status == 2) { // expired login token
                     passcodeView.newLoginToken();
                     // window.location.hash = "validation";
 
-                } else if (data.status == 4) {          // passcode lock
+                } else if (data.status == 4) { // passcode lock
                     window.location.hash = "passcodelock";
 
                 } else if (data.status == 5) {
                     settings.set({
-                        'errorType' : data.status,
-                        'adminName' : data.adminName,
-                        'adminEmail' : data.adminEmail
+                        'errorType': data.status,
+                        'adminName': data.adminName,
+                        'adminEmail': data.adminEmail
                     });
                     settings.save();
                     window.location.hash = "disableUserDevice";
 
                 } else if (data.status == 6) {
                     settings.set({
-                        'errorType' : data.status,
-                        'adminName' : data.adminName,
-                        'adminEmail' : data.adminEmail,
-                        'orgName' : data.orgName
+                        'errorType': data.status,
+                        'adminName': data.adminName,
+                        'adminEmail': data.adminEmail,
+                        'orgName': data.orgName
                     });
                     settings.save();
                     window.location.hash = "disableUserDevice";
 
-                } else if (data.status == 7) {          // passcode expired
+                } else if (data.status == 7) { // passcode expired
                     passcodeExpired = true;
                     if (passcodeType == 1) {
                         passcodeActivationRequired = true;
@@ -1817,13 +1820,13 @@ $(function() {
     });
 
     var SetPasscodeView = Backbone.View.extend({
-        el : $("#maindiv"),
-        changedNode : null,
-        state : 0, // 0-first passcode 1-second passcode
-        savedPasscode : "",
-        oldPasscode : "",
+        el: $("#maindiv"),
+        changedNode: null,
+        state: 0, // 0-first passcode 1-second passcode
+        savedPasscode: "",
+        oldPasscode: "",
 
-        initialize : function() {
+        initialize: function() {
             // this.render();
 
             this.oldPasscode = enterPasscode;
@@ -1834,8 +1837,8 @@ $(function() {
             $(document).unbind('keydown').bind('keydown', this.on_keydown);
         },
 
-        render : function() {
-            var template = _.template($("#setpasscode_template").html(), { });
+        render: function() {
+            var template = _.template($("#setpasscode_template").html(), {});
             this.$el.html(template);
             formatPage();
 
@@ -1843,20 +1846,20 @@ $(function() {
                 passcodeExpired = false;
                 $('#passwordExpired').css("visibility", "visible");
             } else {
-               $('#passwordExpired').css("visibility", "hidden");
+                $('#passwordExpired').css("visibility", "hidden");
             }
         },
-        events : {
-            "mousedown .numKey" : "mousedown",
-            "mouseup .numKey" : "mouseup",
-            "mouseout .numKey" : "mouseout",
-            "click .numKey" : "click", // "click #keydel" : "click",
-            "click #btndel" : "click",
-            "touchend .numKey" : "click",
-            "touchend #btndel" : "click",
+        events: {
+            "mousedown .numKey": "mousedown",
+            "mouseup .numKey": "mouseup",
+            "mouseout .numKey": "mouseout",
+            "click .numKey": "click", // "click #keydel" : "click",
+            "click #btndel": "click",
+            "touchend .numKey": "click",
+            "touchend #btndel": "click",
         },
 
-        on_keydown : function(event) {
+        on_keydown: function(event) {
             var code = event.keyCode || event.which;
             // console.log("SetPasscodeView.on_keydown  code: " + code + ", enterPasscode: " + enterPasscode);
 
@@ -1865,14 +1868,14 @@ $(function() {
                 return;
             }
 
-            if (code == 8 || code == 46) {     // backspace
+            if (code == 8 || code == 46) { // backspace
                 this.deleteChar();
                 $('#selectPasscode').val(enterPasscode);
                 return false;
             }
         },
 
-        on_keypress : function(event) {
+        on_keypress: function(event) {
             var code = event.keyCode || event.which;
 
             $('#passcodeErrMsg').css("visibility", "hidden");
@@ -1881,7 +1884,7 @@ $(function() {
 
             // console.log("setPasscodeView.on_keypress code: " + code + " event.type: " + event.type);
 
-            if (code >= 48 && code <= 57) {// 1-9
+            if (code >= 48 && code <= 57) { // 1-9
                 enterPasscode = enterPasscode + String.fromCharCode(code);
 
                 if (enterPasscode.length > 8) {
@@ -1897,16 +1900,16 @@ $(function() {
                     $('#selectPasscode').val(enterPasscode);
                 }
 
-            } else if (code == 8 || code == 127) {// delete
+            } else if (code == 8 || code == 127) { // delete
                 this.deleteChar();
-                 $('#selectPasscode').val(enterPasscode);
+                $('#selectPasscode').val(enterPasscode);
 
-            } else if (code == 13) {// enter/ok
+            } else if (code == 13) { // enter/ok
                 this.okButton();
             }
         },
 
-        click : function(event) {
+        click: function(event) {
 
             // console.log("SetPasscodeView. click: " + event.target.id + " type: " + event.type);
 
@@ -1940,23 +1943,23 @@ $(function() {
             $('#selectPasscode').trigger('input');
 
             if (passcode.length == 0) {
-                 $('#selectPasscode').val("");
+                $('#selectPasscode').val("");
             } else if (passcode.length <= 8) {
-                 $('#selectPasscode').val(enterPasscode);
+                $('#selectPasscode').val(enterPasscode);
             } else {
                 $('#passcodeErrMsg').text(l('noMatchPasscode4'));
                 $('#passcodeErrMsg').css({
-                    "visibility" : "visible"
+                    "visibility": "visible"
                 });
 
                 $('#passcodeErrMsg2').text(l('noMatchPasscode5'));
                 $('#passcodeErrMsg2').css("visibility", "visible");
                 enterPasscode = "";
-                 $('#selectPasscode').val("");
+                $('#selectPasscode').val("");
             }
 
         },
-        mousedown : function(event) {
+        mousedown: function(event) {
             var id = event.target.id;
             if (id == "keyok")
                 return;
@@ -1964,23 +1967,23 @@ $(function() {
             $('#' + id).css('color', '#FFFFFF');
             this.changedNode = $('#' + id);
         },
-        mouseup : function(event) {
+        mouseup: function(event) {
             if (this.changedNode != null) {
                 this.changedNode.css('color', '#333333');
                 this.changedNode = null;
             }
         },
-        mouseout : function(event) {
+        mouseout: function(event) {
             if (this.changedNode != null) {
                 this.changedNode.css('color', '#333333');
                 this.changedNode = null;
             }
         },
 
-        okButton : function() {
+        okButton: function() {
             // console.log("SetPasscodeView.okButton  this.state: " + this.state);
 
-            if (this.state == 0) {// first passcode
+            if (this.state == 0) { // first passcode
 
                 if (enterPasscode.length < 6) {
                     var errText = l('noMatchPasscode4');
@@ -2007,7 +2010,7 @@ $(function() {
                 enterPasscode = "";
                 $('#selectPasscode').val("");
 
-            } else {    //re-enter the passcopde
+            } else { //re-enter the passcopde
                 if (enterPasscode != this.savedPasscode) {
 
                     $('#passcodeErrMsg').text(l('noMatchPasscode1'));
@@ -2017,13 +2020,13 @@ $(function() {
                     $('#selectPasscodeTitle').text(l('selectPasscode'));
                     enterPasscode = "";
                     $('#selectPasscode').val("");
-                } else {// passcode is valid - lets try to update on server
+                } else { // passcode is valid - lets try to update on server
                     this.setPasscode();
                 }
             }
         },
 
-        passcodeValidate : function() {
+        passcodeValidate: function() {
             var tmpPasscode = enterPasscode;
             var minimumChars = '';
 
@@ -2050,8 +2053,8 @@ $(function() {
                 // "A Combinations of consecutive numbers is not allowed"
                 $('#passcodeErrMsg').html(l('noMatchPasscode8'));
                 $('#passcodeErrMsg2').html(l('noMatchPasscode81'));
-                $('#passcodeErrMsg').css({"visibility" : "visible"});
-                $('#passcodeErrMsg2').css({"visibility" : "visible"});
+                $('#passcodeErrMsg').css({ "visibility": "visible" });
+                $('#passcodeErrMsg2').css({ "visibility": "visible" });
 
                 enterPasscode = "";
                 $('#selectPasscode').val("");
@@ -2061,7 +2064,7 @@ $(function() {
             if (minimumChars.length < 4) {
                 $('#passcodeErrMsg').html(l('noMatchPasscode9'));
                 // Select at least 4 different numbers
-                $('#passcodeErrMsg').css({"visibility" : "visible"});
+                $('#passcodeErrMsg').css({ "visibility": "visible" });
 
                 enterPasscode = "";
                 $('#selectPasscode').val("");
@@ -2069,7 +2072,7 @@ $(function() {
             }
         },
 
-        setPasscode : function() {
+        setPasscode: function() {
             var url = mgmtURL + "setPasscode?loginToken=" + encodeURIComponent(loginToken) + "&passcode=" +
                 encodeURIComponent(enterPasscode);
 
@@ -2085,19 +2088,18 @@ $(function() {
                     console.log(JSON.stringify(data, null, 4));
                 }
 
-                if (data.status == 0) {         // failed
+                if (data.status == 0) { // failed
                     $('#passcodeErrMsg').text(data.message);
                     $('#passcodeErrMsg').css("visibility", "visible");
                     enterPasscode = "";
                     $('#enterPasscode').val("");
                     this.state = 0;
                     $('#selectPasscodeTitle').text(l('selectPasscode'));
-                }
-                else if (data.status == 2) {    // expired login token
+                } else if (data.status == 2) { // expired login token
                     window.location.hash = "validation";
                     return;
 
-                } else if (data.status == 1) {  // success
+                } else if (data.status == 1) { // success
                     loggedIn = true;
                     window.location.hash = "player";
                     return;
@@ -2105,7 +2107,7 @@ $(function() {
             });
         },
 
-        deleteChar : function() {
+        deleteChar: function() {
             if (enterPasscode.length >= 1) {
                 enterPasscode = enterPasscode.substr(0, enterPasscode.length - 1);
                 console.log("SetPasscodeView.deleteChar  enterPasscode: " + enterPasscode);
@@ -2116,18 +2118,18 @@ $(function() {
     var enterPasswordView = null;
 
     var EnterPasswordView = Backbone.View.extend({
-        el : $("#maindiv"),
-        state : 0,              // 0-first passcode 1-second passcode
-        savedPassword : "",
-        isPasswordValid : false,
+        el: $("#maindiv"),
+        state: 0, // 0-first passcode 1-second passcode
+        savedPassword: "",
+        isPasswordValid: false,
 
-        initialize : function() {
+        initialize: function() {
             enterPasswordView = this;
         },
-        render : function() {
+        render: function() {
             var imgURL = mgmtURL + "html/player/";
             var template = _.template($("#enterpassword_template").html(), {
-                passwordStr : ""
+                passwordStr: ""
             });
             document.getElementById('playerCSS').href = imgURL + "player.css";
             this.$el.html(template);
@@ -2159,35 +2161,35 @@ $(function() {
                 $('#passwordRequired').css("visibility", "hidden");
             }
         },
-        events : {
-            "click #enterPasswordOKBtn" : "clickEnterPassword",
-            "click #forgotBtn" : "clickForgotPassword",
-            "input input" : "resetError",
-            "keydown input" : "keyDown"
+        events: {
+            "click #enterPasswordOKBtn": "clickEnterPassword",
+            "click #forgotBtn": "clickForgotPassword",
+            "input input": "resetError",
+            "keydown input": "keyDown"
         },
-        keyDown : function(event) {
-            if (event.keyCode == 13) {          // ENTER
+        keyDown: function(event) {
+            if (event.keyCode == 13) { // ENTER
                 this.clickEnterPassword();
                 return false;
             }
         },
-        resetError : function(event) {
+        resetError: function(event) {
             $('#passcodeErrMsg').text("");
             $('#passcodeErrMsg').css("visibility", "hidden");
             $('#passcodeErrMsg2').css("visibility", "hidden");
             $('#passwordExpired').css("visibility", "hidden");
         },
-        clickForgotPassword : function(event) {
-             window.location.hash = "resetpasscode";
+        clickForgotPassword: function(event) {
+            window.location.hash = "resetpasscode";
         },
-        clickEnterPassword : function(event) {
+        clickEnterPassword: function(event) {
             var password = ($('#enterPassword').val() == l("passwordStr").trim() ? "" : $('#enterPassword').val());
 
             if (password.length == 0) {
                 return;
             }
 
-            if (passcodeActivationRequired) {   // setPassword
+            if (passcodeActivationRequired) { // setPassword
                 if (this.state == 0) {
                     this.passwordValidate();
                     if (this.isPasswordValid == false) {
@@ -2207,19 +2209,19 @@ $(function() {
                         $('#passcodeErrMsg').html(l('noMatchPasscode1'));
                         $('#passcodeErrMsg').css("visibility", "visible");
                         $('#passwordTitle').text(l('selectPassword'));
-                        $('#enterPassword').attr('placeholder',l('selectPassword'));
+                        $('#enterPassword').attr('placeholder', l('selectPassword'));
                         $('#enterPassword').val("");
                         return;
                     }
                 }
                 this.setPassword();
 
-            } else {            // checkPassword
+            } else { // checkPassword
                 this.checkPassword();
             }
         },
 
-        passwordValidate : function () {
+        passwordValidate: function() {
             var password = ($('#enterPassword').val() == l("passwordStr").trim() ? "" : $('#enterPassword').val());
 
             if (password.length < passcodeMinChars) {
@@ -2271,10 +2273,10 @@ $(function() {
             this.isPasswordValid = true;
         },
 
-        newLoginToken : function() {
+        newLoginToken: function() {
             var url = mgmtURL + "validate?deviceid=" + encodeURIComponent(settings.get("deviceID")) +
-            "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion +
-            "&username=" + encodeURIComponent(settings.get("workEmail"));
+                "&activationKey=" + encodeURIComponent(settings.get("activationKey")) + "&playerVersion=" + playerVersion +
+                "&username=" + encodeURIComponent(settings.get("workEmail"));
 
             if (DEBUG) {
                 console.log("newLoginToken. " + url);
@@ -2296,10 +2298,10 @@ $(function() {
             });
         },
 
-        checkPassword : function() {
+        checkPassword: function() {
             var password = ($('#enterPassword').val() == l("passwordStr").trim() ? "" : $('#enterPassword').val());
             var url = mgmtURL + "checkPasscode?loginToken=" + encodeURIComponent(loginToken) +
-                                "&passcode=" + encodeURIComponent(password);
+                "&passcode=" + encodeURIComponent(password);
 
             if (DEBUG) {
                 console.log("checkPassword.  " + url);
@@ -2309,55 +2311,55 @@ $(function() {
                     console.log(JSON.stringify(data, null, 4));
                 }
 
-                if (data.status == 0) {                 // failed
-                   var isError = false;
+                if (data.status == 0) { // failed
+                    var isError = false;
                     var message = data.message;
                     if (message != undefined || message != "") {
                         message = message.toLowerCase();
                         var isInvalidPasscode = message.indexOf("invalid passcode");
                         if (isInvalidPasscode == -1) {
-                           isError = true;
+                            isError = true;
                         }
                     }
 
                     if (isError == false) {
-                         $('#passcodeErrMsg').text(l('wrongPassCode1') + "      " + l('wrongPassCode2'));
+                        $('#passcodeErrMsg').text(l('wrongPassCode1') + "      " + l('wrongPassCode2'));
                         $('#passcodeErrMsg').css("visibility", "visible");
                         $('#enterPassword').val("");
-                   } else {
+                    } else {
                         window.location.hash = "error";
                     }
 
-                } else if (data.status == 1) {          // success
+                } else if (data.status == 1) { // success
                     loggedIn = true;
                     window.location.hash = "player";
 
-                } else if (data.status == 2) {          // expired login token
+                } else if (data.status == 2) { // expired login token
                     enterPasswordView.newLoginToken();
 
-                } else if (data.status == 4) {          // passcode lock
+                } else if (data.status == 4) { // passcode lock
                     window.location.hash = "passcodelock";
 
                 } else if (data.status == 5) {
                     settings.set({
-                        'errorType' : data.status,
-                        'adminName' : data.adminName,
-                        'adminEmail' : data.adminEmail
+                        'errorType': data.status,
+                        'adminName': data.adminName,
+                        'adminEmail': data.adminEmail
                     });
                     settings.save();
                     window.location.hash = "disableUserDevice";
 
                 } else if (data.status == 6) {
                     settings.set({
-                        'errorType' : data.status,
-                        'adminName' : data.adminName,
-                        'adminEmail' : data.adminEmail,
-                        'orgName' : data.orgName
+                        'errorType': data.status,
+                        'adminName': data.adminName,
+                        'adminEmail': data.adminEmail,
+                        'orgName': data.orgName
                     });
                     settings.save();
                     window.location.hash = "disableUserDevice";
 
-                } else if (data.status == 7) {          // passcode expired
+                } else if (data.status == 7) { // passcode expired
                     if (passcodeType == 0) {
                         passcodeExpired = true;
                         enterPasscode = password;
@@ -2370,18 +2372,18 @@ $(function() {
                         $('#passwordExpired').css("visibility", "visible");
                         $('#enterPassword').val("");
                         $('#passwordTitle').text(l('selectPassword'));
-                        $('#enterPassword').attr('placeholder',l('selectPassword'));
+                        $('#enterPassword').attr('placeholder', l('selectPassword'));
                         $('#forgotBtn').css("visibility", "hidden");
                     }
                 }
             });
         },
 
-        setPassword : function() {
+        setPassword: function() {
             var password = ($('#enterPassword').val() == l("passwordStr").trim() ? "" : $('#enterPassword').val());
 
             var url = mgmtURL + "setPasscode?loginToken=" + encodeURIComponent(loginToken) +
-                                "&passcode=" + encodeURIComponent(password);
+                "&passcode=" + encodeURIComponent(password);
 
             if (oldPassword != null && oldPassword.length > 0) {
                 url += "&oldpasscode=" + encodeURIComponent(oldPassword);
@@ -2395,8 +2397,8 @@ $(function() {
                     console.log(JSON.stringify(data, null, 4));
                 }
 
-                if (data.status == 0) {         // failed
-                    $('#passcodeErrMsg').text(l('errorChangePassword'));   //data.message
+                if (data.status == 0) { // failed
+                    $('#passcodeErrMsg').text(l('errorChangePassword')); //data.message
                     $('#passcodeErrMsg').css("visibility", "visible");
                     $('#passcodeErrMsg2').css("visibility", "visible");
                     this.savePassword = "";
@@ -2404,12 +2406,11 @@ $(function() {
                     $('#enterPassword').attr('placeholder', l('selectPassword'));
                     $('#passwordTitle').text(l('selectPassword'));
                     this.state = 0;
-                }
-                else if (data.status == 2) {    // expired login token
+                } else if (data.status == 2) { // expired login token
                     enterPasswordView.newLoginToken();
                     return;
 
-                } else if (data.status == 1) {  // success
+                } else if (data.status == 1) { // success
                     loggedIn = true;
                     window.location.hash = "player";
                     return;
@@ -2419,17 +2420,17 @@ $(function() {
     });
 
     var RecordingsView = Backbone.View.extend({
-        el : $("#maindiv"),
+        el: $("#maindiv"),
 
-        initialize : function() {
+        initialize: function() {
             $.datepicker.setDefaults({
-                dateFormat : "yy-mm-dd"
+                dateFormat: "yy-mm-dd"
             });
         },
         params: {
             data: []
         },
-        render : function() {
+        render: function() {
             if (DEBUG) {
                 console.log("Called render");
             }
@@ -2438,19 +2439,19 @@ $(function() {
             this.$el.html(template);
             formatPage();
         },
-        events : {           
-            "click #homebtn" : "homeEvent", 
-            "click #buttonSearch" : "search",
-            "click #fromDatepicker" : "pickFromDate",
-            "click #toDatepicker" : "pickToDate",
-            "click .buttonCell" : "playVideo",
+        events: {
+            "click #homebtn": "homeEvent",
+            "click #buttonSearch": "search",
+            "click #fromDatepicker": "pickFromDate",
+            "click #toDatepicker": "pickToDate",
+            "click .buttonCell": "playVideo",
         },
-        
-        homeEvent : function(event) {
+
+        homeEvent: function(event) {
             window.location.hash = "validation";
         },
 
-        playVideo : function(event) {
+        playVideo: function(event) {
             var arr = event.target.id.split("_");
             var idx = Number(arr[1]);
             var item = this.params.data[idx];
@@ -2463,15 +2464,15 @@ $(function() {
             }
             var wWidth = Math.round(item.width * scale);
             var wHeight = Math.round(item.height * scale);
-            window.open("login.html#playback/"+loginToken+"/"+wWidth+"/"+wHeight+"/"+scale+"/"+
-                encodeURIComponent(item.filename)+"/"+
+            window.open("login.html#playback/" + loginToken + "/" + wWidth + "/" + wHeight + "/" + scale + "/" +
+                encodeURIComponent(item.filename) + "/" +
                 encodeURIComponent(item.dateObj.toISOString()),
-                "_blank","width="+(wWidth)+", height="+wHeight);
+                "_blank", "width=" + (wWidth) + ", height=" + wHeight);
         },
 
-        pickFromDate : function() {
-            
-            $( "#fromDatepicker" ).datepicker( {
+        pickFromDate: function() {
+
+            $("#fromDatepicker").datepicker({
                 onSelect: function(date) {
                     if ($('#toDatepicker').val().length == 0) {
                         $('#toDatepicker').val(date);
@@ -2482,13 +2483,13 @@ $(function() {
 
         },
 
-        pickToDate : function() {
+        pickToDate: function() {
 
-            $( "#toDatepicker" ).datepicker();
+            $("#toDatepicker").datepicker();
             $('#toDatepicker').datepicker('show');
         },
 
-        search : function(event) {
+        search: function(event) {
 
             var view = this;
 
@@ -2523,9 +2524,9 @@ $(function() {
                 }
             }
 
-            var url = mgmtURL + "getNuboRecordings?name=" + encodeURIComponent(name)
-                        + "&from=" +encodeURIComponent(fullFromDate)
-                        + "&to=" +encodeURIComponent(fullToDate);
+            var url = mgmtURL + "getNuboRecordings?name=" + encodeURIComponent(name) +
+                "&from=" + encodeURIComponent(fullFromDate) +
+                "&to=" + encodeURIComponent(fullToDate);
 
             getJSON(url, function(results) {
                 if (DEBUG) {
@@ -2533,12 +2534,12 @@ $(function() {
                 }
                 view.params.data = [];
 
-                if (results.status == 0) {          // failed
+                if (results.status == 0) { // failed
                     view.render();
                     updateValues(fromDate, toDate, name, fromSelector, toSelector);
                     return;
 
-                } else if (results.status == 1) {   // success
+                } else if (results.status == 1) { // success
                     loggedIn = true;
 
                     for (i = 0; i < results.records.length; i++) {
@@ -2547,9 +2548,9 @@ $(function() {
 
                         view.params.data.push({
                             name: results.records[i].displayname,
-                            date: date.getMonth()+1 + "/" + date.getDate() + "/" + date.getFullYear(),
+                            date: date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear(),
                             time: formatAMPM(date),
-                            filename : results.records[i].filename,
+                            filename: results.records[i].filename,
                             device: results.records[i].devicename,
                             duration: results.records[i].duration,
                             height: results.records[i].height,
@@ -2569,16 +2570,16 @@ $(function() {
         },
 
     });
-    
-    var ResetPasscodeView = Backbone.View.extend({
-        el : $("#maindiv"),
 
-        initialize : function() {
-            
+    var ResetPasscodeView = Backbone.View.extend({
+        el: $("#maindiv"),
+
+        initialize: function() {
+
         },
-        render : function() {
+        render: function() {
             // console.log("Called render");
-            var template = _.template($("#resetpasscode_template").html(), { });
+            var template = _.template($("#resetpasscode_template").html(), {});
             this.$el.html(template);
             formatPage();
 
@@ -2588,13 +2589,13 @@ $(function() {
                 $('#resetPasscodeTitle').text(l('resetPasscode'));
             }
         },
-        events : {
-            "click #resetOKBtn" : "resetOKBtnClick",
-            "touchend #resetOKBtn" : "resetOKBtnClick",
-            "click #resetCancelBtn" : "clickResetCancelBtn",
-            "touchend #resetCancelBtn" : "clickResetCancelBtn"
+        events: {
+            "click #resetOKBtn": "resetOKBtnClick",
+            "touchend #resetOKBtn": "resetOKBtnClick",
+            "click #resetCancelBtn": "clickResetCancelBtn",
+            "touchend #resetCancelBtn": "clickResetCancelBtn"
         },
-        resetOKBtnClick : function(event) {
+        resetOKBtnClick: function(event) {
 
             //https://login.nubosoftware.com/resetPasscode?loginToken=[]
             var url = mgmtURL + "resetPasscode?loginToken=" + encodeURIComponent(loginToken);
@@ -2615,7 +2616,7 @@ $(function() {
                     }
                     return;
 
-                } else if (data.status == 1 || data.status == 2) {  // success / expired login token
+                } else if (data.status == 1 || data.status == 2) { // success / expired login token
                     pendingValidation = true;
                     window.location.hash = "validation";
                     return;
@@ -2623,7 +2624,7 @@ $(function() {
             });
 
         },
-        clickResetCancelBtn : function(event) {
+        clickResetCancelBtn: function(event) {
             // console.log("ResetPasscodeView. click: " + event.target.id + " type: " + event.type);
             if (passcodeType == 1) {
                 window.location.hash = "enetrPassword";
@@ -2637,15 +2638,15 @@ $(function() {
 
     // passcode lock
     var PasscodeLockView = Backbone.View.extend({
-        el : $("#maindiv"),
+        el: $("#maindiv"),
 
-        initialize : function() {
+        initialize: function() {
             passcodeLockView = this;
             //this.render();
         },
-        timeoutId : 0,
-        render : function() {
-            var template = _.template($("#passcodelock_template").html(), { });
+        timeoutId: 0,
+        render: function() {
+            var template = _.template($("#passcodelock_template").html(), {});
             this.$el.html(template);
             formatPage();
 
@@ -2659,10 +2660,10 @@ $(function() {
 
             this.timeoutId = setTimeout(this.checkUnlock, 2000);
         },
-        events : {
-            "click #resendMailBtn" : "clickResend",
+        events: {
+            "click #resendMailBtn": "clickResend",
         },
-        clickResend : function(event) {
+        clickResend: function(event) {
 
             // var resendUrl = location.protocol+'//'+location.host+"/"+"resendUnlockPasswordLink?activationKey="+encodeURIComponent(settings.get("activationKey"));
             var resendUrl = mgmtURL + "resendUnlockPasswordLink?activationKey=" + encodeURIComponent(settings.get("activationKey"));
@@ -2683,12 +2684,12 @@ $(function() {
                 }
             });
         },
-        checkUnlock : function() {
+        checkUnlock: function() {
 
             var url = mgmtURL + "validate?deviceid=" + encodeURIComponent(settings.get("deviceID")) +
-                      "&activationKey=" + encodeURIComponent(settings.get("activationKey")) +
-                      "&username=" + encodeURIComponent(settings.get("workEmail")) +
-                      "&playerVersion=" + playerVersion;
+                "&activationKey=" + encodeURIComponent(settings.get("activationKey")) +
+                "&username=" + encodeURIComponent(settings.get("workEmail")) +
+                "&playerVersion=" + playerVersion;
 
             if (DEBUG) {
                 console.log("checkUnlock. " + url);
@@ -2705,9 +2706,9 @@ $(function() {
                     authType = data.authType;
                     authenticationRequired = data.authenticationRequired;
                     settings.set({
-                        'firstName' : data.firstName,
-                        'lastName' : data.lastName,
-                        'jobTitle' : data.jobTitle
+                        'firstName': data.firstName,
+                        'lastName': data.lastName,
+                        'jobTitle': data.jobTitle
                     });
                     settings.save();
 
@@ -2720,7 +2721,7 @@ $(function() {
                     } else {
                         window.location.hash = "passcode";
                     }
-                } else if (data.status == 0 || data.status == 4 || data.status == 301) {//Pending
+                } else if (data.status == 0 || data.status == 4 || data.status == 301) { //Pending
                     if (DEBUG) {
                         console.log("Unlock pending...");
                     }
@@ -2738,17 +2739,17 @@ $(function() {
                     // passcodeLockView.render();
                     this.timeoutId = setTimeout(passcodeLockView.checkUnlock, 2000);
 
-                } else if (data.status == 2) {//Activation was denied
+                } else if (data.status == 2) { //Activation was denied
                     this.timeoutId = 0;
                     settings.set({
-                        activationKey : ""
+                        activationKey: ""
                     });
                     window.location.hash = "expired";
 
-                } else if (data.status == 3) {//Invalid player version
+                } else if (data.status == 3) { //Invalid player version
                     this.timeoutId = 0;
                     settings.set({
-                        activationKey : ""
+                        activationKey: ""
                     });
                     window.location.hash = "error";
 
@@ -2759,14 +2760,14 @@ $(function() {
     });
 
     var DisableUserDeviceView = Backbone.View.extend({
-        el : $("#maindiv"),
+        el: $("#maindiv"),
 
-        initialize : function() {
+        initialize: function() {
             //this.render();
         },
-        timeoutId : 0,
-        render : function() {
-            var template = _.template($("#disableUserDevice_template").html(), { });
+        timeoutId: 0,
+        render: function() {
+            var template = _.template($("#disableUserDevice_template").html(), {});
             this.$el.html(template);
             formatPage();
 
@@ -2798,15 +2799,15 @@ $(function() {
     });
 
     var BrowserVerErrView = Backbone.View.extend({
-        el : $("#maindiv"),
+        el: $("#maindiv"),
 
-        initialize : function() {
+        initialize: function() {
             //this.render();
         },
-        timeoutId : 0,
-        render : function() {
+        timeoutId: 0,
+        render: function() {
             // console.log("browserVerErrView.Called render");
-            var template = _.template($("#browser_version_error_template").html(), { });
+            var template = _.template($("#browser_version_error_template").html(), {});
             this.$el.html(template);
             formatPage();
 
@@ -2814,43 +2815,43 @@ $(function() {
     });
 
     var ConnErrView = Backbone.View.extend({
-        el : $("#maindiv"),
-        initialize : function() {
+        el: $("#maindiv"),
+        initialize: function() {
 
         },
-        render : function() {
+        render: function() {
 
-            var template = _.template($("#connerr_template").html(), { });
+            var template = _.template($("#connerr_template").html(), {});
             this.$el.html(template);
             formatPage();
         },
-        events : {
-            "click #tryAgainBtn" : "tryAgainBtnClick"
+        events: {
+            "click #tryAgainBtn": "tryAgainBtnClick"
         },
-        tryAgainBtnClick : function(event) {
+        tryAgainBtnClick: function(event) {
             loginToken = null;
             window.location.hash = "validation";
         }
     });
 
     var ExpiredView = Backbone.View.extend({
-        el : $("#maindiv"),
-        initialize : function() {
+        el: $("#maindiv"),
+        initialize: function() {
 
         },
-        render : function() {
+        render: function() {
 
-            var template = _.template($("#expired_template").html(), { });
+            var template = _.template($("#expired_template").html(), {});
             this.$el.html(template);
             formatPage();
         },
-        events : {
-            "click #expiredCreateBtn" : "expiredCreateBtnClick"
+        events: {
+            "click #expiredCreateBtn": "expiredCreateBtnClick"
         },
-        expiredCreateBtnClick : function(event) {
+        expiredCreateBtnClick: function(event) {
 
             settings.set({
-                "activationKey" : ""
+                "activationKey": ""
             });
             settings.save();
             window.location.hash = "createPlayer";
@@ -2861,23 +2862,23 @@ $(function() {
     var uxip = null;
 
     var PlayerView = Backbone.View.extend({
-        el : $("#maindiv"),
+        el: $("#maindiv"),
 
-        initialize : function() {
+        initialize: function() {
 
         },
         //uxip: null,
-        render : function() {
+        render: function() {
             var imgURL = mgmtURL + "html/player/";
-            var template = _.template($("#player_template").html(), {imgURL : imgURL});
+            var template = _.template($("#player_template").html(), { imgURL: imgURL });
             this.$el.html(template);
             formatPage();
 
-            var datadiv = document.getElementById('datadiv');                
+            var datadiv = document.getElementById('datadiv');
             var width = datadiv.offsetWidth;
             var height = datadiv.offsetHeight + (mobilecheck() ? 90 : 45);
             // console.log("width: " + width + ", height: " + height);
-            uxip = new UXIP(datadiv, width, height, passcodeTimeout);
+            uxip = new UXIP(datadiv, width, height);
             uxip.PlayerView = this;
 
             var firstLogin = settings.get("firstGatewayConnection");
@@ -2915,17 +2916,18 @@ $(function() {
 
                     //console.log(JSON.stringify(window.location, null, 4 ));
                     var wsURL = protocol + host + port + "/gatewayProxy?gateway=" + encodeURIComponent(data.gateway) + "&port=" + data.port + "&isSSL=" + data.isSSL;
+                    window.loginToken = loginToken;
                     uxip.connect(wsURL, data.sessionid);
                     var ed = $("#edVirtualKeyboard");
                     ed.off("keypress keydown keyup");
-                    ed.on("keypress",uxip.virtualKeyboardEvent);
-                    ed.on("keydown",uxip.virtualKeyboardEvent);
-                    ed.on("keyup",uxip.virtualKeyboardEvent);
-                } else if (data.status == 2) {// expired login token
+                    ed.on("keypress", uxip.virtualKeyboardEvent);
+                    ed.on("keydown", uxip.virtualKeyboardEvent);
+                    ed.on("keyup", uxip.virtualKeyboardEvent);
+                } else if (data.status == 2) { // expired login token
                     // console.log("PlayerView. expired login token");
                     window.location.hash = "validation";
 
-                } else if (data.status == 0) {// failed
+                } else if (data.status == 0) { // failed
                     console.log("PlayerView. error");
                     window.location.hash = "error";
 
@@ -2934,32 +2936,32 @@ $(function() {
             }, 45000);
 
         },
-        events : {
-            "click #linkvolcano" : "clickHome",
-            "click #linksettings" : "clickSettings",
-            "click #settingsbtn" : "clickSearch",
-            "click #backbtn" : "clickMobileBack",
+        events: {
+            "click #linkvolcano": "clickHome",
+            "click #linksettings": "clickSettings",
+            "click #settingsbtn": "clickSearch",
+            "click #backbtn": "clickMobileBack",
             "click #recordingsbtn": "openRecordings"
         },
-        openRecordings : function(event) {
+        openRecordings: function(event) {
             window.location.hash = "recordings";
 
         },
-        clickHome : function(event) {
+        clickHome: function(event) {
             uxip.clickHome();
         },
-        clickSettings : function(event) {
+        clickSettings: function(event) {
             uxip.clickSettings();
         },
-        clickSearch : function(event) {
+        clickSearch: function(event) {
             uxip.clickSearch();
         },
-		clickMobileBack : function (event) {
-			// console.log("PlayerView. clickMobileBack");
-		   	uxip.clickMobileBack();
-		},
+        clickMobileBack: function(event) {
+            // console.log("PlayerView. clickMobileBack");
+            uxip.clickMobileBack();
+        },
 
-        setWallpaper : function(type, res) {
+        setWallpaper: function(type, res) {
             // console.log("setWallpaper. type: " + type + ", res: " + res);
 
             var newWallpaperColor;
@@ -2975,10 +2977,10 @@ $(function() {
             // console.log("setWallpaper. activationKey: " + activationKey);
 
             settings.set({
-                "wallpaperColor" : newWallpaperColor
+                "wallpaperColor": newWallpaperColor
             });
             settings.set({
-                "wallpaperImage" : newWallpaperImage
+                "wallpaperImage": newWallpaperImage
             });
             settings.save();
 
@@ -2990,24 +2992,24 @@ $(function() {
             document.getElementById("maindiv").style.backgroundImage = "url(" + mgmtURL + "html/player/" + newWallpaperImage + ")";
         },
 
-        setFirstGatewayConnection : function (firstLogin) {
+        setFirstGatewayConnection: function(firstLogin) {
             $('.firstLoginPopup').css("visibility", "hidden");
-            settings.set({'firstGatewayConnection' : firstLogin});
+            settings.set({ 'firstGatewayConnection': firstLogin });
             settings.save();
         }
     });
-    
-    
-    var PlaybackView = Backbone.View.extend({
-        el : $("#maindiv"),
 
-        initialize : function() {
+
+    var PlaybackView = Backbone.View.extend({
+        el: $("#maindiv"),
+
+        initialize: function() {
 
         },
         //uxip: null,
-        render : function() {
+        render: function() {
             // console.log("PlaybackView");
-            var template = _.template($("#playback_template").html(), { });
+            var template = _.template($("#playback_template").html(), {});
             this.$el.html(template);
             formatPage();
 
@@ -3015,10 +3017,10 @@ $(function() {
             var width = playbackWidth;
             var height = playbackHeight;
             $("div#recordingTimeLbl").css("font-size", 20 / playbackScale + "px");
-            $("div#recordingTimeLbl").css("width",300 / playbackScale + "px");
-            $("div#recordingTimeLbl").css("top",playbackHeight - Math.round(30 / playbackScale) );
+            $("div#recordingTimeLbl").css("width", 300 / playbackScale + "px");
+            $("div#recordingTimeLbl").css("top", playbackHeight - Math.round(30 / playbackScale));
             // console.log("width: " + width + ", height: " + height);
-            uxip = new UXIP(datadiv, width, height, passcodeTimeout, true);
+            uxip = new UXIP(datadiv, width, height, true);
             uxip.PlayerView = this;
 
             var parser = document.createElement('a');
@@ -3026,7 +3028,7 @@ $(function() {
             var host = parser.hostname;
             var protocol = parser.protocol;
             var port = parser.port;
-                                
+
             if (protocol == "http:") {
                 protocol = "ws://";
             } else {
@@ -3037,14 +3039,14 @@ $(function() {
             }
 
             //console.log(JSON.stringify(window.location, null, 4 ));
-            var wsURL = protocol + host + port + "/gatewayProxy?playbackMode=Y&fileName=" + encodeURIComponent(playbackFile)+
+            var wsURL = protocol + host + port + "/gatewayProxy?playbackMode=Y&fileName=" + encodeURIComponent(playbackFile) +
                 "&loginToken=" + encodeURIComponent(loginToken);
             uxip.connect(wsURL, "NA");
         },
-        events : {
+        events: {
             // "click #linkvolcano" : "clickHome"            
         }
-        
+
     });
 
     jsonError = function(jqXHR, textStatus, errorThrown) {
@@ -3056,11 +3058,11 @@ $(function() {
         if (timeout == null)
             timeout = 10000;
         $.ajax({
-            dataType : "json",
-            url : url,
-            success : success,
-            error : jsonError,
-            'timeout' : timeout
+            dataType: "json",
+            url: url,
+            success: success,
+            error: jsonError,
+            'timeout': timeout
         });
     };
 
@@ -3070,7 +3072,7 @@ $(function() {
         var ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
         hours = hours ? hours : 12; // the hour '0' should be '12'
-        minutes = minutes < 10 ? '0'+minutes : minutes;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
         var strTime = hours + ':' + minutes + ' ' + ampm;
         return strTime;
     }
@@ -3084,14 +3086,14 @@ $(function() {
     };
 
     var AppRouter = Backbone.Router.extend({
-        routes : {
-            "ppage/:id" : "getPlayerPage",
-            "activationLink/:token/:email" : "getActivationLink",
-            "resetPasscodeLink/:token/:email" : "getResetPasscodeLink",
-            "unlockPassword/:token/:email" : "getUnlockPassword",
-            "downloadApp" : "getDownloadApp",
-            "downloadApp/:domain" : "getDownloadApp",
-            "*actions" : "defaultRoute" // matches http://example.com/#anything-here
+        routes: {
+            "ppage/:id": "getPlayerPage",
+            "activationLink/:token/:email": "getActivationLink",
+            "resetPasscodeLink/:token/:email": "getResetPasscodeLink",
+            "unlockPassword/:token/:email": "getUnlockPassword",
+            "downloadApp": "getDownloadApp",
+            "downloadApp/:domain": "getDownloadApp",
+            "*actions": "defaultRoute" // matches http://example.com/#anything-here
         }
     });
     // Initiate the router
@@ -3172,16 +3174,16 @@ $(function() {
             wallpaperColor = "#58585A";
             wallpaperImage = "";
             settings.set({
-                "activationKey" : "",
-                "firstName" : "",
-                "lastName" : "",
-                "jobTitle" : "",
-                "workEmail" : "",
-                "wallpaperImage" : "",
-                "wallpaperColor" : wallpaperColor,
-                "uploadExternalWallpaper" : true,
-                "firstGatewayConnection" : true,
-                "deviceID" : ""
+                "activationKey": "",
+                "firstName": "",
+                "lastName": "",
+                "jobTitle": "",
+                "workEmail": "",
+                "wallpaperImage": "",
+                "wallpaperColor": wallpaperColor,
+                "uploadExternalWallpaper": true,
+                "firstGatewayConnection": true,
+                "deviceID": ""
             });
             settings.save();
             window.location.hash = "greeting";
@@ -3246,24 +3248,24 @@ $(function() {
                 // console.log("playback actions :"+sp);
                 loginToken = sp[1];
                 var w = Number(sp[2]);
-                var h = Number(sp[3]);                
-                var scaleN =  Number(sp[4]);
+                var h = Number(sp[3]);
+                var scaleN = Number(sp[4]);
                 playbackWidth = w / scaleN;
-                playbackHeight = h /scaleN;
+                playbackHeight = h / scaleN;
                 playbackScale = scaleN;
                 playbackFile = sp[5];
                 playbackStartTime = Date.parse(sp[6]);
                 // console.log("width: "+w+"px")
-                $("div#maindiv").css("width", w+"px");                
-                $("div#maindiv").css("height", h+"px");
-                $("div#maindiv").css("-webkit-transform", "scale("+scaleN+")");
+                $("div#maindiv").css("width", w + "px");
+                $("div#maindiv").css("height", h + "px");
+                $("div#maindiv").css("-webkit-transform", "scale(" + scaleN + ")");
                 $("div#maindiv").css("transform-origin", "top left");
-                $("body").css("overflow-x","hidden");
-                $("body").css("overflow-y","hidden");
+                $("body").css("overflow-x", "hidden");
+                $("body").css("overflow-y", "hidden");
                 loggedIn = true;
                 window.location.hash = "playback";
                 return;
-            } else 
+            } else
                 window.location.hash = "validation";
             return;
         }
@@ -3287,16 +3289,16 @@ $(function() {
             var resetpasscode_view = new ResetPasscodeView();
             appController.showView(resetpasscode_view);
         } else if (actions == "recordings" && loggedIn) {
-           var recordings_view = new RecordingsView();
+            var recordings_view = new RecordingsView();
             appController.showView(recordings_view);
         } else if (actions == "playback" && loggedIn) {
-           var myview = new PlaybackView();
-           appController.showView(myview);
+            var myview = new PlaybackView();
+            appController.showView(myview);
         } else if (actions == "player" && loggedIn) {
             var player_view = new PlayerView();
             appController.showView(player_view);
 
-        } else {// if we got here we are in incorrect stage - we should go to validation
+        } else { // if we got here we are in incorrect stage - we should go to validation
             window.location.hash = "validation";
         }
 
@@ -3310,5 +3312,5 @@ $(function() {
 
 var globalSettings;
 var getDeviceId = function() {
-	return encodeURIComponent(globalSettings.get("deviceID"));
+    return encodeURIComponent(globalSettings.get("deviceID"));
 }

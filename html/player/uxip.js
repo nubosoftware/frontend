@@ -2,7 +2,11 @@
  * UXIP Protocol implementation in Java Script
  *uxipObj
  */
-var psDisconnect = 0, psInit = 1, psConnected = 2, psDisconnecting = 3, psError = 4;
+var psDisconnect = 0,
+    psInit = 1,
+    psConnected = 2,
+    psDisconnecting = 3,
+    psError = 4;
 var keyboardProcessID = 0;
 
 // used by roundTrip
@@ -11,7 +15,6 @@ var RTT_THRESHOLD_TO_CLOSE_SOCKET = 2500;
 var mBadRTTCounter = 0;
 var MAX_BAD_RTT_SEQUENCE = 5;
 var WRITE_TRANSACTION_TIMEOUT = 900000;
-var TIMER_CHECK_TIMEOUT = 10000;
 var SOCKET_READ_TIMEOUT = 30000;
 
 // debug parameters
@@ -26,7 +29,7 @@ var writeToDrawCmdLog = false;
 var resCache = {};
 var fontCache = {};
 
-function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playbackFile) {
+function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     "use strict";
     var UXIPself = this;
     var protocolState = psDisconnect;
@@ -37,15 +40,16 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
     var currentProcessId = null;
     var zlibReader = new ZlibReader();
 
-    var handle_message, moreData, errorAndClose, getInitResponse, getDrawCommand, initProtocol, prepKeyboardLayout, 
-    	popWindow, PushWindow, setWndId, ShowWindow, HideWindow, setWallpaperByID, toggleSearch, toggleMenu, drawBitmapIntoCanvas, 
+    var handle_message, moreData, errorAndClose, getInitResponse, getDrawCommand, initProtocol, prepKeyboardLayout,
+        popWindow, PushWindow, setWndId, ShowWindow, HideWindow, setWallpaperByID, toggleSearch, toggleMenu, drawBitmapIntoCanvas,
         prepareCanvasForPaint, setDirtyRect, writeTransaction, drawColor1, saveLayer, restoreLayer, drawText, drawText1,
-    	drawRect, drawBitmap, saveLayerAlpha, drawLine, drawLines, drawRect1, drawRoundRect, drawBitmap1, setDensity, 
-    	ninePatchDraw, drawBitmap6, drawPosText1, drawPosText2, drawBitmap8, readNotification, updateWallpaperOffset, 
-    	initPopupContentView, handleKeyEvent, dispatchKeyEvent, removeProcess, drawWebView, printArr, ninePatch_Draw, 
-    	calculateStretch, drawStretchyPatch, showSoftKeyboard, updatePopWindow, resizeWindow, sendKeyboardExtractedText, 
-    	updateScreenOrientation, drawBitmapMatrix, drawTextOnCanvas, drawPosTextOnCanvas, setTextAttFromPaint, drawTextRun, 
-    	sendRoundTripDataCommand, prepareViewCache, roundTripDataAck, outgoingCall, drawPath, drawPoints, toast, setTopTask, 
+        drawRect, drawBitmap, saveLayerAlpha, drawLine, drawLines, drawRect1, drawRoundRect, drawBitmap1, setDensity,
+        ninePatchDraw, drawBitmap6, drawPosText1, drawPosText2, drawBitmap8, readNotification, updateWallpaperOffset,
+        initPopupContentView, handleKeyEvent, dispatchKeyEvent, removeProcess, drawWebView, printArr, ninePatch_Draw,
+        calculateStretch, drawStretchyPatch, showSoftKeyboard, updatePopWindow, resizeWindow, sendKeyboardExtractedText,
+        updateScreenOrientation, drawBitmapMatrix, drawTextOnCanvas, drawPosTextOnCanvas, setTextAttFromPaint, drawTextRun,
+        sendRoundTripDataCommand, prepareViewCache, roundTripDataAck,
+        outgoingCall, drawPath, drawPoints, toast, setTopTask,
         setWindowPos, getColorFromInt, setShaderToGrdColorStop, clearProcessCacheAck, setPackageName, getFontFromAsset,
         getFontFromCache, createWebSocket,
         drawOval, drawArc, drawCircle,
@@ -63,7 +67,6 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
     var domObj;
     var lastProcessID, lastWndID;
     var mWidth, mHeight, mParentNode;
-    var mOrgPasscodeTimeout = WRITE_TRANSACTION_TIMEOUT;
     var wm;
     var waitForDraw = false;
     var lastExtractedText = "";
@@ -73,9 +76,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
     var timeoutid = 0;
     var mPlaybackMode = playbackMode;
     var mZlibData = true;
-    
+
     var drawCmdLog = {};
-    
+
     var connectTime = 0;
     var lastTSLabelTime = 0;
     var resourceURL;
@@ -89,10 +92,6 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
     mWidth = width;
     mHeight = height;
 
-    if (passcodeTimeout > 0) {
-        mOrgPasscodeTimeout = passcodeTimeout;
-    }
-
     // keyboard input action
     var mImeOptions = 1;
 
@@ -104,7 +103,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
     var mPackageNameList = [];
 
     publicinterface.connect = function(url, sessionID) {
-        
+
         /*if (playbackMode) {
             mZlibData = false;
         }*/
@@ -125,7 +124,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         if (port != "") {
             port = ":" + port;
         }
-        
+
         var mgmtURL = protocol + host + port;
         resourceURL = mgmtURL + "/html/player/";
 
@@ -147,12 +146,12 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         // domObj.onclick=mouseEvent;
     };
 
-    createWebSocket = function (url) {
+    createWebSocket = function(url) {
 
         ws = new WebSocket(url, ['binary']);
         ws.binaryType = "arraybuffer";
 
-         ws.onmessage = function(e) {
+        ws.onmessage = function(e) {
             if (DEBUG_PROTOCOL_NETWORK) {
                 Log.d(TAG + DEBUG_PROTOCOL_NETWORK_STR, "onmessage, e.data.byteLength=" + e.data.byteLength);
             }
@@ -168,7 +167,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             } else { // nocompression
                 Log.v(TAG, "Getting uncompresses stream data");
                 reader.addBuffer(e.data);
-                if (!insideGetDrawCommand) {                    
+                if (!insideGetDrawCommand) {
                     handle_message();
                 }
             }
@@ -190,7 +189,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                 ws.close();
             }
             clearTimer(timeoutid);
-            timeoutid = setInterval(checkTimeOut, TIMER_CHECK_TIMEOUT);  // check if timeout every 10 seconds
+            timeoutid = setInterval(checkTimeOut, 12000);
         };
 
         ws.onclose = function(e) {
@@ -242,7 +241,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             Log.d("checkTimeOut.");
         }
 
-        if (diff > mOrgPasscodeTimeout) {
+        if (diff > WRITE_TRANSACTION_TIMEOUT) {
             Log.e(TAG + " WRITE_TRANSACTION_TIMEOUT");
             errorAndClose();
             window.location.reload();
@@ -275,9 +274,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         if (eventt.type == "keypress") {
             var chr = getChar(eventt);
             if (isMobile) {
-                var newText = $("#edVirtualKeyboard").val();                
+                var newText = $("#edVirtualKeyboard").val();
                 // Log.d("newText: \""+newText+"\" , oldInputText: \""+oldInputText+"\"");
-                if ( chr==" " && (newText.length-oldInputText.length) > 1) {
+                if (chr == " " && (newText.length - oldInputText.length) > 1) {
                     chr = newText.substr(oldInputText.length);
                 }
                 oldInputText = newText;
@@ -286,10 +285,10 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             if (chr != null) {
                 // Log.d("chr: "+chr);
                 handleKeyEvent(processId, wndId, {
-                    name : "KeyEvent",
-                    action : KeyEvent.ACTION_MULTIPLE,
-                    keyCode : KeyEvent.KEYCODE_UNKNOWN,
-                    characters : chr
+                    name: "KeyEvent",
+                    action: KeyEvent.ACTION_MULTIPLE,
+                    keyCode: KeyEvent.KEYCODE_UNKNOWN,
+                    characters: chr
                 });
                 return true;
             }
@@ -297,103 +296,103 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             var specialKey = -1;
             var key = eventt.which == null ? eventt.keyCode : eventt.which;
             // console.log("key: "+key);
-            switch(key) {
-            case 8:
-                //backspace
-                specialKey = KeyEvent.KEYCODE_DEL;
-                break;
-            case 9:
-                if (mImeOptions == 5) {  // keyboard input action next
-                    specialKey = KeyEvent.KEYCODE_TAB;
-                } else {
-                    specialKey = -1;
-                }
+            switch (key) {
+                case 8:
+                    //backspace
+                    specialKey = KeyEvent.KEYCODE_DEL;
+                    break;
+                case 9:
+                    if (mImeOptions == 5) { // keyboard input action next
+                        specialKey = KeyEvent.KEYCODE_TAB;
+                    } else {
+                        specialKey = -1;
+                    }
 
-                break;
-            case 13:
-                specialKey = KeyEvent.KEYCODE_ENTER;
-                break;
-            case 17:
-                specialKey = KeyEvent.KEYCODE_ALT_LEFT;
-                break;
-            case 18:
-                specialKey = KeyEvent.KEYCODE_CTRL_LEFT;
-                break;
-            case 27:
-                specialKey = KeyEvent.KEYCODE_ESCAPE;
-                break;
-            case 32:
-                specialKey = KeyEvent.KEYCODE_SPACE;
-                break;
-            case 33:
-                specialKey = KeyEvent.KEYCODE_PAGE_UP;
-                break;
-            case 34:
-                specialKey = KeyEvent.KEYCODE_PAGE_DOWN;
-                break;
-            case 35:
-                specialKey = KeyEvent.KEYCODE_MOVE_END;
-                break;
-            case 36:
-                specialKey = KeyEvent.KEYCODE_MOVE_HOME;
-                break;
-            case 37:
-                specialKey = KeyEvent.KEYCODE_DPAD_LEFT;
-                break;
-            case 38:
-                specialKey = KeyEvent.KEYCODE_DPAD_UP;
-                break;
-            case 39:
-                specialKey = KeyEvent.KEYCODE_DPAD_RIGHT;
-                break;
-            case 40:
-                specialKey = KeyEvent.KEYCODE_DPAD_DOWN;
-                break;
-            case 46:
-                specialKey = KeyEvent.KEYCODE_FORWARD_DEL;
-                break;
-            case 91:
-                specialKey = KeyEvent.KEYCODE_BUTTON_START;
-                break;
-            case 112:
-                specialKey = KeyEvent.KEYCODE_F1;
-                break;
-            case 113:
-                specialKey = KeyEvent.KEYCODE_F2;
-                break;
-            case 114:
-                specialKey = KeyEvent.KEYCODE_F3;
-                break;
-            case 115:
-                specialKey = KeyEvent.KEYCODE_F4;
-                break;
-            case 116:
-                specialKey = KeyEvent.KEYCODE_F5;
-                break;
-            case 117:
-                specialKey = KeyEvent.KEYCODE_F6;
-                break;
-            case 118:
-                specialKey = KeyEvent.KEYCODE_F7;
-                break;
-            case 119:
-                specialKey = KeyEvent.KEYCODE_F8;
-                break;
-            case 120:
-                specialKey = KeyEvent.KEYCODE_F9;
-                break;
-            case 121:
-                specialKey = KeyEvent.KEYCODE_F10;
-                break;
-            case 122:
-                specialKey = KeyEvent.KEYCODE_F11;
-                break;
-            case 123:
-                specialKey = KeyEvent.KEYCODE_F12;
-                break;
-            case 144:
-                specialKey = KeyEvent.KEYCODE_NUM_LOCK;
-                break;
+                    break;
+                case 13:
+                    specialKey = KeyEvent.KEYCODE_ENTER;
+                    break;
+                case 17:
+                    specialKey = KeyEvent.KEYCODE_ALT_LEFT;
+                    break;
+                case 18:
+                    specialKey = KeyEvent.KEYCODE_CTRL_LEFT;
+                    break;
+                case 27:
+                    specialKey = KeyEvent.KEYCODE_ESCAPE;
+                    break;
+                case 32:
+                    specialKey = KeyEvent.KEYCODE_SPACE;
+                    break;
+                case 33:
+                    specialKey = KeyEvent.KEYCODE_PAGE_UP;
+                    break;
+                case 34:
+                    specialKey = KeyEvent.KEYCODE_PAGE_DOWN;
+                    break;
+                case 35:
+                    specialKey = KeyEvent.KEYCODE_MOVE_END;
+                    break;
+                case 36:
+                    specialKey = KeyEvent.KEYCODE_MOVE_HOME;
+                    break;
+                case 37:
+                    specialKey = KeyEvent.KEYCODE_DPAD_LEFT;
+                    break;
+                case 38:
+                    specialKey = KeyEvent.KEYCODE_DPAD_UP;
+                    break;
+                case 39:
+                    specialKey = KeyEvent.KEYCODE_DPAD_RIGHT;
+                    break;
+                case 40:
+                    specialKey = KeyEvent.KEYCODE_DPAD_DOWN;
+                    break;
+                case 46:
+                    specialKey = KeyEvent.KEYCODE_FORWARD_DEL;
+                    break;
+                case 91:
+                    specialKey = KeyEvent.KEYCODE_BUTTON_START;
+                    break;
+                case 112:
+                    specialKey = KeyEvent.KEYCODE_F1;
+                    break;
+                case 113:
+                    specialKey = KeyEvent.KEYCODE_F2;
+                    break;
+                case 114:
+                    specialKey = KeyEvent.KEYCODE_F3;
+                    break;
+                case 115:
+                    specialKey = KeyEvent.KEYCODE_F4;
+                    break;
+                case 116:
+                    specialKey = KeyEvent.KEYCODE_F5;
+                    break;
+                case 117:
+                    specialKey = KeyEvent.KEYCODE_F6;
+                    break;
+                case 118:
+                    specialKey = KeyEvent.KEYCODE_F7;
+                    break;
+                case 119:
+                    specialKey = KeyEvent.KEYCODE_F8;
+                    break;
+                case 120:
+                    specialKey = KeyEvent.KEYCODE_F9;
+                    break;
+                case 121:
+                    specialKey = KeyEvent.KEYCODE_F10;
+                    break;
+                case 122:
+                    specialKey = KeyEvent.KEYCODE_F11;
+                    break;
+                case 123:
+                    specialKey = KeyEvent.KEYCODE_F12;
+                    break;
+                case 144:
+                    specialKey = KeyEvent.KEYCODE_NUM_LOCK;
+                    break;
             }
             if (specialKey > 0) {
                 // Log.d("specialKey: "+specialKey);
@@ -401,9 +400,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                 var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
 
                 handleKeyEvent(processId, wndId, {
-                    name : "KeyEvent",
-                    action : eventaction,
-                    keyCode : specialKey
+                    name: "KeyEvent",
+                    action: eventaction,
+                    keyCode: specialKey
                 });
             }
         }
@@ -432,8 +431,8 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         //not null
 
         var timevar = {
-            hi : 0,
-            lo : 0
+            hi: 0,
+            lo: 0
         };
 
         writer.writeLong(timevar);
@@ -446,9 +445,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             lastTouchY = null;
             action = 1;
         } else if (eventt.type == "mousedown") {
-                lastTouchX = left;
-                lastTouchY = top;
-                action = 0;
+            lastTouchX = left;
+            lastTouchY = top;
+            action = 0;
         } else if (eventt.type == "mousemove") {
             action = 2;
         }
@@ -511,17 +510,17 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
     };
 
     this.touchEvent = function(eventt) {
-        
-//        Log.e(TAG, "touchEvent. eventt.type: " + eventt.type);
+
+        //        Log.e(TAG, "touchEvent. eventt.type: " + eventt.type);
         var lastMouseDownTouchTime = eventt.lastMouseDownTouchTime;
 
         var src = eventt.src;
         var rect = src.getBoundingClientRect();
-        
+
         writer.writeBoolean(false);
         var timevar = {
-            hi : 0,
-            lo : 0
+            hi: 0,
+            lo: 0
         };
         writer.writeLong(timevar);
         writer.writeLong(timevar);
@@ -541,14 +540,14 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
         writer.writeInt(action);
 
-        for (var i=0; i < eventt.changedTouches.length; i++) {
-            var touch =  eventt.changedTouches[i];
-            writer.writeInt(i);  // id
-            writer.writeInt(1);  // toolType
+        for (var i = 0; i < eventt.changedTouches.length; i++) {
+            var touch = eventt.changedTouches[i];
+            writer.writeInt(i); // id
+            writer.writeInt(1); // toolType
         }
 
-        for (var i=0; i < eventt.changedTouches.length; i++) {
-            var touch =  eventt.changedTouches[i];
+        for (var i = 0; i < eventt.changedTouches.length; i++) {
+            var touch = eventt.changedTouches[i];
             var left = touch.clientX - rect.left - src.clientLeft + src.scrollLeft;
             var top = touch.clientY - rect.top - src.clientTop + src.scrollTop;
             if (eventt.type == "touchstart" && i == 0) {
@@ -556,32 +555,32 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                 lastTouchX = left;
                 lastTouchY = top;
             }
-//            Log.v(TAG, "touchPoint.  type: " + eventt.type + ", timeStamp: " + eventt.timeStamp +
-//                  ", left: " + left + ", top: " + top + ", force: " +touch.force);
+            //            Log.v(TAG, "touchPoint.  type: " + eventt.type + ", timeStamp: " + eventt.timeStamp +
+            //                  ", left: " + left + ", top: " + top + ", force: " +touch.force);
 
             if (action != 2) {
-                writer.writeFloat(0);     // orientation
-                writer.writeFloat(90);    // toolMajor
-                writer.writeFloat(90);    // toolMinor
-                writer.writeFloat(90);    // touchMajor
-                writer.writeFloat(90);    // touchMinor
+                writer.writeFloat(0); // orientation
+                writer.writeFloat(90); // toolMajor
+                writer.writeFloat(90); // toolMinor
+                writer.writeFloat(90); // touchMajor
+                writer.writeFloat(90); // touchMinor
             }
 
-            writer.writeFloat(touch.force ? touch.force : 0.73);   // pressure;
-            writer.writeFloat(0.26);  // size
-            writer.writeFloat(left);  // coords.x
-            writer.writeFloat(top);   // coords.y
+            writer.writeFloat(touch.force ? touch.force : 0.73); // pressure;
+            writer.writeFloat(0.26); // size
+            writer.writeFloat(left); // coords.x
+            writer.writeFloat(top); // coords.y
         }
 
-        writer.writeFloat(2);  // XPrecision
-        writer.writeFloat(2);  // YPrecision
+        writer.writeFloat(2); // XPrecision
+        writer.writeFloat(2); // YPrecision
 
         if (action != 2) {
-            writer.writeInt(0);  // MetaState
-            writer.writeInt(0);  // ButtonState
-            writer.writeInt(0);    // EdgeFlags
-            writer.writeInt(4098);  // touchscreen
-            writer.writeInt(0);    // Flags
+            writer.writeInt(0); // MetaState
+            writer.writeInt(0); // ButtonState
+            writer.writeInt(0); // EdgeFlags
+            writer.writeInt(4098); // touchscreen
+            writer.writeInt(0); // Flags
         }
 
         if (action == 2) { // move event
@@ -603,11 +602,12 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         y: 0
     };
     var lastMouseDownTouchTime = 0;
-    var lastTouchX = 0, lastTouchY = 0;
+    var lastTouchX = 0,
+        lastTouchY = 0;
 
     this.mousewheel = function(eventt) {
-//      up: delta > 0, down: delta < 0
-//      Log.e(TAG, "mousewheel. eventt.type: " + eventt.type + ", eventt.action: " + eventt.action + ", eventt.delta: " + eventt.delta);
+        //      up: delta > 0, down: delta < 0
+        //      Log.e(TAG, "mousewheel. eventt.type: " + eventt.type + ", eventt.action: " + eventt.action + ", eventt.delta: " + eventt.delta);
 
         if (eventt.type != "mousewheel" && eventt.type != "DOMMouseScroll" && eventt.type != "wheel") {
             writer.writeBoolean(true);
@@ -635,42 +635,42 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
         writer.writeBoolean(false); // 1
         var timevar = {
-             hi : 0,
-             lo : 0
+            hi: 0,
+            lo: 0
         };
 
-        writer.writeLong(timevar);  // 2 down time
-        writer.writeLong(timevar);  // 3 event time
-        writer.writeInt(1);         // 4 number of touches
-        writer.writeInt(action);    // 5 action
-        writer.writeInt(0);         // 6 id
-        writer.writeInt(1);         // 7 tool type
+        writer.writeLong(timevar); // 2 down time
+        writer.writeLong(timevar); // 3 event time
+        writer.writeInt(1); // 4 number of touches
+        writer.writeInt(action); // 5 action
+        writer.writeInt(0); // 6 id
+        writer.writeInt(1); // 7 tool type
 
         if (action != 2) {
-            writer.writeFloat(0);       // orientation
-            writer.writeFloat(90);      // toolMajor
-            writer.writeFloat(90);      // toolMinor
-            writer.writeFloat(90);      // touchMajor
-            writer.writeFloat(90);      // touchMinor
+            writer.writeFloat(0); // orientation
+            writer.writeFloat(90); // toolMajor
+            writer.writeFloat(90); // toolMinor
+            writer.writeFloat(90); // touchMajor
+            writer.writeFloat(90); // touchMinor
         }
 
-        writer.writeFloat(0.73);    // pressure
-        writer.writeFloat(0.26);    // size
+        writer.writeFloat(0.73); // pressure
+        writer.writeFloat(0.26); // size
 
-        var left = wheeldelta.x;  // + rect.left;
-        var top = wheeldelta.y;   // + rect.top;
+        var left = wheeldelta.x; // + rect.left;
+        var top = wheeldelta.y; // + rect.top;
 
-        writer.writeFloat(left);    // coords.x
-        writer.writeFloat(top);     // coords.y
-        writer.writeFloat(2);       // XPrecision
-        writer.writeFloat(2);       // YPrecision
+        writer.writeFloat(left); // coords.x
+        writer.writeFloat(top); // coords.y
+        writer.writeFloat(2); // XPrecision
+        writer.writeFloat(2); // YPrecision
 
         if (action != 2) {
-            writer.writeInt(0);         // MetaState
-            writer.writeInt(0);         // ButtonState
-            writer.writeInt(0);         // EdgeFlags
-            writer.writeInt(4098);      // touchscreen
-            writer.writeInt(0);         // flags
+            writer.writeInt(0); // MetaState
+            writer.writeInt(0); // ButtonState
+            writer.writeInt(0); // EdgeFlags
+            writer.writeInt(4098); // touchscreen
+            writer.writeInt(0); // flags
         }
 
         if (action == 2) {
@@ -714,7 +714,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
     var mobilecheck = function() {
         var check = false;
-        (function(a,b){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4)))check = true;})(navigator.userAgent||navigator.vendor||window.opera);
+        (function(a, b) { if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true; })(navigator.userAgent || navigator.vendor || window.opera);
         return check;
     };
     var isMobile = mobilecheck();
@@ -764,7 +764,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             mXDpi, mYDpi, mScaledDensity, // write all float
             mRotation, mNavBarHeightPortrait, mNavBarHeightLandscape, mNavBarWidth, romClientType, 17, // write all int
             'web', '1.2.0.91', '1.2', // write all string
-            91, (4 * mHeight * mWidth), -1, "",getDeviceId()); // write int, int, int , dataIntent withservice
+            91, (4 * mHeight * mWidth), -1,
+
+            "", getDeviceId()); // write int, int, int , dataIntent withservice
         NuboOutputStreamMgr.getInstance().setIsPlayerLogin(false);
 
         //ws.send(buffer2);
@@ -779,7 +781,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         // do not continue if we wait for draw
 
         switch (protocolState) {
-        case psDisconnect:
+            case psDisconnect:
                 if (!mPlaybackMode) {
                     Log.e("Got data while disconnect or error");
                 } else {
@@ -797,20 +799,20 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                     }
                 }
                 break;
-        case psDisconnecting:
-        case psError:
-            Log.e("Got data while disconnect or error");
-            break;
-        case psConnected:
-            if (getDrawCommand() && reader.canReadBytes(4)) {
-                moreData();
-            }
-            break;
-        default:
-            if (getInitResponse() && reader.canReadBytes(4)) {
-                moreData();
-            }
-            break;
+            case psDisconnecting:
+            case psError:
+                Log.e("Got data while disconnect or error");
+                break;
+            case psConnected:
+                if (getDrawCommand() && reader.canReadBytes(4)) {
+                    moreData();
+                }
+                break;
+            default:
+                if (getInitResponse() && reader.canReadBytes(4)) {
+                    moreData();
+                }
+                break;
         }
     };
 
@@ -826,7 +828,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             return false;
         }
 
-        if (!reader.canReadBytes(4)) {// go back and return if we dont have the result yet
+        if (!reader.canReadBytes(4)) { // go back and return if we dont have the result yet
             reader.rollback(4);
             return false;
         }
@@ -856,10 +858,10 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
         for (var property in obj) {
             var value = obj[property];
-            if ( typeof value == 'string')
+            if (typeof value == 'string')
                 value = "'" + value + "'";
-            else if ( typeof value == 'object') {
-                if ( value instanceof Array) {
+            else if (typeof value == 'object') {
+                if (value instanceof Array) {
                     value = "[ " + value + " ]";
                 } else {
                     var ood = DumpObject(value, indent + 1);
@@ -937,28 +939,28 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                 insideGetDrawCommand = false;
                 return false;
             }
-            
+
             if (timeStamp > 0) {
-                 var nowTime = new Date().getTime();
-                 var timeDiff =  nowTime - connectTime;
-                 // check if we need to wait before process this command
-                 if (timeDiff < timeStamp) { 
-                     var sleepTime = timeStamp - timeDiff + 1; 
-                     Log.v(TAG,"Sleeping for "+ sleepTime + " ms");
-                     reader.rollbackTransaction();
-                     exitInsideDrawCommand = true;
-                     setTimeout(function(){
-                         insideGetDrawCommand = false;
-                         handle_message();
-                      }, sleepTime);
-                      return false;
-                 }
-                 var labelDiff = nowTime - lastTSLabelTime;
-                 if (labelDiff > 500) {
-                     lastTSLabelTime = nowTime;
-                     var displayTime = new Date(playbackStartTime + timeStamp);
-                     $("#recordingTimeLbl").text( displayTime.toLocaleDateString()+" "+ displayTime.toLocaleTimeString());
-                 } 
+                var nowTime = new Date().getTime();
+                var timeDiff = nowTime - connectTime;
+                // check if we need to wait before process this command
+                if (timeDiff < timeStamp) {
+                    var sleepTime = timeStamp - timeDiff + 1;
+                    Log.v(TAG, "Sleeping for " + sleepTime + " ms");
+                    reader.rollbackTransaction();
+                    exitInsideDrawCommand = true;
+                    setTimeout(function() {
+                        insideGetDrawCommand = false;
+                        handle_message();
+                    }, sleepTime);
+                    return false;
+                }
+                var labelDiff = nowTime - lastTSLabelTime;
+                if (labelDiff > 500) {
+                    lastTSLabelTime = nowTime;
+                    var displayTime = new Date(playbackStartTime + timeStamp);
+                    $("#recordingTimeLbl").text(displayTime.toLocaleDateString() + " " + displayTime.toLocaleTimeString());
+                }
             }
             //errorAndClose();
             //return false;
@@ -969,193 +971,221 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             }
             // Log.e(TAG, "CMDCODE: " + cmdcode);
             switch (cmdcode) {
-            case DrawCmd.setDirtyRect:
-                func = setDirtyRect;
-                break;
-            case DrawCmd.writeTransaction:
-                firstLoginReconnect = false;
-                lastTimeReceiveData = new Date().getTime();
-                publicinterface.PlayerView.setFirstGatewayConnection(false);
+                case DrawCmd.setDirtyRect:
+                    func = setDirtyRect;
+                    break;
+                case DrawCmd.writeTransaction:
+                    firstLoginReconnect = false;
+                    lastTimeReceiveData = new Date().getTime();
+                    publicinterface.PlayerView.setFirstGatewayConnection(false);
 
-                func = writeTransaction;
-                break;
-            case DrawCmd.drawColor1:
-                func = drawColor1;
-                break;
-            case DrawCmd.saveLayer:
-                func = saveLayer;
-                break;
-            case DrawCmd.restoreLayer:
-                func = restoreLayer;
-                break;
-            case DrawCmd.drawText:
-                func = drawText;
-                break;
-            case DrawCmd.drawText1:
-                func = drawText1;
-                break;
-            case DrawCmd.drawRect:
-                func = drawRect;
-                break;
-            case DrawCmd.drawBitmap:
-                func = drawBitmap;
-                break;
-            case DrawCmd.saveLayerAlpha:
-                func = saveLayerAlpha;
-                break;
-            case DrawCmd.drawColor2:
-                func = drawColor1;
-                break;
-            case DrawCmd.drawLine:
-                func = drawLine;
-                break;
-            case DrawCmd.drawLines:
-                func = drawLines;
-                break;
-            case DrawCmd.drawRect1:
-                func = drawRect;
-                break;
-            case DrawCmd.drawRoundRect:
-                func = drawRect;
-                break;
-            case DrawCmd.drawBitmap1:
-                func = drawBitmap1;
-                break;
-            case DrawCmd.setDensity:
-                func = setDensity;
-                break;
-            case DrawCmd.drawTextRun:
-                func = drawTextRun;
-                break;
-            case DrawCmd.ninePatchDraw:
-                func = ninePatchDraw;
-                break;
-            case DrawCmd.drawBitmap6:
-                func = drawBitmap6;
-                break;
-            case DrawCmd.drawPosText1:
-                func = drawPosText1;
-                break;
-            case DrawCmd.drawPosText2:
-                func = drawPosText2;
-                break;
-            case DrawCmd.drawBitmap8:
-                func = drawBitmap8;
-                break;
-            case DrawCmd.drawBitmapMatrix:
-                func = drawBitmapMatrix;
-                break;
+                    func = writeTransaction;
+                    break;
+                case DrawCmd.drawColor1:
+                    func = drawColor1;
+                    break;
+                case DrawCmd.saveLayer:
+                    func = saveLayer;
+                    break;
+                case DrawCmd.restoreLayer:
+                    func = restoreLayer;
+                    break;
+                case DrawCmd.drawText:
+                    func = drawText;
+                    break;
+                case DrawCmd.drawText1:
+                    func = drawText1;
+                    break;
+                case DrawCmd.drawRect:
+                    func = drawRect;
+                    break;
+                case DrawCmd.drawBitmap:
+                    func = drawBitmap;
+                    break;
+                case DrawCmd.saveLayerAlpha:
+                    func = saveLayerAlpha;
+                    break;
+                case DrawCmd.drawColor2:
+                    func = drawColor1;
+                    break;
+                case DrawCmd.drawLine:
+                    func = drawLine;
+                    break;
+                case DrawCmd.drawLines:
+                    func = drawLines;
+                    break;
+                case DrawCmd.drawRect1:
+                    func = drawRect;
+                    break;
+                case DrawCmd.drawRoundRect:
+                    func = drawRect;
+                    break;
+                case DrawCmd.drawBitmap1:
+                    func = drawBitmap1;
+                    break;
+                case DrawCmd.setDensity:
+                    func = setDensity;
+                    break;
+                case DrawCmd.drawTextRun:
+                    func = drawTextRun;
+                    break;
+                case DrawCmd.ninePatchDraw:
+                    func = ninePatchDraw;
+                    break;
+                case DrawCmd.drawBitmap6:
+                    func = drawBitmap6;
+                    break;
+                case DrawCmd.drawPosText1:
+                    func = drawPosText1;
+                    break;
+                case DrawCmd.drawPosText2:
+                    func = drawPosText2;
+                    break;
+                case DrawCmd.drawBitmap8:
+                    func = drawBitmap8;
+                    break;
+                case DrawCmd.drawBitmapMatrix:
+                    func = drawBitmapMatrix;
+                    break;
 
-            case DrawCmd.drawOval:
-                func = drawOval;
-                break;
-            case DrawCmd.drawArc:
-                func = drawArc;
-                break;
-            case DrawCmd.drawCircle:
-                func = drawCircle;
-                break;
+                case DrawCmd.drawOval:
+                    func = drawOval;
+                    break;
+                case DrawCmd.drawArc:
+                    func = drawArc;
+                    break;
+                case DrawCmd.drawCircle:
+                    func = drawCircle;
+                    break;
 
-            case DrawCmd.popWindow:
-                func = popWindow;
-                break;
-            case DrawCmd.pushWindow:
-                func = PushWindow;
-                break;
-            case DrawCmd.setWndId:
-                func = setWndId;
-                break;
-            case DrawCmd.showWindow:
-                func = ShowWindow;
-                break;
-            case DrawCmd.hideWindow:
-                func = HideWindow;
-                break;
-            case DrawCmd.wallpaperID:
-                func = setWallpaperByID;
-                break;
-            case DrawCmd.toggleSearch:
-                func = toggleSearch;
-                break;
-            case DrawCmd.toggleMenu:
-                func = toggleMenu;
-                break;
-            case DrawCmd.showSoftKeyboard:
-                func = showSoftKeyboard;
-                break;
-            case DrawCmd.prepKeyboardLayout:
-                func = prepKeyboardLayout;
-                break;
-            case DrawCmd.removeProcess:
-                func = removeProcess;
-                break;
-            case DrawCmd.incomingNotification:
-                func = readNotification;
-                break;
-            case DrawCmd.wallpaperOffset:
-                func = updateWallpaperOffset;
-                break;
-            case DrawCmd.initPopupContentView:
-                func = initPopupContentView;
-                break;
-            case DrawCmd.updatePopWindow:
-                func = updatePopWindow;
-                break;
-            case DrawCmd.drawWebView:
-                func = drawWebView;
-                break;
-            case DrawCmd.resizeWindow:
-                func = resizeWindow;
-                break;
-            case DrawCmd.sendKeyboardExtractedText:
-                func = sendKeyboardExtractedText;
-                break;
-            case DrawCmd.updateScreenOrientation:
-                func = updateScreenOrientation;
-                break;
-            case DrawCmd.prepareViewCache:
-                func = prepareViewCache;
-                break;
-            case DrawCmd.roundTripDataAck:
-                func = roundTripDataAck;
-                break;
-            case DrawCmd.outgoingCall:
-                func = outgoingCall;
-                break;
-            case DrawCmd.drawPath:
-                func = drawPath;
-                break;
-            case DrawCmd.toast:
-            case DrawCmd.oldToast:
-                func = toast;
-                break;
-            case DrawCmd.setTopTask:
-                func = setTopTask;
-                break;
-            case DrawCmd.setWindowPos:
-                func = setWindowPos;
-                break;
-            case DrawCmd.clearProcessCacheAck:
-                func = clearProcessCacheAck;
-                break;
-            case DrawCmd.setPackageName:
-                func = setPackageName;
-                break;
-
-            default:
-                Log.e(TAG, "processId=" + processId + ", cmdcode=" + cmdcode + ", wndId=" + wndId);
-                Log.e(TAG, "Illegal draw command " + cmdcode);
-                var transactionSize = reader.getTransactionSize();
-                if (bytesCount - transactionSize > 0)
-                    reader.incrementOffsetAfterRead(bytesCount - transactionSize);
-                reader.compact();
-                return true;
-            //errorAndClose();
-            //return false;
-            //break;
+                case DrawCmd.popWindow:
+                    func = popWindow;
+                    break;
+                case DrawCmd.pushWindow:
+                    func = PushWindow;
+                    break;
+                case DrawCmd.setWndId:
+                    func = setWndId;
+                    break;
+                case DrawCmd.showWindow:
+                    func = ShowWindow;
+                    break;
+                case DrawCmd.hideWindow:
+                    func = HideWindow;
+                    break;
+                case DrawCmd.wallpaperID:
+                    func = setWallpaperByID;
+                    break;
+                case DrawCmd.toggleSearch:
+                    func = toggleSearch;
+                    break;
+                case DrawCmd.toggleMenu:
+                    func = toggleMenu;
+                    break;
+                case DrawCmd.showSoftKeyboard:
+                    func = showSoftKeyboard;
+                    break;
+                case DrawCmd.prepKeyboardLayout:
+                    func = prepKeyboardLayout;
+                    break;
+                case DrawCmd.removeProcess:
+                    func = removeProcess;
+                    break;
+                case DrawCmd.incomingNotification:
+                    func = readNotification;
+                    break;
+                case DrawCmd.wallpaperOffset:
+                    func = updateWallpaperOffset;
+                    break;
+                case DrawCmd.initPopupContentView:
+                    func = initPopupContentView;
+                    break;
+                case DrawCmd.updatePopWindow:
+                    func = updatePopWindow;
+                    break;
+                case DrawCmd.drawWebView:
+                    func = drawWebView;
+                    break;
+                case DrawCmd.resizeWindow:
+                    func = resizeWindow;
+                    break;
+                case DrawCmd.sendKeyboardExtractedText:
+                    func = sendKeyboardExtractedText;
+                    break;
+                case DrawCmd.updateScreenOrientation:
+                    func = updateScreenOrientation;
+                    break;
+                case DrawCmd.prepareViewCache:
+                    func = prepareViewCache;
+                    break;
+                case DrawCmd.roundTripDataAck:
+                    func = roundTripDataAck;
+                    break;
+                case DrawCmd.outgoingCall:
+                    func = outgoingCall;
+                    break;
+                case DrawCmd.drawPath:
+                    func = drawPath;
+                    break;
+                case DrawCmd.toast:
+                case DrawCmd.oldToast:
+                    func = toast;
+                    break;
+                case DrawCmd.setTopTask:
+                    func = setTopTask;
+                    break;
+                case DrawCmd.setWindowPos:
+                    func = setWindowPos;
+                    break;
+                case DrawCmd.clearProcessCacheAck:
+                    func = clearProcessCacheAck;
+                    break;
+                case DrawCmd.setPackageName:
+                    func = setPackageName;
+                    break;
+                case DrawCmd.Video_createNewSurfaceView:
+                    func = createNewSurfaceView;
+                    break;
+                case DrawCmd.MediaObject_newObject:
+                    func = newMediaObject;
+                    break;
+                case DrawCmd.Video_attachToSurface:
+                    func = attachSurfaceToMediaPlayer;
+                    break;
+                case DrawCmd.MediaObject_prepare:
+                    func = prepareMediaObject;
+                    break;
+                case DrawCmd.MediaObject_play:
+                    func = playMediaObject;
+                    break;
+                case DrawCmd.MediaObject_stop:
+                    func = stopMediaObject;
+                    break;
+                case DrawCmd.MediaObject_release:
+                    func = releaseMediaObject;
+                    break;
+                case DrawCmd.Video_pauseVideo:
+                    func = pauseVideo;
+                    break;
+                case DrawCmd.Video_seekTo:
+                    func = seekToVideo;
+                    break;
+                default:
+                    Log.e(TAG, "processId=" + processId + ", cmdcode=" + cmdcode + ", wndId=" + wndId);
+                    Log.e(TAG, "Illegal draw command " + cmdcode);
+                    var transactionSize = reader.getTransactionSize();
+                    if (bytesCount - transactionSize > 0)
+                        reader.incrementOffsetAfterRead(bytesCount - transactionSize);
+                    reader.compact();
+                    return true;
+                    //errorAndClose();
+                    //return false;
+                    //break;
             }
             if (func != null) {
-                // Log.d("AsiM", "processId=" + processId + ", cmdcode=" + cmdcode + ", cmdName=" + drawCmdCodeToText(cmdcode) + ", wndId=" + wndId);
+                if (cmdcode > 70 && cmdcode <= 82) {
+                    Log.d(TAG, "processId=" + processId + ", cmdcode=" + cmdcode + ", cmdName=" + drawCmdCodeToText(cmdcode) + ", wndId=" + wndId);
+                }
                 try {
                     if (DEBUG_PROTOCOL_NETWORK) {
                         Log.d(TAG + DEBUG_PROTOCOL_NETWORK_STR, "Before running func: " + cmdcode);
@@ -1193,8 +1223,8 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                         }
                         return true;
                     } // if (!func(processId,
-                }//try
-                catch(err) {
+                } //try
+                catch (err) {
                     //Handle errors here
                     Log.e(TAG + DEBUG_PROTOCOL_NETWORK_STR, "Error during draw command " + drawCmdCodeToText(cmdcode) + " err: " + err);
                     var transactionSize = reader.getTransactionSize();
@@ -1204,8 +1234,10 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                     return true;
                 } // catch
 
-            } else {// if (func !=
+            } else { // if (func !=
                 Log.e(TAG, "What the func?");
+                Log.e(TAG, "processId=" + processId + ", cmdcode=" + cmdcode + ", wndId=" + wndId);
+                Log.e(TAG, "Illegal draw command " + cmdcode);
             }
         } finally {
             if (!exitInsideDrawCommand)
@@ -1334,8 +1366,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         if (paint.fontPath != null && paint.fontPath.length > 0) {
             if (paint.fontPath.indexOf('assets') > -1) {
                 fontFamily = getFontFromAsset(paint.fontPath);
-            }
-            else if (paint.fontPath.indexOf('cache') > -1) {
+            } else if (paint.fontPath.indexOf('cache') > -1) {
                 fontFamily = getFontFromCache(paint.fontPath, paint.fileContent);
             }
         }
@@ -1348,19 +1379,19 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         }
 
         var fontStyle = "";
-        switch(paint.typefaceStyle) {
-        case Typeface.NORMAL:
-            fontStyle = "";
-            break;
-        case Typeface.BOLD:
-            fontStyle = "bold ";
-            break;
-        case Typeface.BOLD_ITALIC:
-            fontStyle = "italic bold ";
-            break;
-        case Typeface.ITALIC:
-            fontStyle = "italic ";
-            break;
+        switch (paint.typefaceStyle) {
+            case Typeface.NORMAL:
+                fontStyle = "";
+                break;
+            case Typeface.BOLD:
+                fontStyle = "bold ";
+                break;
+            case Typeface.BOLD_ITALIC:
+                fontStyle = "italic bold ";
+                break;
+            case Typeface.ITALIC:
+                fontStyle = "italic ";
+                break;
         }
 
         var textSize = paint.textSize - 0.7;
@@ -1369,16 +1400,16 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
         var fcolor = convertToHTMLColor(paint.color.toString(16));
         ctx.fillStyle = fcolor;
-        switch(paint.textAlign) {
-        case Align.LEFT:
-            ctx.textAlign = "left";
-            break;
-        case Align.CENTER:
-            ctx.textAlign = "center";
-            break;
-        case Align.RIGHT:
-            ctx.textAlign = "right";
-            break;
+        switch (paint.textAlign) {
+            case Align.LEFT:
+                ctx.textAlign = "left";
+                break;
+            case Align.CENTER:
+                ctx.textAlign = "center";
+                break;
+            case Align.RIGHT:
+                ctx.textAlign = "right";
+                break;
         }
 
     };
@@ -1387,13 +1418,13 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         var fontData = fontCache[cacheFontPath];
 
         if (fontData == null) {
-            var fontFamily = cacheFontPath.replace(' ','_').trim();
+            var fontFamily = cacheFontPath.replace(' ', '_').trim();
 
             if (fileContent != undefined) {
                 var fontUrl = "url(data:font/opentype;base64," + fileContent + " )";
 
                 var f = new FontFace(fontFamily, fontUrl, {});
-                f.load().then(function (loadedFace) {
+                f.load().then(function(loadedFace) {
                     document.fonts.add(loadedFace);
 
                     // save font data
@@ -1413,23 +1444,23 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
     };
 
     getFontFromAsset = function(assetFontPath) {
-       var fontData = fontCache[assetFontPath];
+        var fontData = fontCache[assetFontPath];
 
         if (fontData == null) {
-            var fontPath = assetFontPath.replace('assets ','');
+            var fontPath = assetFontPath.replace('assets ', '');
 
             var i = fontPath.indexOf("/");
             if (i < 0) {
                 return "";
             }
 
-            var fontPackage = fontPath.substr(0,i);
+            var fontPackage = fontPath.substr(0, i);
 
             i = fontPath.indexOf("/assets/");
             if (i < 0) {
                 return "";
             }
-            var fileName = fontPath.substr(i+1);
+            var fileName = fontPath.substr(i + 1);
 
             if (fontPackage == null || fontPackage.length == 0 || fileName == null || fileName.length == 0) {
                 return "";
@@ -1438,30 +1469,30 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             var url = "../../getResource?" + "packageName=" + fontPackage + "&fileName=" + fileName;
             getJSON(url, function(data) {
                 if (data.status == 0) {
-                  var fileContent = data.fileContent;
+                    var fileContent = data.fileContent;
 
-                  var i1 = fileName.lastIndexOf('/');
-                  var i2 = fileName.lastIndexOf('.');
-                  if (i1 < 0 || i2 < 0) {
-                      return "";
-                  }
-                  var fontFamily = fileName.substring(i1+1, i2);
+                    var i1 = fileName.lastIndexOf('/');
+                    var i2 = fileName.lastIndexOf('.');
+                    if (i1 < 0 || i2 < 0) {
+                        return "";
+                    }
+                    var fontFamily = fileName.substring(i1 + 1, i2);
 
-                  var fontUrl = "url(data:font/opentype;base64," + fileContent + " )";
-                  var f = new FontFace(fontFamily, fontUrl, {});
+                    var fontUrl = "url(data:font/opentype;base64," + fileContent + " )";
+                    var f = new FontFace(fontFamily, fontUrl, {});
 
-                  f.load().then(function (loadedFace) {
-                      document.fonts.add(loadedFace);
-                      // save data
-                      fontData = {};
-                      fontData.path = assetFontPath;
-                      fontData.fontFamily = fontFamily;
-                      fontData.fileContent = fileContent;
-                      fontCache[assetFontPath] = fontData;
-                      return fontFamily;
-                  });
+                    f.load().then(function(loadedFace) {
+                        document.fonts.add(loadedFace);
+                        // save data
+                        fontData = {};
+                        fontData.path = assetFontPath;
+                        fontData.fontFamily = fontFamily;
+                        fontData.fileContent = fileContent;
+                        fontCache[assetFontPath] = fontData;
+                        return fontFamily;
+                    });
                 }
-            },function(){
+            }, function() {
                 Log.e("getJSON: ERROR");
                 return "";
             });
@@ -1482,7 +1513,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
     drawPosTextOnCanvas = function(ctx, text, x, y, paint) {
         setTextAttFromPaint(ctx, paint);
-        if ( x instanceof Array && y instanceof Array) {
+        if (x instanceof Array && y instanceof Array) {
             var minLength = 0;
             if (x.length > y.length)
                 minLength = y.length;
@@ -1495,7 +1526,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             } else {
                 Log.e(TAG, "drawPosTextOnCanvas:: incorrect text input. text = " + text + " minLength = " + minLength);
             }
-        } else if ( x instanceof Array) {
+        } else if (x instanceof Array) {
             if (text != null && text.length >= x.length) {
                 for (var i = 0; i < x.length; i++) {
                     ctx.fillText(text[i], x[i], y);
@@ -1503,7 +1534,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             } else {
                 Log.e(TAG, "drawPosTextOnCanvas:: incorrect text input. text = " + text + " posX.length = " + x.length);
             }
-        } else if ( y instanceof Array) {
+        } else if (y instanceof Array) {
             if (text != null && text.length >= y.length) {
                 for (var i = 0; i < y.length; i++) {
                     ctx.fillText(text[i], x, y[i]);
@@ -1664,9 +1695,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
     getColorFromInt = function(intColor) {
         var ncolor = (intColor & 0xFFFFFF);
         var nalpha = intColor >>> 24;
-        var nr = (intColor & 0xFF0000 ) >>> 16;
-        var ng = (intColor & 0x00FF00 ) >>> 8;
-        var nb = (intColor & 0x0000FF );
+        var nr = (intColor & 0xFF0000) >>> 16;
+        var ng = (intColor & 0x00FF00) >>> 8;
+        var nb = (intColor & 0x0000FF);
         var gColor = 'rgba(' + nr + ',' + ng + ',' + nb + ',' + (nalpha / 255) + ')';
         return gColor;
     };
@@ -1690,7 +1721,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         }
     };
 
-    convertToHTMLColor = function (aColor) {
+    convertToHTMLColor = function(aColor) {
         var color = aColor;
         if (color.length > 6) {
             Log.e(TAG, "convertToHTMLColor.error. color: " + aColor);
@@ -1722,7 +1753,8 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         var right = Math.round(r.right);
         var bottom = Math.round(r.bottom);
 
-        var rx = 0, ry = 0;
+        var rx = 0,
+            ry = 0;
 
         if (cmd == DrawCmd.drawRoundRect) {
             if (!reader.canReadBytes(8))
@@ -1914,11 +1946,11 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         if (timeout == null)
             timeout = 10000;
         $.ajax({
-            dataType : "json",
-            url : url,
-            success : success,
-            error : jsonError,
-            'timeout' : timeout
+            dataType: "json",
+            url: url,
+            success: success,
+            error: jsonError,
+            'timeout': timeout
         });
     };
 
@@ -1943,7 +1975,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
     drawBitmapIntoCanvas = function(processId, wndId, bm, src, dst, matrix, p, bitmap, left, top, chunk, drawBitmapType) {
         var img = document.createElement("img");
         if (PRINT_DRAW_COMMANDS) {
-            Log.d(TAG, "drawBitmapIntoCanvas. bitmap.bitmapType: "+bitmap.bitmapType +", drawBitmapType: "+drawBitmapType);
+            Log.d(TAG, "drawBitmapIntoCanvas. bitmap.bitmapType: " + bitmap.bitmapType + ", drawBitmapType: " + drawBitmapType);
         }
 
         img.onload = function(e) {
@@ -1958,10 +1990,10 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
             var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
             if (ctx != null) {
-                if (drawBitmapType == DrawBitmapType.ninePatch) {//nine patch image
+                if (drawBitmapType == DrawBitmapType.ninePatch) { //nine patch image
                     ninePatch_Draw(ctx, dst, img, chunk, p);
 
-                } else if (drawBitmapType == DrawBitmapType.webView) {//Web view draw
+                } else if (drawBitmapType == DrawBitmapType.webView) { //Web view draw
                     var sn = wm.getWindow(processId, wndId);
                     //		check which case is drawn and update matrix and clipBounds accordingly:
                     //		1. out of memory - in this case we should be receiving bitmap at the size of the screen
@@ -1972,17 +2004,17 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                         //rect2.right = (int) (currentClipBounds.right + matValues[2]);
                         //cm.updateCanvasParams(rect2, new Matrix());
                         var newbm = {
-                            isNull : false
+                            isNull: false
                         };
                         newbm.bounds = {
-                            isNull : false,
-                            left : sn.matrix.arr[2],
-                            top : sn.matrix.arr[5],
-                            right : (sn.bounds.right + sn.matrix.arr[2]),
-                            bottom : (sn.bounds.bottom + sn.matrix.arr[5])
+                            isNull: false,
+                            left: sn.matrix.arr[2],
+                            top: sn.matrix.arr[5],
+                            right: (sn.bounds.right + sn.matrix.arr[2]),
+                            bottom: (sn.bounds.bottom + sn.matrix.arr[5])
                         };
                         newbm.matrix = {
-                            isNull : false
+                            isNull: false
                         };
                         newbm.matrix.arr = [1, 0, 0, 0, 1, 0, 0, 0, 1];
                         Log.e("webView out of mem case! sn.bounds:" + JSON.stringify(sn.bounds) + ", sn.matrix:" + JSON.stringify(sn.matrix) + ", img.height=" + img.height + ", newbm:" + JSON.stringify(newbm));
@@ -1996,7 +2028,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                     ctx.drawImage(newImage, 0, 0);
 
 
-                } else {// std image (no nine patch)
+                } else { // std image (no nine patch)
                     if (drawBitmapType == DrawBitmapType.bitmapShader) {
                         if (matrix != null && !matrix.isNull) {
                             ctx.setTransform(matrix.arr[0], matrix.arr[3], matrix.arr[1], matrix.arr[4], matrix.arr[2], matrix.arr[5]);
@@ -2064,19 +2096,19 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                 getJSON(bitmap.path, function(data) {
                     // Log.d("getJSON: "+JSON.stringify(data,null,2));
                     if (data.status == 0) {
-                      var fileContent = data.fileContent;
-                      img.setAttribute("src", 'data:image/png;base64,' + fileContent);
+                        var fileContent = data.fileContent;
+                        img.setAttribute("src", 'data:image/png;base64,' + fileContent);
 
-                      // save data
-                      resData = {};
-                      resData.path = bitmap.path;
-                      resData.fileContent = fileContent;
-                      resCache[bitmap.path] = resData;
+                        // save data
+                        resData = {};
+                        resData.path = bitmap.path;
+                        resData.fileContent = fileContent;
+                        resCache[bitmap.path] = resData;
                     } else {
                         waitForDraw = false;
                         moreData();
                     }
-                },function(){
+                }, function() {
                     Log.e("getJSON: ERROR");
                     waitForDraw = false;
                     moreData();
@@ -2098,7 +2130,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             // 9patch is always in png format
             if (drawBitmapType == DrawBitmapType.ninePatch) {
                 img.setAttribute("src", 'data:image/png;base64,' + b64encoded);
-            } else if (Modernizr.webp) {// supports webp format
+            } else if (Modernizr.webp) { // supports webp format
                 img.setAttribute("src", 'data:image/webp;base64,' + b64encoded);
             } else {
                 img.setAttribute("src", 'data:image/png;base64,' + b64encoded);
@@ -2240,7 +2272,8 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         //Log.v(TAG, "fillStyle=" + fcolor);
         ctx.fillStyle = fcolor;
         //drawLines(ctx,pts.arr, offset, count, paint);
-        for (var i = offset; (i + 3) < (offset + count) && (i + 3) < pts.arr.length; i += 4) {
+        for (var i = offset;
+            (i + 3) < (offset + count) && (i + 3) < pts.arr.length; i += 4) {
             ctx.beginPath();
             ctx.moveTo(pts.arr[i], pts.arr[i + 1]);
             ctx.lineTo(pts.arr[i + 2], pts.arr[i + 3]);
@@ -2371,12 +2404,12 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         var dstRightsHaveBeenCached = false;
 
         var numStretchyXPixelsRemaining = 0;
-        for ( i = 0; i < numXDivs; i += 2) {
+        for (i = 0; i < numXDivs; i += 2) {
             numStretchyXPixelsRemaining += chunk.xDivs[i + 1] - chunk.xDivs[i];
         }
         var numFixedXPixelsRemaining = bitmapWidth - numStretchyXPixelsRemaining;
         var numStretchyYPixelsRemaining = 0;
-        for ( i = 0; i < numYDivs; i += 2) {
+        for (i = 0; i < numYDivs; i += 2) {
             numStretchyYPixelsRemaining += chunk.yDivs[i + 1] - chunk.yDivs[i];
         }
         var numFixedYPixelsRemaining = bitmapHeight - numStretchyYPixelsRemaining;
@@ -2416,7 +2449,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
         // The initial yDiv and whether the first row is considered stretchable or
         // not depends on whether yDiv[0] was zero or not.
-        for ( j = yIsStretchable ? 1 : 0; j <= numYDivs && src.top < bitmapHeight; j++, yIsStretchable = !yIsStretchable) {
+        for (j = yIsStretchable ? 1 : 0; j <= numYDivs && src.top < bitmapHeight; j++, yIsStretchable = !yIsStretchable) {
             src.left = 0;
             dst.left = location.left;
             if (j == numYDivs) {
@@ -2437,7 +2470,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             xIsStretchable = initialXIsStretchable;
             // The initial xDiv and whether the first column is considered
             // stretchable or not depends on whether xDiv[0] was zero or not.
-            for ( i = xIsStretchable ? 1 : 0; i <= numXDivs && src.left < bitmapWidth; i++, xIsStretchable = !xIsStretchable) {
+            for (i = xIsStretchable ? 1 : 0; i <= numXDivs && src.left < bitmapWidth; i++, xIsStretchable = !xIsStretchable) {
                 color = chunk.colors[colorIndex++];
                 if (i == numXDivs) {
                     src.right = bitmapWidth;
@@ -2508,7 +2541,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             var oldFillStyle = ctx.fillStyle;
             var oldAlpha = ctx.globalAlpha;
             ctx.beginPath();
-            var color = (colorHint & 0xFFFFFF );
+            var color = (colorHint & 0xFFFFFF);
             var alpha = colorHint >>> 24;
 
             var fcolor = convertToHTMLColor(color.toString(16));
@@ -2797,14 +2830,14 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         }
         var paint = paintRet.p;
 
-       if (paint != null && paint.shader != null) {
-           var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
-           if (ctx == null) {
-               Log.e(TAG, "drawOval. ERROR ctx is NULL");
-               return true;
-           }
+        if (paint != null && paint.shader != null) {
+            var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
+            if (ctx == null) {
+                Log.e(TAG, "drawOval. ERROR ctx is NULL");
+                return true;
+            }
 
-           if (paint.shader.stype == ShaderType.LinearGradient) {
+            if (paint.shader.stype == ShaderType.LinearGradient) {
                 var x0 = paint.shader.x0;
                 var y0 = paint.shader.y0;
                 var x1 = paint.shader.x1;
@@ -2862,9 +2895,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             return true;
         }
 
-        var cx = Math.round((left + right)/2);
-        var cy = Math.round((top + bottom)/2);
-        var radius = Math.min(right-left, bottom-top)/2;
+        var cx = Math.round((left + right) / 2);
+        var cy = Math.round((top + bottom) / 2);
+        var radius = Math.min(right - left, bottom - top) / 2;
 
         drawEllipse(processId, wndId, bm, cx, cy, radius, paint);
         return true;
@@ -2915,12 +2948,12 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             return true;
         }
 
-        var cx = Math.round((left + right)/2);
-        var cy = Math.round((top + bottom)/2);
-        var radius = Math.min(right-left, bottom-top)/2;
+        var cx = Math.round((left + right) / 2);
+        var cy = Math.round((top + bottom) / 2);
+        var radius = Math.min(right - left, bottom - top) / 2;
         ctx.fillStyle = convertToHTMLColor(paint.color.toString(16));
 
-        ctx.arc(cx, cy, radius, 0, 2*Math.PI);
+        ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
 
         switch (paint.style) {
             case 0:
@@ -2958,14 +2991,14 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             return true;
         }
 
-       if (paint != null && paint.shader != null) {
-           var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
-           if (ctx == null) {
-               Log.e(TAG, "drawCircle. ERROR ctx is NULL");
-               return true;
-           }
+        if (paint != null && paint.shader != null) {
+            var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
+            if (ctx == null) {
+                Log.e(TAG, "drawCircle. ERROR ctx is NULL");
+                return true;
+            }
 
-           if (paint.shader.stype == ShaderType.LinearGradient) {
+            if (paint.shader.stype == ShaderType.LinearGradient) {
                 var x0 = paint.shader.x0;
                 var y0 = paint.shader.y0;
                 var x1 = paint.shader.x1;
@@ -3009,7 +3042,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         return true;
     };
 
-    drawEllipse = function (processId, wndId, bm, cx, cy, radius, paint) {
+    drawEllipse = function(processId, wndId, bm, cx, cy, radius, paint) {
         var color = convertToHTMLColor(paint.color.toString(16));
 
         if (color == '#000000') {
@@ -3025,9 +3058,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         ctx.fillStyle = color;
         // ctx.ellipse(cx, cy, radius, radius, 45*Math.PI/180, 0, 2*Math.PI);
         ctx.translate(cx, cy);
-        ctx.rotate(45*Math.PI/180);
+        ctx.rotate(45 * Math.PI / 180);
         ctx.scale(radius, radius);
-        ctx.arc(0, 0, 1, 0, 2*Math.PI);
+        ctx.arc(0, 0, 1, 0, 2 * Math.PI);
 
         switch (paint.style) {
             case 0:
@@ -3162,50 +3195,50 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         var Points = path.points;
         var segmentMask = path.segmentMask;
         for (var i = 0; i < path.verbs.length; i++) {
-            switch(path.verbs[i]) {
-            case 0:
-                ctx.moveTo(Points[2 * curPoint], Points[2 * curPoint + 1]);
-                //                Log.v(TAG, "Move to (" + Points[2*curPoint] + ", " + Points[2*curPoint+1] + ")");
-                curPoint++;
-                break;
-            case 1:
-                // Line
-                if ((segmentMask & 1) != 0) {
-                    ctx.lineTo(Points[2 * curPoint], Points[2 * curPoint + 1]);
-                    //                    Log.v(TAG, "Line to (" + Points[2*curPoint] + ", " + Points[2*curPoint+1] + ")");
-                }
-                curPoint++;
-                break;
-            case 2:
-                // Quad
-                if ((segmentMask & 2) != 0) {
-                    ctx.quadraticCurveTo(Points[2 * curPoint], Points[2 * curPoint + 1], Points[2 * curPoint + 2], Points[2 * curPoint + 3]);
-                    //                    Log.v(TAG, "Quad to (" + Points[2*curPoint] + ", " + Points[2*curPoint+1] + "),(" +
-                    //                            Points[2*curPoint+2] + ", " + Points[2*curPoint+3] + ")");
-                }
-                curPoint += 2;
-                break;
-            case 3:
-                // Cubic
-                if ((segmentMask & 4) != 0) {
-                    ctx.bezierCurveTo(Points[2 * curPoint], Points[2 * curPoint + 1], Points[2 * curPoint + 2], Points[2 * curPoint + 3], Points[2 * curPoint + 4], Points[2 * curPoint + 5]);
-                    //                    Log.v(TAG, "Quad to (" + Points[2*curPoint] + ", " + Points[2*curPoint+1] + "),(" +
-                    //                            Points[2*curPoint+2] + ", " + Points[2*curPoint+3] + "),(" +
-                    //                            Points[2*curPoint+4] + ", " + Points[2*curPoint+5] + ")");
-                }
-                curPoint += 3;
-                break;
-            case 4:
-                // Close
-                //                Log.v(TAG, "Close");
-                ctx.closePath();
-                break;
-            case 5:
-                // Done
-                break;
-            default:
-                Log.e(TAG, "Wrong verb type " + Verbs[i] + " of point " + i);
-                break;
+            switch (path.verbs[i]) {
+                case 0:
+                    ctx.moveTo(Points[2 * curPoint], Points[2 * curPoint + 1]);
+                    //                Log.v(TAG, "Move to (" + Points[2*curPoint] + ", " + Points[2*curPoint+1] + ")");
+                    curPoint++;
+                    break;
+                case 1:
+                    // Line
+                    if ((segmentMask & 1) != 0) {
+                        ctx.lineTo(Points[2 * curPoint], Points[2 * curPoint + 1]);
+                        //                    Log.v(TAG, "Line to (" + Points[2*curPoint] + ", " + Points[2*curPoint+1] + ")");
+                    }
+                    curPoint++;
+                    break;
+                case 2:
+                    // Quad
+                    if ((segmentMask & 2) != 0) {
+                        ctx.quadraticCurveTo(Points[2 * curPoint], Points[2 * curPoint + 1], Points[2 * curPoint + 2], Points[2 * curPoint + 3]);
+                        //                    Log.v(TAG, "Quad to (" + Points[2*curPoint] + ", " + Points[2*curPoint+1] + "),(" +
+                        //                            Points[2*curPoint+2] + ", " + Points[2*curPoint+3] + ")");
+                    }
+                    curPoint += 2;
+                    break;
+                case 3:
+                    // Cubic
+                    if ((segmentMask & 4) != 0) {
+                        ctx.bezierCurveTo(Points[2 * curPoint], Points[2 * curPoint + 1], Points[2 * curPoint + 2], Points[2 * curPoint + 3], Points[2 * curPoint + 4], Points[2 * curPoint + 5]);
+                        //                    Log.v(TAG, "Quad to (" + Points[2*curPoint] + ", " + Points[2*curPoint+1] + "),(" +
+                        //                            Points[2*curPoint+2] + ", " + Points[2*curPoint+3] + "),(" +
+                        //                            Points[2*curPoint+4] + ", " + Points[2*curPoint+5] + ")");
+                    }
+                    curPoint += 3;
+                    break;
+                case 4:
+                    // Close
+                    //                Log.v(TAG, "Close");
+                    ctx.closePath();
+                    break;
+                case 5:
+                    // Done
+                    break;
+                default:
+                    Log.e(TAG, "Wrong verb type " + Verbs[i] + " of point " + i);
+                    break;
             }
         }
 
@@ -3270,11 +3303,11 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         keyboardProcessID = processId;
 
         if (show) {
-            // Log.e(TAG,"open edVirtualKeyboard");
-            // $( window ).scroll(function() {
-                // Log.d("$( window ).scrollTop(): "+$( window ).scrollTop());
-            // });
-            $("#edVirtualKeyboard").css({top: lastTouchY, left: lastTouchX, position:'fixed'});
+            Log.e(TAG, "open edVirtualKeyboard");
+            $(window).scroll(function() {
+                Log.d("$( window ).scrollTop(): " + $(window).scrollTop());
+            });
+            $("#edVirtualKeyboard").css({ top: lastTouchY, left: lastTouchX, position: 'fixed' });
             var input = document.querySelector('#edVirtualKeyboard');
             var focus = function() {
                 //e.stopPropagation();
@@ -3296,7 +3329,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             focus();
             //document.getElementById("edVirtualKeyboard").focus();
             // check if need to pass currentProcessId instead
-            NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.setKeyboardHeight), processId, mHeight/2);
+            NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.setKeyboardHeight), processId, mHeight / 2);
         } else {
             if (DEBUG_PROTOCOL_NETWORK) {
                 Log.d("Hide soft keyboard");
@@ -3318,13 +3351,13 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         var duration = reader.readInt();
         if (duration == 0) {
             new Android_Toast({
-                content : '<em>' + textRes + '</em>',
-                duration : 2000
+                content: '<em>' + textRes + '</em>',
+                duration: 2000
             });
         } else if (duration == 1) {
             new Android_Toast({
-                content : '<em>' + textRes + '</em>',
-                duration : 3500
+                content: '<em>' + textRes + '</em>',
+                duration: 3500
             });
         }
         return true;
@@ -3407,13 +3440,17 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
         var activityOrDialog = (containerType == ContainerType.ACTIVITY || containerType == ContainerType.DIALOG);
 
-        if (activityOrDialog) {//AsiM - keep last process id for keyboard
+        if (activityOrDialog) { //AsiM - keep last process id for keyboard
             if (processId != currentProcessId) {
                 currentProcessId = processId;
             }
         }
 
-        var x = 0, y = 0, gravity = 0, orientation = 0, inputMethodMode = 0;
+        var x = 0,
+            y = 0,
+            gravity = 0,
+            orientation = 0,
+            inputMethodMode = 0;
         var onTopOfKeyboard = false;
         var taskIdAndPos = -1;
         var parentWndId = -1;
@@ -3490,7 +3527,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         }
         if (isMobile) {
             if (PRINT_DRAW_COMMANDS) {
-                Log.d("prepKeyboardLayout. text: "+text.value);
+                Log.d("prepKeyboardLayout. text: " + text.value);
             }
             $("#edVirtualKeyboard").val(text.value);
             $("#edVirtualKeyboard").setCursorPosition(text.value.length);
@@ -3605,29 +3642,29 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         dispatchKeyEvent(currentProcessId, UXIPself.nuboByte(PlayerCmd.searchKeyEvent));
     };
 
-	publicinterface.clickMobileBack = function() {
-	    if (PRINT_NETWORK_COMMANDS) {
+    publicinterface.clickMobileBack = function() {
+        if (PRINT_NETWORK_COMMANDS) {
             Log.Date("clickMobileBack.");
         }
-        
+
         if (protocolState != psConnected)
             return;
-            
+
         var sn = wm.getWindow(currentProcessId, 0);
         if (sn == null)
             return;
 
         handleKeyEvent(currentProcessId, sn.wndId, {
-            name : "KeyEvent",
-            action : KeyEvent.ACTION_DOWN,
-            keyCode : KeyEvent.KEYCODE_BACK
+            name: "KeyEvent",
+            action: KeyEvent.ACTION_DOWN,
+            keyCode: KeyEvent.KEYCODE_BACK
         });
 
         //new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
         handleKeyEvent(currentProcessId, sn.wndId, {
-            name : "KeyEvent",
-            action : KeyEvent.ACTION_UP,
-            keyCode : KeyEvent.KEYCODE_BACK
+            name: "KeyEvent",
+            action: KeyEvent.ACTION_UP,
+            keyCode: KeyEvent.KEYCODE_BACK
         });
     };
 
@@ -3641,15 +3678,15 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         if (sn == null)
             return;
         handleKeyEvent(currentProcessId, sn.wndId, {
-            name : "KeyEvent",
-            action : KeyEvent.ACTION_DOWN,
-            keyCode : KeyEvent.KEYCODE_BACK
+            name: "KeyEvent",
+            action: KeyEvent.ACTION_DOWN,
+            keyCode: KeyEvent.KEYCODE_BACK
         });
         //new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
         handleKeyEvent(currentProcessId, sn.wndId, {
-            name : "KeyEvent",
-            action : KeyEvent.ACTION_UP,
-            keyCode : KeyEvent.KEYCODE_BACK
+            name: "KeyEvent",
+            action: KeyEvent.ACTION_UP,
+            keyCode: KeyEvent.KEYCODE_BACK
         });
         // new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
     };
@@ -3673,14 +3710,14 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         if (sn == null)
             return;
         handleKeyEvent(currentProcessId, sn.wndId, {
-            name : "KeyEvent",
-            action : KeyEvent.ACTION_DOWN,
-            keyCode : KeyEvent.KEYCODE_MENU
+            name: "KeyEvent",
+            action: KeyEvent.ACTION_DOWN,
+            keyCode: KeyEvent.KEYCODE_MENU
         });
         handleKeyEvent(currentProcessId, sn.wndId, {
-            name : "KeyEvent",
-            action : KeyEvent.ACTION_UP,
-            keyCode : KeyEvent.KEYCODE_MENU
+            name: "KeyEvent",
+            action: KeyEvent.ACTION_UP,
+            keyCode: KeyEvent.KEYCODE_MENU
         });
     };
 
@@ -3689,7 +3726,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         if (protocolState != psConnected)
             return;
 
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.keyEvent), processId ,wndId ,event);
+        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.keyEvent), processId, wndId, event);
     };
 
     if (START_ROUND_TRIP_CHECK && !mPlaybackMode) {
@@ -3715,24 +3752,24 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
     function getNuboLongAsFloat(nuboLongAsFloat) {
         var nuboLaF = {
-            name : "nuboLongAsFloat",
-            val : nuboLongAsFloat
+            name: "nuboLongAsFloat",
+            val: nuboLongAsFloat
         };
         return nuboLaF;
     }
 
     function getNuboFloat(nuboFloat) {
         var nuboF = {
-            name : "nuboFloat",
-            val : nuboFloat
+            name: "nuboFloat",
+            val: nuboFloat
         };
         return nuboF;
     }
 
     this.nuboByte = function(nuboByte) {
         var nuboB = {
-                name : "nuboByte",
-                val : nuboByte
+            name: "nuboByte",
+            val: nuboByte
         };
         return nuboB;
     }
@@ -3782,7 +3819,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
         var packName = (rsRet.value == null) ? "" : rsRet.value;
         if (packName.length > 0) {
-            var line = {processId: processId, packName:packName};
+            var line = { processId: processId, packName: packName };
             mPackageNameList.push(line);
         };
 
@@ -3824,13 +3861,99 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         var containerType = sn.containerType;
         var activityOrDialog = (containerType == ContainerType.ACTIVITY || containerType == ContainerType.DIALOG);
 
-        if (activityOrDialog) {//AsiM - keep last process id for keyboard
+        if (activityOrDialog) { //AsiM - keep last process id for keyboard
             if (processId != currentProcessId) {
                 //wm.hideProcess(currentProcessId);
                 currentProcessId = processId;
             }
         }
 
+        return true;
+    };
+
+    //new Video functions 
+    var createNewSurfaceView = function(processId, surfaceHash) {
+        var data = {
+            x: reader.readInt(),
+            y: reader.readInt(),
+            width: reader.readInt(),
+            height: reader.readInt(),
+            visible: reader.readBoolean(),
+            parentWndId: reader.readInt()
+        }
+        Log.e(TAG, `createNewSurfaceView. surfaceHash: ${surfaceHash}, x: ${data.x}, y: ${data.y}, width: ${data.width}, height: ${data.height}, visible: ${data.visible}, parentWndId: ${data.parentWndId}`);
+        wm.createNewSurfaceView(processId, surfaceHash, data);
+        return true;
+    };
+
+    var newMediaObject = function(processId, objectType) {
+        var objectHashInt = reader.readInt();
+        Log.e(TAG, "newMediaObject: " + objectHashInt);
+        if (objectType == MediaObjectType.MediaPlayer) {
+            wm.newMediaPlayer(processId, objectType, objectHashInt);
+        } else {
+            Log.e(TAG, "Invalid media object type: " + objectType);
+        }
+        return true;
+    };
+
+    var attachSurfaceToMediaPlayer = function(processId, mediaPlayerHashInt) {
+        var surfaceHashInt = reader.readInt();
+        wm.attachSurfaceToMediaPlayer(processId, mediaPlayerHashInt, surfaceHashInt);
+        return true;
+    };
+
+    var prepareMediaObject = function(processId, objectType) {
+        if (objectType == MediaObjectType.MediaPlayer) {
+            //wm.newMediaPlayer(processId, objectType, objectHashInt);
+            var mediaPlayerHashInt = reader.readInt();
+            var rsRet = reader.readCachedString(processId);
+            if (!rsRet.canRead)
+                return false;
+            var streamName = rsRet.value;
+            Log.e(TAG, "prepareMediaObject. processId: " + processId + ", mediaPlayerHashInt: " + mediaPlayerHashInt + ", streamName: " + streamName);
+            wm.prepareMediaPlayer(processId, mediaPlayerHashInt, streamName);
+        } else {
+            Log.e(TAG, "Invalid media object type: " + objectType);
+        }
+        return true;
+    };
+
+    var playMediaObject = function(processId, objectType) {
+        var mediaPlayerHashInt = reader.readInt();
+        if (objectType == MediaObjectType.MediaPlayer) {
+            var totalDuration = reader.readInt();
+            wm.startMediaPlayer(processId, mediaPlayerHashInt, totalDuration);
+        } else {
+            Log.e(TAG, "Invalid media object type: " + objectType);
+        }
+        return true;
+    };
+
+    var stopMediaObject = function(processId, objectType) {
+        var mediaPlayerHashInt = reader.readInt();
+        Log.e(TAG, "Invalid media object type: " + objectType);
+        return true;
+    };
+
+    var releaseMediaObject = function(processId, objectType) {
+        var mediaPlayerHashInt = reader.readInt();
+        if (objectType == MediaObjectType.MediaPlayer) {
+            wm.releaseMediaPlayer(processId, mediaPlayerHashInt);
+        } else {
+            Log.e(TAG, "Invalid media object type: " + objectType);
+        }
+        return true;
+    };
+
+    var pauseVideo = function(processId, mediaPlayerHashInt) {
+        wm.pauseVideo(processId, mediaPlayerHashInt);
+        return true;
+    };
+
+    var seekToVideo = function(processId, mediaPlayerHashInt) {
+        var msec = reader.readInt();
+        wm.seekToVideo(processId, mediaPlayerHashInt, msec);
         return true;
     };
 
@@ -3865,30 +3988,28 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
 
     // return constructor(ctx, canvasObj,width,height); // Return the public API interface
     return publicinterface;
-}// End of RFB()
+} // End of RFB()
 
 var RomClientType = {
     // main types
-    ANDROID : 0,
-    IOS : 1,
-    WEB  : 2,
+    ANDROID: 0,
+    IOS: 1,
+    WEB: 2,
     // Client ROM support for images
-    ROM_IMAGES_WEBP  : 0x00000000,
-    ROM_IMAGES_PNG   : 0x00000100,
-    ROM_IMAGES_JPG   : 0x00000200,
-    ROM_IMAGES_MASK  : 0x00000F00,
+    ROM_IMAGES_WEBP: 0x00000000,
+    ROM_IMAGES_PNG: 0x00000100,
+    ROM_IMAGES_JPG: 0x00000200,
+    ROM_IMAGES_MASK: 0x00000F00,
     // Client ROM support for hardware keyboard
-    ROM_HW_KEYBOARD_NONE   : 0x00000000,
-    ROM_HW_KEYBOARD_EXISTS : 0x00001000
+    ROM_HW_KEYBOARD_NONE: 0x00000000,
+    ROM_HW_KEYBOARD_EXISTS: 0x00001000
 };
 
-function Consts() {
-}
+function Consts() {}
 
 Consts.TEMP_WINDOW_ID = 12345;
 
-function Log() {
-}
+function Log() {}
 
 Log.v = function(tag, msg) {
     console.log("[" + tag + "] " + msg);
@@ -3900,16 +4021,14 @@ Log.d = function(tag, msg) {
     console.info("[" + tag + "] " + msg);
 };
 
-function ContainerType() {
-};
+function ContainerType() {};
 ContainerType.ACTIVITY = 0x01;
 ContainerType.DIALOG = 0x02;
 ContainerType.POPUPWINDOW = 0x04;
 ContainerType.DEFAULT = 0x08;
 //Default is for all else
 
-function PlayerCmd() {
-}
+function PlayerCmd() {}
 
 PlayerCmd.sync = -1;
 PlayerCmd.touchEvent = 1;
@@ -3929,6 +4048,15 @@ PlayerCmd.searchKeyEvent = 22;
 PlayerCmd.notificationOpen = 23;
 PlayerCmd.requestState = 24;
 
+// Video commands
+PlayerCmd.VideoErrorEvent = 25;
+PlayerCmd.VideoCompleteEvent = 26;
+PlayerCmd.VideoBufferEvent = 27;
+PlayerCmd.VideoInfoEvent = 28;
+PlayerCmd.VideoSeekEvent = 29;
+PlayerCmd.VideoProgress = 30;
+PlayerCmd.OnVideoSizeChanged = 31;
+
 function drawCmdCodeToText(code) {
     for (var property in DrawCmd) {
         var value = DrawCmd[property];
@@ -3938,8 +4066,7 @@ function drawCmdCodeToText(code) {
     return code;
 }
 
-function DrawCmd() {
-}
+function DrawCmd() {}
 
 DrawCmd.setDirtyRect = 1;
 DrawCmd.drawColor1 = 2;
@@ -3975,6 +4102,19 @@ DrawCmd.drawOval = 30;
 DrawCmd.drawArc = 31;
 DrawCmd.drawCircle = 32;
 DrawCmd.drawPath2 = 33;
+
+DrawCmd.MediaObject_stop = 71;
+DrawCmd.Video_createNewSurfaceView = 72;
+DrawCmd.MediaObject_release = 73;
+DrawCmd.MediaObject_reset = 74;
+DrawCmd.Video_pauseVideo = 75;
+DrawCmd.Video_seekTo = 76;
+DrawCmd.UpdateCursor = 77;
+DrawCmd.MediaObject_play = 78;
+DrawCmd.MediaObject_newObject = 79;
+DrawCmd.MediaObject_prepare = 80;
+DrawCmd.Video_attachToSurface = 81;
+DrawCmd.Video_setVolume = 82;
 
 DrawCmd.toast = 83;
 
@@ -4013,8 +4153,7 @@ DrawCmd.setTopTask = 125;
 DrawCmd.setWindowPos = 126;
 
 //drawBitmapType
-function DrawBitmapType() {
-}
+function DrawBitmapType() {}
 
 DrawBitmapType.stdBitmap = 0;
 DrawBitmapType.ninePatch = 1;
@@ -4022,81 +4161,70 @@ DrawBitmapType.webView = 2;
 DrawBitmapType.drawBitmapMatrix = 3;
 DrawBitmapType.bitmapShader = 4;
 
-function NuboStatus() {
-}
+function NuboStatus() {}
 
 //return status
 NuboStatus.OK = 0;
 NuboStatus.FAIL = -1;
 
-function BitmapSendRcvType() {
-}
+function BitmapSendRcvType() {}
 
 BitmapSendRcvType.fullBitmap = 1;
 BitmapSendRcvType.cachedBitmap = 2;
 BitmapSendRcvType.resourceBitmap = 3;
 BitmapSendRcvType.assetBitmap = 4;
 
-function PathSendRcvType() {
-}
+function PathSendRcvType() {}
 
 PathSendRcvType.fullPath = 1;
 PathSendRcvType.cachedPath = 2;
 // Path constants
-function Path() {
-}
+function Path() {}
 
 Path.FillType = {
-    WINDING : 0,
-    EVEN_ODD : 1,
-    INVERSE_WINDING : 2,
-    INVERSE_EVEN_ODD : 3
+    WINDING: 0,
+    EVEN_ODD: 1,
+    INVERSE_WINDING: 2,
+    INVERSE_EVEN_ODD: 3
 };
 
-function FloatArrSendRcvType() {
-}
+function FloatArrSendRcvType() {}
 
 FloatArrSendRcvType.fullArray = 1;
 FloatArrSendRcvType.cachedArray = 2;
 
-function Typeface() {
-}
+function Typeface() {}
 
 Typeface.BOLD = 1;
 Typeface.BOLD_ITALIC = 3;
 Typeface.ITALIC = 2;
 Typeface.NORMAL = 0;
 
-function Style() {
-}
+function Style() {}
 
 Style.FILL = 0;
 Style.STROKE = 1;
 Style.FILL_AND_STROKE = 2;
 
-function Cap() {
-}
+function Cap() {}
 
 Cap.BUTT = 0;
 Cap.ROUND = 1;
 Cap.SQUARE = 2;
 
-function Join() {
-}
+function Join() {}
 
 Join.MITER = 0;
 Join.ROUND = 1;
 Join.BEVEL = 2;
 
-function Align() {
-}
+function Align() {}
 
 Align.LEFT = 0;
 Align.CENTER = 1;
 Align.RIGHT = 2;
 
-function Paint() {
-}
+function Paint() {}
 
 /** bit mask for the flag enabling antialiasing */
 Paint.ANTI_ALIAS_FLAG = 0x01;
@@ -4117,8 +4245,7 @@ Paint.SUBPIXEL_TEXT_FLAG = 0x80;
 /** bit mask for the flag enabling device kerning for text */
 Paint.DEV_KERN_TEXT_FLAG = 0x100;
 
-function KeyEvent() {
-}
+function KeyEvent() {}
 
 KeyEvent.ACTION_DOWN = 0;
 KeyEvent.ACTION_UP = 1;
@@ -4129,7 +4256,7 @@ KeyEvent.KEYCODE_BACK = 4;
 KeyEvent.KEYCODE_MENU = 82;
 KeyEvent.KEYCODE_UNKNOWN = 0;
 KeyEvent.KEYCODE_DEL = 0x00000043;
-KeyEvent.KEYCODE_FORWARD_DEL = 112;   
+KeyEvent.KEYCODE_FORWARD_DEL = 112;
 KeyEvent.KEYCODE_ENTER = 0x00000042;
 /** Key code constant: F1 key. */
 KeyEvent.KEYCODE_F1 = 131;
@@ -4198,68 +4325,71 @@ KeyEvent.KEYCODE_SHIFT_LEFT = 59;
 /** Key code constant: Right Shift modifier key. */
 KeyEvent.KEYCODE_SHIFT_RIGHT = 60;
 /** Key code constant: Tab key. */
-KeyEvent.KEYCODE_TAB = 66;  //61;
+KeyEvent.KEYCODE_TAB = 66; //61;
 /** Key code constant: Start Button key.
  * On a game controller, the button labeled Start. */
 KeyEvent.KEYCODE_BUTTON_START = 108;
 // Key code constant: Space key.
 KeyEvent.KEYCODE_SPACE = 62;
 
-function Res_png_9patch() {
-}
+function Res_png_9patch() {}
 
 Res_png_9patch.NO_COLOR = 1;
 Res_png_9patch.TRANSPARENT_COLOR = 0;
 
-function CacheDataType() {
-}
+function CacheDataType() {}
 
 CacheDataType.bitmap = 1;
 CacheDataType.ninepatchBitmap = 2;
 CacheDataType.ninepatchChunk = 3;
 
-function ShaderType() {
-}
+function ShaderType() {}
 
 ShaderType.LinearGradient = 1;
 ShaderType.BitmapShader = 2;
 ShaderType.RadialGradient = 3;
 
+function MediaObjectType() {}
+
+MediaObjectType.MediaPlayer = 0;
+MediaObjectType.AudioRecord = 2;
+MediaObjectType.MediaRecorder = 3;
+
 UXIPExport = {
-    UXIP : UXIP,
-    Paint : Paint,
-    Style : Style,
-    Cap : Cap,
-    Join : Join,
-    Align : Align,
-    Typeface : Typeface,
-    DrawCmd : DrawCmd,
-    KeyEvent : KeyEvent,
-    PlayerCmd : PlayerCmd,
-    FloatArrSendRcvType : FloatArrSendRcvType
+    UXIP: UXIP,
+    Paint: Paint,
+    Style: Style,
+    Cap: Cap,
+    Join: Join,
+    Align: Align,
+    Typeface: Typeface,
+    DrawCmd: DrawCmd,
+    KeyEvent: KeyEvent,
+    PlayerCmd: PlayerCmd,
+    FloatArrSendRcvType: FloatArrSendRcvType
 };
 
-if ( typeof module != 'undefined') {
+if (typeof module != 'undefined') {
     module.exports = UXIPExport;
     UTF8 = require('./utf8.js').UTF8;
     NuboCache = require('./nubocache.js').NuboCache;
 }
 
 new function($) {
-  $.fn.setCursorPosition = function(pos) {
-    if (this.setSelectionRange) {
-      this.setSelectionRange(pos, pos);
-    } else if (this.createTextRange) {
-      var range = this.createTextRange();
-      range.collapse(true);
-      if(pos < 0) {
-        pos = $(this).val().length + pos;
-      }
-      range.moveEnd('character', pos);
-      range.moveStart('character', pos);
-      range.select();
-    }
-  };
+    $.fn.setCursorPosition = function(pos) {
+        if (this.setSelectionRange) {
+            this.setSelectionRange(pos, pos);
+        } else if (this.createTextRange) {
+            var range = this.createTextRange();
+            range.collapse(true);
+            if (pos < 0) {
+                pos = $(this).val().length + pos;
+            }
+            range.moveEnd('character', pos);
+            range.moveStart('character', pos);
+            range.select();
+        }
+    };
 }(jQuery);
 /*
  Res_png_9patch
@@ -4310,4 +4440,3 @@ new function($) {
  };
 
  */
-

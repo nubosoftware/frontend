@@ -1,229 +1,232 @@
 <html>
-    <head>
-        <title>Nubo Player</title>
-    </head>
-    <!--<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"> -->
-    <meta name="viewport" content="user-scalable=no, initial-scale=0.5, minimum-scale=0.5, maximum-scale=0.5, width=device-width, height=device-height, target-densitydpi=device-dpi">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link id="playerCSS", rel="stylesheet" type="text/css" href="./player.css" media="all" />
-    <link rel="stylesheet" href="css/toast.css" type="text/css">
-    <link rel="localization" hreflang="" href="lang/en.json" type="application/vnd.oftn.l10n+json"/>
-    <link rel="localization" hreflang="he" href="lang/he.json" type="application/vnd.oftn.l10n+json"/>
-    <!-- <link rel="localizations" href="localization.json" type="application/vnd.oftn.l10n+json"/> -->
-    <!-- <link rel="stylesheet" href="/resources/demos/style.css"> -->
-     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-    
 
-    <body onload="getSessionId()">
+<head>
+    <title>Nubo Player</title>
+</head>
+<!--<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"> -->
+<meta name="viewport" content="user-scalable=no, initial-scale=0.5, minimum-scale=0.5, maximum-scale=0.5, width=device-width, height=device-height, target-densitydpi=device-dpi">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link id="playerCSS" , rel="stylesheet" type="text/css" href="./player.css" media="all" />
+<link rel="stylesheet" href="css/toast.css" type="text/css">
+<link rel="localization" hreflang="" href="lang/en.json" type="application/vnd.oftn.l10n+json" />
+<link rel="localization" hreflang="he" href="lang/he.json" type="application/vnd.oftn.l10n+json" />
+<!-- <link rel="localizations" href="localization.json" type="application/vnd.oftn.l10n+json"/> -->
+<!-- <link rel="stylesheet" href="/resources/demos/style.css"> -->
+<link rel="stylesheet" href="css/jquery-ui.css">
+<link href="css/video-js.css" rel="stylesheet">
 
-        <script type="text/javascript" src="jquery-1.12.2.min.js"></script>
-        <script src="watermark.js" type="text/javascript"></script>
-        <script type="text/javascript" src="underscore-min.js"></script>
-        <script type="text/javascript" src="backbone-min.js"></script>
-        <script type="text/javascript" src="l10n.js"></script>
-        <script type="text/javascript" src="hmac-sha1.js"></script>
-        <script type="text/javascript" src="utf8.js"></script>
-        <script type="text/javascript" src="base.js"></script>
-        <script type="text/javascript" src="long.js"></script>
-        <script type="text/javascript" src="js/modernizr.webp.test.js"></script>
-        <script type="text/javascript" src="js/canvas2image.js"></script>
-        <script type="text/javascript" src="js/toast.js"></script>
-        <script type="text/javascript" src="inflate.min.js"></script>
-        <script type="text/javascript" src="jquery-ui.js"></script>
-        <script type="text/javascript" src="common.js"></script>
-        <script type="text/javascript" src="dropzone.js"></script>
-        
-        <script language="javascript" type="text/javascript">
-            var production = true;
-            if (Common.production) {
-                document.write('<script src="out.js"><\/script>');
-            } else {
-                document.write('<script type="text/javascript" src="login.js"><\/script>');
-                document.write('<script type="text/javascript" src="wm.js"><\/script>');
-                document.write('<script type="text/javascript" src="zlibReader.js"><\/script>');
-                document.write('<script type="text/javascript" src="uxipReader.js"><\/script>');
-                document.write('<script type="text/javascript" src="uxipWriter.js"><\/script>');
-                document.write('<script type="text/javascript" src="uxip.js"><\/script>');
-                document.write('<script type="text/javascript" src="NuboOutputStreamMgr.js"><\/script>');
-                document.write('<script type="text/javascript" src="nubocache.js"><\/script>');
-            }
-        </script>
+<body onload="getSessionId()">
 
-        <script type="text/template" id="greeting_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <span id="greetings" localize-text="Greetings" ></span>
-            <span id="lorem" class="alignText" localize-text="Message" ></span>
+    <script type="text/javascript" src="jquery-1.12.2.min.js"></script>
+    <script src="watermark.js" type="text/javascript"></script>
+    <script type="text/javascript" src="underscore-min.js"></script>
+    <script type="text/javascript" src="backbone-min.js"></script>
+    <script type="text/javascript" src="l10n.js"></script>
+    <script type="text/javascript" src="hmac-sha1.js"></script>
+    <script type="text/javascript" src="utf8.js"></script>
+    <script type="text/javascript" src="base.js"></script>
+    <script type="text/javascript" src="long.js"></script>
+    <script type="text/javascript" src="js/modernizr.webp.test.js"></script>
+    <script type="text/javascript" src="js/canvas2image.js"></script>
+    <script type="text/javascript" src="js/toast.js"></script>
+    <script type="text/javascript" src="inflate.min.js"></script>
+    <script type="text/javascript" src="jquery-ui.js"></script>
+    <script type="text/javascript" src="common.js"></script>
+    <script type="text/javascript" src="dropzone.js"></script>
+    <script type="text/javascript" src="video.js"></script>
+    <script type="text/javascript" src="videojs-contrib-hls.min.js"></script>
+
+    <script language="javascript" type="text/javascript">
+        var production = true;
+        if (Common.production) {
+            document.write('<script src="out.js"><\/script>');
+        } else {
+            document.write('<script type="text/javascript" src="login.js"><\/script>');
+            document.write('<script type="text/javascript" src="wm.js"><\/script>');
+            document.write('<script type="text/javascript" src="zlibReader.js"><\/script>');
+            document.write('<script type="text/javascript" src="uxipReader.js"><\/script>');
+            document.write('<script type="text/javascript" src="uxipWriter.js"><\/script>');
+            document.write('<script type="text/javascript" src="uxip.js"><\/script>');
+            document.write('<script type="text/javascript" src="NuboOutputStreamMgr.js"><\/script>');
+            document.write('<script type="text/javascript" src="nubocache.js"><\/script>');
+        }
+    </script>
+
+    <script type="text/template" id="greeting_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <span id="greetings" localize-text="Greetings"></span>
+            <span id="lorem" class="alignText" localize-text="Message"></span>
             <!-- Disable button below on withService project -->
             <span id="create" class="appbutton" localize-text="createPlayer" />
             <!--  end withService -->
             <span id="signin" class="cleanbutton" localize-text="ImAlreadyUser" />
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="create_player_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <span id="create_create" class="appbutton" localize-text="createPlayer" >
+    <script type="text/template" id="create_player_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <span id="create_create" class="appbutton" localize-text="createPlayer">
             <!-- <span id="create_createtext" class="buttontext" localize-text="createPlayer"></span> -->
             </span>
-            <input id="edFirstName" class="alignText" type="text" placeholder="first Name" value="<%- firstName %>"/>
-            <span id="FirstNameErr" class="errText" ></span>
-            <input id="edLastName" class="alignText" type="text" placeholder="last Name"  value="<%- lastName %>" />
-            <span id="LastNameErr" class="errText" ></span>
-            <input id="edJobTitle" class="alignText" type="text" placeholder="job Title"  value="<%- jobTitle %>" />
+            <input id="edFirstName" class="alignText" type="text" placeholder="first Name" value="<%- firstName %>" />
+            <span id="FirstNameErr" class="errText"></span>
+            <input id="edLastName" class="alignText" type="text" placeholder="last Name" value="<%- lastName %>" />
+            <span id="LastNameErr" class="errText"></span>
+            <input id="edJobTitle" class="alignText" type="text" placeholder="job Title" value="<%- jobTitle %>" />
 
             <div class="dropdiv">
-            <span id="drop1" class="dropCommon" />
-            <span id="drop2" class="dropCommon" />
-            <span id="drop3" class="dropCommon" />
-            <span id="drop4" class="dropCommon roundDrop" />
+                <span id="drop1" class="dropCommon" />
+                <span id="drop2" class="dropCommon" />
+                <span id="drop3" class="dropCommon" />
+                <span id="drop4" class="dropCommon roundDrop" />
             </div>
 
-            <span id="JobTitleErr" class="errText" ></span>
+            <span id="JobTitleErr" class="errText"></span>
             <input id="edWorkEmail" class="alignText" type="email" autocomplete="on" placeholder="Work Email" value="<%- workEmail %>" />
-            <span id="WorkEmailErr" class="errText" ></span>
+            <span id="WorkEmailErr" class="errText"></span>
 
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="splash_template">
-            <div class="subdiv">
+    <script type="text/template" id="splash_template">
+        <div class="subdiv">
             <img id="nubologo" src="images/logo.png" />
-            <span id="nameTitle" ><%- firstName %> <%- lastName %></span>
-            <span id="workEmail" ><%- workEmail %></span>
-            </div>
-            <!-- </span> -->
-        </script>
+            <span id="nameTitle"><%- firstName %> <%- lastName %></span>
+            <span id="workEmail"><%- workEmail %></span>
+        </div>
+        <!-- </span> -->
+    </script>
 
-        <script type="text/template" id="welcome_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <img id="welcomeTitle"  src="images/welcome.png" />
+    <script type="text/template" id="welcome_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <img id="welcomeTitle" src="images/welcome.png" />
             <span id="startDeviceText" class="titleText" localize-text="startUsingDevice" />
-            </div>
-            <!--
+        </div>
+        <!--
             <span id="orText" class="titleText" localize-text="or" />
             <span id="startWebText" class="titleText" localize-text="startUsingWeb" />
             <span id="createWebPlayer" class="appbutton" localize-text="createWebPlayer" />
             -->
-        </script>
+    </script>
 
-        <script type="text/template" id="resetPasscodeLink_template">
-            <div class="subdiv">
+    <script type="text/template" id="resetPasscodeLink_template">
+        <div class="subdiv">
             <img id="nubologo" src="images/logo.png" />
             <img id="medal" src="images/medal.png" />
             <span id="resetPasscodeTxt" class="titleText" localize-text="resetPasscodeText" />
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="unlockPasscodeLink_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
+    <script type="text/template" id="unlockPasscodeLink_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
             <img id="medal" src="images/medal.png" />
             <span id="unlockPasscodeTxt" class="titleText" localize-text="unlockPasscodeText" />
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="activation_err_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <img id="expiredClock"  src="images/clock.png" />
+    <script type="text/template" id="activation_err_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <img id="expiredClock" src="images/clock.png" />
             <span id="expiredTxt" class="titleText" localize-text="activationExpired" />
-            </div>
-            <!--<span id="createWebPlayer" class="appbutton" localize-text="createWebPlayer" />-->
-        </script>
+        </div>
+        <!--<span id="createWebPlayer" class="appbutton" localize-text="createWebPlayer" />-->
+    </script>
 
-        <script type="text/template" id="validation_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <span id="activationSent" localize-text="activationSent" ></span>
-            <span id="activationEmail" ><%- activationEmail %></span>
-            <span id="checkInbox" localize-text="checkInbox" ></span>
+    <script type="text/template" id="validation_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <span id="activationSent" localize-text="activationSent"></span>
+            <span id="activationEmail"><%- activationEmail %></span>
+            <span id="checkInbox" localize-text="checkInbox"></span>
             <span id="changeBtn" class="appbutton" localize-text="changeEmailAddress"></span>
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="auth_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <span id="authMsg"  ><%- l("signIntext1")%> </span>
+    <script type="text/template" id="auth_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <span id="authMsg"><%- l("signIntext1")%> </span>
 
             <div id="spinner" class="spinner" style="display:none;">
-                <img id="img-spinner" src="images/ajax-loader.gif" alt="Loading"/>
+                <img id="img-spinner" src="images/ajax-loader.gif" alt="Loading" />
             </div>
 
             <span id="signInBtn" class="appbutton" localize-text="signIn" />
-            <input id="authUserName" class="alignText" type="email" placeholder="User Name" autofocus="autofocus" value="<%- userName %>"/>
-            <span id="authUserNameErr" class="errText" ></span>
-            <input id="authPassword" class="alignText" type="text" placeholder="Password"/>
-            <span id="authPasswordErr" class="errText" ></span>
-            </div>
-        </script>
+            <input id="authUserName" class="alignText" type="email" placeholder="User Name" autofocus="autofocus" value="<%- userName %>" />
+            <span id="authUserNameErr" class="errText"></span>
+            <input id="authPassword" class="alignText" type="text" placeholder="Password" />
+            <span id="authPasswordErr" class="errText"></span>
+        </div>
+    </script>
 
-        <script type="text/template" id="passcode_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <span id="passcodeErrMsg"  ></span>
+    <script type="text/template" id="passcode_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <span id="passcodeErrMsg"></span>
 
-            <span id="passcodeErrMsg2"  ></span>
+            <span id="passcodeErrMsg2"></span>
             <!--<input id="enterPasscode" class="alignText" type="hidden" type="password" watermark="enterPasscode" isPassword="Y"  />-->
             <input id="enterPasscode" class="alignText" type="password" placeholder="Enter Passcode" isPassword="Y" />
             <!-- <img id="passcodeImg" src="images/passcodeText0.png" class="alignText" /> -->
             <span id="forgotBtn" class="cleanbutton" localize-text="forgetPassCode" />
 
             <div id="passcodediv" class="passcodediv">
-            <span id="btn1" class="numbutton"/><span id="key1" class="numKey" localize-text="key1"/>
-            <span id="btn2" class="numbutton"/><span id="key2" class="numKey" localize-text="key2"/>
-            <span id="btn3" class="numbutton"/><span id="key3" class="numKey" localize-text="key3"/>
-            <span id="btn4" class="numbutton"/><span id="key4" class="numKey" localize-text="key4"/>
-            <span id="btn5" class="numbutton"/><span id="key5" class="numKey" localize-text="key5"/>
-            <span id="btn6" class="numbutton"/><span id="key6" class="numKey" localize-text="key6"/>
-            <span id="btn7" class="numbutton"/><span id="key7" class="numKey" localize-text="key7"/>
-            <span id="btn8" class="numbutton"/><span id="key8" class="numKey" localize-text="key8"/>
-            <span id="btn9" class="numbutton"/><span id="key9" class="numKey" localize-text="key9"/>
-            <span id="btnok" class="numbutton"/><span id="keyok" class="numKey" localize-text="ok"/>
-            <span id="btn0" class="numbutton"/><span id="key0" class="numKey" localize-text="key0"/>
-            <span id="btndel" class="numbutton">
+                <span id="btn1" class="numbutton" /><span id="key1" class="numKey" localize-text="key1" />
+                <span id="btn2" class="numbutton" /><span id="key2" class="numKey" localize-text="key2" />
+                <span id="btn3" class="numbutton" /><span id="key3" class="numKey" localize-text="key3" />
+                <span id="btn4" class="numbutton" /><span id="key4" class="numKey" localize-text="key4" />
+                <span id="btn5" class="numbutton" /><span id="key5" class="numKey" localize-text="key5" />
+                <span id="btn6" class="numbutton" /><span id="key6" class="numKey" localize-text="key6" />
+                <span id="btn7" class="numbutton" /><span id="key7" class="numKey" localize-text="key7" />
+                <span id="btn8" class="numbutton" /><span id="key8" class="numKey" localize-text="key8" />
+                <span id="btn9" class="numbutton" /><span id="key9" class="numKey" localize-text="key9" />
+                <span id="btnok" class="numbutton" /><span id="keyok" class="numKey" localize-text="ok" />
+                <span id="btn0" class="numbutton" /><span id="key0" class="numKey" localize-text="key0" />
+                <span id="btndel" class="numbutton">
             <!-- <img id="keydel" src="images/del.png"/>     -->
             </span>
 
             </div>
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="setpasscode_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <span id="passcodeErrMsg"  ></span>
-            <span id="passcodeErrMsg2"  ></span>
+    <script type="text/template" id="setpasscode_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <span id="passcodeErrMsg"></span>
+            <span id="passcodeErrMsg2"></span>
             <span id="passwordExpired">
                 <img id="passwordExpiredImg" src="images/umbrella_ic.png"/>
                 <p id="passwordExpiredMsg" localize-text="expiredPasscode" />
             </span>
-            <span id="selectPasscodeTitle" localize-text="selectPasscode" ></span>
+            <span id="selectPasscodeTitle" localize-text="selectPasscode"></span>
             <input id="selectPasscode" class="alignText" type="password" placeholder="Select Passcode" readonly="readonly" />
             <div class="passcodediv">
-            <span id="btn1" class="numbutton" /><span id="key1" class="numKey" localize-text="key1" />
-            <span id="btn2" class="numbutton" /><span id="key2" class="numKey" localize-text="key2" />
-            <span id="btn3" class="numbutton" /><span id="key3" class="numKey" localize-text="key3" />
-            <span id="btn4" class="numbutton" /><span id="key4" class="numKey" localize-text="key4" />
-            <span id="btn5" class="numbutton" /><span id="key5" class="numKey" localize-text="key5" />
-            <span id="btn6" class="numbutton" /><span id="key6" class="numKey" localize-text="key6" />
-            <span id="btn7" class="numbutton" /><span id="key7" class="numKey" localize-text="key7" />
-            <span id="btn8" class="numbutton" /><span id="key8" class="numKey" localize-text="key8" />
-            <span id="btn9" class="numbutton" /><span id="key9" class="numKey" localize-text="key9" />
-            <span id="btnok" class="numbutton" /><span id="keyok" class="numKey" localize-text="ok" />
-            <span id="btn0" class="numbutton" /><span id="key0" class="numKey" localize-text="key0" />
-            <span id="btndel" class="numbutton">
+                <span id="btn1" class="numbutton" /><span id="key1" class="numKey" localize-text="key1" />
+                <span id="btn2" class="numbutton" /><span id="key2" class="numKey" localize-text="key2" />
+                <span id="btn3" class="numbutton" /><span id="key3" class="numKey" localize-text="key3" />
+                <span id="btn4" class="numbutton" /><span id="key4" class="numKey" localize-text="key4" />
+                <span id="btn5" class="numbutton" /><span id="key5" class="numKey" localize-text="key5" />
+                <span id="btn6" class="numbutton" /><span id="key6" class="numKey" localize-text="key6" />
+                <span id="btn7" class="numbutton" /><span id="key7" class="numKey" localize-text="key7" />
+                <span id="btn8" class="numbutton" /><span id="key8" class="numKey" localize-text="key8" />
+                <span id="btn9" class="numbutton" /><span id="key9" class="numKey" localize-text="key9" />
+                <span id="btnok" class="numbutton" /><span id="keyok" class="numKey" localize-text="ok" />
+                <span id="btn0" class="numbutton" /><span id="key0" class="numKey" localize-text="key0" />
+                <span id="btndel" class="numbutton">
             <!-- <img id="keydel" src="images/del.png" /> -->
             </span>
             </div>
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="enterpassword_template">
-            <div class="subdiv">
+    <script type="text/template" id="enterpassword_template">
+        <div class="subdiv">
             <img id="nubologo" src="images/logo.png" />
             <span id="passcodeErrMsg"></span>
             <span id="passcodeErrMsg2"></span>
@@ -231,46 +234,45 @@
                 <img id="passwordExpiredImg" src="images/umbrella_ic.png"/>
                 <p id="passwordExpiredMsg" localize-text="expiredPassword" />
             </span>
-            <span id="passwordTitle" localize-text="enterPassword"/>
-            <span id="enterPasswordOKBtn" class="appbutton" localize-text="ok"/>
-            <input id="enterPassword" class="alignText" type="password" placeholder="Enter Your Nubo Password"
-                                            autofocus="autofocus" value="<%- passwordStr %>" />
-            <span id="forgotBtn" class="cleanbutton" localize-text="forgetPassword"/>
+            <span id="passwordTitle" localize-text="enterPassword" />
+            <span id="enterPasswordOKBtn" class="appbutton" localize-text="ok" />
+            <input id="enterPassword" class="alignText" type="password" placeholder="Enter Your Nubo Password" autofocus="autofocus" value="<%- passwordStr %>" />
+            <span id="forgotBtn" class="cleanbutton" localize-text="forgetPassword" />
             <br/>
-            <span id="passwordRequired" class="passwordRequired" localize-text="passwordRequired"/>
-            </div>
-            </div>
-        </script>
+            <span id="passwordRequired" class="passwordRequired" localize-text="passwordRequired" />
+        </div>
+        </div>
+    </script>
 
-        <script type="text/template" id="resetpasscode_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <span id="resetPasscodeTitle" localize-text="resetPasscode" ></span>
+    <script type="text/template" id="resetpasscode_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <span id="resetPasscodeTitle" localize-text="resetPasscode"></span>
             <div class="resetBtn">
-            <span id="resetOKBtn" class="appbutton" localize-text="ok" />
-            <span id="resetCancelBtn" localize-text="cancel" />
+                <span id="resetOKBtn" class="appbutton" localize-text="ok" />
+                <span id="resetCancelBtn" localize-text="cancel" />
             </div>
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="connerr_template">
-            <div class="subdiv">
-            <img id="connerr"  src="images/connerr.png" />
-            <span id="conerrMsg" localize-text="connectionUnavilable" ></span>
+    <script type="text/template" id="connerr_template">
+        <div class="subdiv">
+            <img id="connerr" src="images/connerr.png" />
+            <span id="conerrMsg" localize-text="connectionUnavilable"></span>
             <span id="tryAgainBtn" class="appbutton" localize-text="tryAgain" />
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="expired_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <span id="expiredMsg" localize-text="activationExpired" ></span>
+    <script type="text/template" id="expired_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <span id="expiredMsg" localize-text="activationExpired"></span>
             <span id="expiredCreateBtn" class="appbutton" localize-text="createNewPlayer" />
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="already_template">
-            <div class="subdiv">
+    <script type="text/template" id="already_template">
+        <div class="subdiv">
             <img id="nubologo" src="images/logo.png" />
             <span id="sendMeActivationBtn" class="appbutton" localize-text="sendMeActivation" />
             <!-- replace line below with the line under it on withService project-->
@@ -279,92 +281,92 @@
             <!--  end withService -->
             <span id="workEmailSendErr" class="errText" />
             <span id="sendMeActivationCreateBtn" class="cleanbutton" localize-text="createNewPlayer" />
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="passcodelock_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
+    <script type="text/template" id="passcodelock_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
             <span id="lockMsg" localize-text="userPasscodeLock"></span>
-            <span id="unlockMsg" localize-text="unlockPasscode" ></span>
+            <span id="unlockMsg" localize-text="unlockPasscode"></span>
             <span id="resendMailBtn" class="appbutton" localize-text="resendMail" />
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="disableUserDevice_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <img id="managerImg"  src="images/managerImage.png" />
+    <script type="text/template" id="disableUserDevice_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <img id="managerImg" src="images/managerImage.png" />
             <span id="disableTitle" localize-text="deviceBlocked"></span>
-            <span id="disableMsg" localize-text="disableDeviceMsg" ></span>
-            </div>
-        </script>
+            <span id="disableMsg" localize-text="disableDeviceMsg"></span>
+        </div>
+    </script>
 
-        <script type="text/template" id="browser_version_error_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
+    <script type="text/template" id="browser_version_error_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
             <span id="versionErrTitle" localize-text="versionErrTitle"></span>
-            <img id="chrome" src="images/chrome_ic.png"/>
+            <img id="chrome" src="images/chrome_ic.png" />
             <span id="chromeTxt">From version 35</span>
-            <img id="firefox" src="images/firefox_ic.png"/>
+            <img id="firefox" src="images/firefox_ic.png" />
             <span id="firefoxTxt">From version 37</span>
-            <img id="ie" src="images/ie_ic.png"/>
+            <img id="ie" src="images/ie_ic.png" />
             <span id="ieTxt">From version 11</span>
-            </div>
-        </script>
+        </div>
+    </script>
 
-        <script type="text/template" id="download_template">
-            <div class="subdiv">
-            <img id="nubologo"  src="images/logo.png" />
-            <span id="welcome" ></span>
-            <span id="downloadLink"  class="titleText" localize-text="downloadLink" />
-            <span id="downloadTwoSteps"  class="titleText" localize-text="downloadTwoSteps" />
+    <script type="text/template" id="download_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <span id="welcome"></span>
+            <span id="downloadLink" class="titleText" localize-text="downloadLink" />
+            <span id="downloadTwoSteps" class="titleText" localize-text="downloadTwoSteps" />
             <span id="downloadStep1" class="titleText" localize-text="downloadStep1" />
             <span id="downloadStep2" class="titleText" localize-text="downloadStep2" />
-            </div>
-            <span id="downloadMessage" class="alignText" localize-text="Message" />
-            <span id="iosMessage" class="alignText" >Your domain does not have Enterprise distribution for iOS apps.</br></br>
+        </div>
+        <span id="downloadMessage" class="alignText" localize-text="Message" />
+        <span id="iosMessage" class="alignText">Your domain does not have Enterprise distribution for iOS apps.</br></br>
                 <a href="mailto:support@nubosoftware.com?subject=iOS%20Enterprise%20Distribution">Please contact us for more information &gt;</a>
             </span>
 
-        </script>
-        
-        
-        <script type="text/template" id="recordings_template">
-            <div id="toolbardiv">
-                <span id="toolbarleftmargin" class="toolbarmargin"></span>
-                <a id="linkvolcano" href="javascript:;">
-                    <span id="homebtn"  class="toolbarbtn">
+    </script>
+
+
+    <script type="text/template" id="recordings_template">
+        <div id="toolbardiv">
+            <span id="toolbarleftmargin" class="toolbarmargin"></span>
+            <a id="linkvolcano" href="javascript:;">
+                <span id="homebtn" class="toolbarbtn">
                         <img id="iconvolcano" src="images/volcano.png" />
                     </span>
-                </a>
-                <span id="toolbarpad1" class="toolbarpad"></span>
-                <a id="linksettings" hreaf="javascript:;" >
-                    <span id="searchbtn"  class="toolbarbtn">
+            </a>
+            <span id="toolbarpad1" class="toolbarpad"></span>
+            <a id="linksettings" hreaf="javascript:;">
+                <span id="searchbtn" class="toolbarbtn">
                         <img id="iconsettings" src="images/settings.png"/>
                     </span>
-                </a>
-                <span id="toolbarpadr1" class="toolbarpad"></span>
-                <span id="settingsbtn"  class="toolbarbtn">
+            </a>
+            <span id="toolbarpadr1" class="toolbarpad"></span>
+            <span id="settingsbtn" class="toolbarbtn">
                     <img id="iconsearch" src="images/search.png"/>
                 </span>
-                <span id="toolbarrightmargin" class="toolbarmargin"></span>
-            </div>
+            <span id="toolbarrightmargin" class="toolbarmargin"></span>
+        </div>
 
-            <h1><b>Nubo Session Recording</b></h1>
-            <input id="searchNames" class="recordingBar" type="text" placeholder="Search Names" /><br>
+        <h1><b>Nubo Session Recording</b></h1>
+        <input id="searchNames" class="recordingBar" type="text" placeholder="Search Names" /><br>
 
-            <div id="recordingRow" class="recordingBarRow">
-                <b><label for="Date">Date:</label></b>
-                <label for="From">From:</label>
-                <input class="recordingDateField" id="fromDatepicker" type="text" />
-                <label for="To">To:</label>
-                <input class="recordingDateField" id="toDatepicker" type="text" />
+        <div id="recordingRow" class="recordingBarRow">
+            <b><label for="Date">Date:</label></b>
+            <label for="From">From:</label>
+            <input class="recordingDateField" id="fromDatepicker" type="text" />
+            <label for="To">To:</label>
+            <input class="recordingDateField" id="toDatepicker" type="text" />
 
-                <b><label for="Time">Time:</label></b>
-                <label for="From">From:</label>
-      
-                <select id="fromSelector">
+            <b><label for="Time">Time:</label></b>
+            <label for="From">From:</label>
+
+            <select id="fromSelector">
                     <option value="00:00:00">00:00AM</option>
                     <option value="01:00:00">01:00AM</option>
                     <option value="02:00:00">02:00AM</option>
@@ -390,8 +392,8 @@
                     <option value="22:00:00">10:00PM</option>
                     <option value="23:00:00">11:00PM</option>                 
                 </select>
-                <label for="To">To:</label>
-                <select id="toSelector">
+            <label for="To">To:</label>
+            <select id="toSelector">
                     <option value="00:00:00">00:00AM</option>
                     <option value="01:00:00">01:00AM</option>
                     <option value="02:00:00">02:00AM</option>
@@ -417,121 +419,140 @@
                     <option value="22:00:00">10:00PM</option>
                     <option value="23:00:00">11:00PM</option>                   
                 </select>
-                <button id="buttonSearch"  class="buttonSearch">Search</button>
-            </div>
-            
-            <div id="recordingdata">
-                <table id="recordsTable" align="left" CELLPADDING=20>
-                    <thead><tr align="left"> <th>Name</th> <th>Date</th> <th>Time</th> <th>Device</th> <th>Duration</th> </tr></thead>
+            <button id="buttonSearch" class="buttonSearch">Search</button>
+        </div>
+
+        <div id="recordingdata">
+            <table id="recordsTable" align="left" CELLPADDING=20>
+                <thead>
+                    <tr align="left">
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Device</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
                 <% for (var i=0; i<data.length; i++) { 
                     var item = data[i];
                 %>
-                <tbody>
-                    <tr>
-                        <td class="recordingTextField"> <%= item.name %> </td>
-                        <td class="recordingTextField"> <%= item.date %> </td>
-                        <td class="recordingTextField"> <%= item.time %> </td>
-                        <td class="recordingTextField"> <%= item.device %> </td>
-                        <td class="recordingTextField"> <%= item.duration %> </td>
-                        <td id="buttonCell" ><button class="buttonCell" id="playRecordingBtn_<%= i %>">Play</button></td>
-                    </tr>
-                </tbody>
-                <% } %>
-                </table>
-            </div>
-        </script>
-        
-        <script type="text/template" id="playback_template">            
-            <div id="datadiv">                                
-            </div>
-            <div id="recordingTimeLbl">2016-03-30 00:00:00</div>
-        </script>
+                    <tbody>
+                        <tr>
+                            <td class="recordingTextField">
+                                <%= item.name %>
+                            </td>
+                            <td class="recordingTextField">
+                                <%= item.date %>
+                            </td>
+                            <td class="recordingTextField">
+                                <%= item.time %>
+                            </td>
+                            <td class="recordingTextField">
+                                <%= item.device %>
+                            </td>
+                            <td class="recordingTextField">
+                                <%= item.duration %>
+                            </td>
+                            <td id="buttonCell"><button class="buttonCell" id="playRecordingBtn_<%= i %>">Play</button></td>
+                        </tr>
+                    </tbody>
+                    <% } %>
+            </table>
+        </div>
+    </script>
 
-        <script type="text/template" id="player_template">
+    <script type="text/template" id="playback_template">
+        <div id="datadiv">
+        </div>
+        <div id="recordingTimeLbl">2016-03-30 00:00:00</div>
+    </script>
 
-            <textarea id="edVirtualKeyboard" ></textarea>
+    <script type="text/template" id="player_template">
 
-            <div id="nuboToolBar">
-                <div id="toolbardiv">
-                    <span id="toolbarleftmargin" class="toolbarmargin"></span>
-                    <a id="linkvolcano" hreaf="javascript:;">
-                        <span id="homebtn"  class="toolbarbtn">
+        <textarea id="edVirtualKeyboard"></textarea>
+
+        <div id="nuboToolBar">
+            <div id="toolbardiv">
+                <span id="toolbarleftmargin" class="toolbarmargin"></span>
+                <a id="linkvolcano" hreaf="javascript:;">
+                    <span id="homebtn" class="toolbarbtn">
                             <img id="iconvolcano" src="<%= imgURL %>images/volcano.png" />
                         </span>
-                    </a>
-                    <span id="toolbarpad1" class="toolbarpad"></span>
-                    <a id="linksettings" href="javascript:;" >
-                        <span id="searchbtn"  class="toolbarbtn">
+                </a>
+                <span id="toolbarpad1" class="toolbarpad"></span>
+                <a id="linksettings" href="javascript:;">
+                    <span id="searchbtn" class="toolbarbtn">
                             <img id="iconsettings" src="<%= imgURL %>images/settings.png"/>
                         </span>
-                    </a>
+                </a>
 
-                    <span id="toolbarpad1" class="toolbarpad"></span>
-                    <span id="recordingsbtn"  class="toolbarbtn">
+                <span id="toolbarpad1" class="toolbarpad"></span>
+                <span id="recordingsbtn" class="toolbarbtn">
                         <img id="iconRecordings" src="<%= imgURL %>images/video_recording.png" />
                     </span>
 
-                    <span id="toolbarpadr1" class="toolbarpad"></span>
-                    <span id="settingsbtn"  class="toolbarbtn">
+                <span id="toolbarpadr1" class="toolbarpad"></span>
+                <span id="settingsbtn" class="toolbarbtn">
                         <img id="iconsearch" src="<%= imgURL %>images/search.png"/>
                     </span>
-                    <span id="toolbarrightmargin" class="toolbarmargin"></span>
-                </div>
+                <span id="toolbarrightmargin" class="toolbarmargin"></span>
+            </div>
 
-                <div class="mobiletoolbardiv">
-                    <span id="toolbarleftmargin" class="toolbarmargin"></span>
-                    <span id="backbtn"  class="toolbarbtn">
+            <div class="mobiletoolbardiv">
+                <span id="toolbarleftmargin" class="toolbarmargin"></span>
+                <span id="backbtn" class="toolbarbtn">
                         <img id="iconback" src="<%= imgURL %>images/back.png"/>
                     </span>
-                    <span id="toolbarpad1" class="toolbarpad"></span>
-                    <a id="linksettings" href="javascript:;" >
-                        <span id="searchbtn"  class="toolbarbtn">
+                <span id="toolbarpad1" class="toolbarpad"></span>
+                <a id="linksettings" href="javascript:;">
+                    <span id="searchbtn" class="toolbarbtn">
                             <img id="iconsettings" src="<%= imgURL %>images/settings.png"/>
                         </span>
-                    </a>
-                    <span id="toolbarpadr1" class="toolbarpad"></span>
-                    <span class="mobileToolbarRight">
+                </a>
+                <span id="toolbarpadr1" class="toolbarpad"></span>
+                <span class="mobileToolbarRight">
                         <span class="toolbarbtn">
                             <img id="iconsearch" src="<%= imgURL %>images/search.png"/>
                         </span>
-                        <span id="toolbarpad1" class="toolbarpad"></span>
-                        <a id="linkvolcano" href="javascript:;">
-                            <span id="homebtn"  class="toolbarbtn">
+                <span id="toolbarpad1" class="toolbarpad"></span>
+                <a id="linkvolcano" href="javascript:;">
+                    <span id="homebtn" class="toolbarbtn">
                                 <img id="iconvolcano" src="<%= imgURL %>images/volcano.png" />
                             </span>
-                        </a>
-                    </span>
-                </div>
-            </div>
-
-            <div id="datadiv"></div>
-
-            <div class="firstLoginPopup">
-                <div class="firstLoginSpinner">
-                    <img id="img-spinner" src="images/ajax-loader.gif" alt="Loading"/>
-                </div>
-                <span class="firstLoginMsg" localize-text="firstLoginText"/>
-            </div>
-        </script>
-
-        <div id="maindiv"></div>
-
-        <div id="uploadFiles" style="left:100;top:100;">
-            <div id="uploadTitle">
-                Uploads
-            </div>
-            <div id="uploadX"></div>
-            <div id="uploadContent"></div>
-            <div id="uploadErrorMsg">
-                <div id="txtErrorMsg">
-                    <p>
-                        Select single file or create a zip file from multiple files
-                    </p>
-                </div>
-                <div id="btnErrorMsg">
-                    OK
-                </div>
+                </a>
+                </span>
             </div>
         </div>
-    </body>
+
+        <div id="datadiv"></div>
+
+        <div class="firstLoginPopup">
+            <div class="firstLoginSpinner">
+                <img id="img-spinner" src="images/ajax-loader.gif" alt="Loading" />
+            </div>
+            <span class="firstLoginMsg" localize-text="firstLoginText" />
+        </div>
+    </script>
+
+    <div id="maindiv"></div>
+
+    <div id="uploadFiles" style="left:100;top:100;">
+        <div id="uploadTitle">
+            Uploads
+        </div>
+        <div id="uploadX"></div>
+        <div id="uploadContent"></div>
+        <div id="uploadErrorMsg">
+            <div id="txtErrorMsg">
+                <p>
+                    Select single file or create a zip file from multiple files
+                </p>
+            </div>
+            <div id="btnErrorMsg">
+                OK
+            </div>
+        </div>
+    </div>
+</body>
+
 </html>

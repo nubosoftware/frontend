@@ -366,7 +366,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             }
         };
         sn.keyEvent = function(e) {
-            console.log("key event event.type: " + event.type + ", keyCode: " + event.keyCode);
+            // console.log("key event event.type: " + event.type + ", keyCode: " + event.keyCode);
             var evtobj = e || event;
             mUxip.keyEvent(evtobj, sn.processId, sn.wndId, this);
         };
@@ -392,8 +392,10 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                 clearTimeout(wheeling);
                 wheeling = setTimeout(function() { // stop wheeling
                     wheeling = undefined;
+                    evtobj.action = 2;
+                    NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
 
-                    lastEvtobj.type == "mousewheel"
+                    lastEvtobj.type == "mousewheel";
                     lastEvtobj.action = 1;
                     NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, lastEvtobj);
                     lastEvtobj = null;
@@ -410,7 +412,6 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
         sn.touchEvent = function(e) {
             var evtobj = e || event;
-
             evtobj.name = "TouchEvent";
             evtobj.src = this;
             evtobj.preventDefault();

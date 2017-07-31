@@ -460,9 +460,10 @@ function buildServerObject(server) {
         if (!isPermittedUrl(req.url)) {
             logger.info("Access to " + req.url + " does not permitted");
             res.writeHead(404, {
-                "Content-Type": "text/plain"
+                "Content-Type": "application/json",
+                "Transfer-Encoding": ""
             });
-            res.write("404 Not Found\n");
+            res.write("");
             res.end();
             return;
         }
@@ -511,8 +512,11 @@ function buildServerObject(server) {
     server.get(/^\/.*/, function(req, res, next) {
         if(!isPermittedUrl(req.url)) {
             logger.info("Access to " + req.url + " does not permitted");
-            res.writeHead(404,  {"Content-Type" : "text/plain"});
-            res.write("404 Not Found\n");
+            res.writeHead(404,  {
+                "Content-Type": "application/json",
+                "Transfer-Encoding": ""
+            });
+            res.write("");
             res.end();
             return;
         }
@@ -526,9 +530,10 @@ function buildServerObject(server) {
                 if (err) { 
                     logger.error("Error serving " + req.url + " - " + err.message);
                     res.writeHead(404, {
-                        "Content-Type": "text/plain"
+                        "Content-Type": "application/json",
+                        "Transfer-Encoding": ""
                     });
-                    res.write("404 Not Found\n");
+                    res.write("");
                     res.end();
                     internalRequests.addMissingResource(req.url);
                     return;
@@ -544,9 +549,10 @@ function buildServerObject(server) {
                 if (err) { // There was an error serving the file
                     logger.error("Error serving " + req.url + " - " + err.message);
                     res.writeHead(404, {
-                        "Content-Type": "text/plain"
+                        "Content-Type": "application/json",
+                        "Transfer-Encoding": ""
                     });
-                    res.write("404 Not Found\n");
+                    res.write("");
                     res.end();
                     internalRequests.addMissingResource(req.url);
                     return;

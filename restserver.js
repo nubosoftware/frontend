@@ -35,6 +35,8 @@ var mainFunction = function(err, firstTimeLoad) {
 
     refresh_filter();
 
+    watchFilterFile();
+
     if (!firstTimeLoad)// execute the following code only in the first time
         return;
 
@@ -353,13 +355,16 @@ var filterOpts = {
 
 var filterObj = new filterModule.filter([], filterOpts);
 var filterFile = "./parameters-map.js";
-Common.fs.watchFile(filterFile, {
-    persistent : false,
-    interval : 5007
-}, function(curr, prev) {
-    logger.info(filterFile + ' been modified');
-    refresh_filter();
-});
+
+function watchFilterFile() {
+    Common.fs.watchFile(filterFile, {
+        persistent: false,
+        interval: 5007
+    }, function(curr, prev) {
+        logger.info(filterFile + ' been modified');
+        refresh_filter();
+    });
+}
 
 var refresh_filter = function() {
     try {
@@ -374,7 +379,8 @@ var refresh_filter = function() {
         return;
     }
 
-    filterObj.reload(obj.rules, {permittedMode: obj.permittedMode});
+    var permittedMode = Common.parametersMapPermittedMode ? Common.parametersMapPermittedMode : false;
+    filterObj.reload(obj.rules, {permittedMode: permittedMode});
 };
 
 //wrapper for old client

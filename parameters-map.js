@@ -4,7 +4,6 @@ var Common = require("./common.js");
 var constraints = require("nubo-validateConstraints")(Common.withService);
 
 var filter = {
-    "permittedMode": true,
     "rules": [{
             "path": "/favicon.ico"
         }, {

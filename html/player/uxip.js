@@ -3378,6 +3378,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
     ShowWindow = function(processId, wndId) {
         // Log.e(TAG, "Show window. wndId=" + wndId);
+        currentProcessId = processId;
         wm.showWindow(processId, wndId);
         return true;
     };
@@ -3639,6 +3640,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         }
         if (protocolState != psConnected)
             return;
+
         dispatchKeyEvent(currentProcessId, UXIPself.nuboByte(PlayerCmd.searchKeyEvent));
     };
 

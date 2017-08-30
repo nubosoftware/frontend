@@ -3408,7 +3408,6 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         if (PRINT_DRAW_COMMANDS) {
             Log.d(TAG, "PopWindow. processId=" + processId + ", wndId=" + wndId);
         }
-
         var nuboWndId = wndId;
         if (!reader.canReadBytes(4))
             return false;
@@ -3418,10 +3417,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
         if (isWindowStackEmpty) {
             var lastProcessId = wm.getLastNotKeyboardProcessIdOnStack(keyboardProcessID);
-            if (!isNaN(lastProcessId) && lastProcessId != 0) {
+            if (!isNaN(lastProcessId) && lastProcessId != 0 && lastProcessId != processId) {
                 currentProcessId = lastProcessId;
-            } else {
-                Log.e(TAG, "popWindow:: there is no last processId");
+            // } else {
+            //     Log.e(TAG, "popWindow:: there is no last processId");
             }
         }
         return true;

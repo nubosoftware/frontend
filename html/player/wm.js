@@ -21,6 +21,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
 
     fFindWndByWndId = function(ws, wndId) {
+        // console.log("**** fFindWndByWndId. wndId: " + wndId + ", ws.length: " + ws.length);
         for (var i = ws.length - 1; i >= 0; i--) {
             if (ws[i].wndId == wndId || ws[i].nuboWndId == wndId || wndId == 0)
                 return i;
@@ -365,9 +366,16 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                 NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
             }
         };
+
         sn.keyEvent = function(e) {
-            // console.log("key event event.type: " + event.type + ", keyCode: " + event.keyCode);
             var evtobj = e || event;
+            var msgstr = "key event evtobj.type: " + evtobj.type + ", keyCode: " + evtobj.keyCode;
+            console.log(msgstr);
+            new Android_Toast({
+                content: '<em>' + msgstr + '</em>',
+                duration: 3500
+            });
+
             mUxip.keyEvent(evtobj, sn.processId, sn.wndId, this);
         };
 
@@ -395,7 +403,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                     evtobj.action = 2;
                     NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
 
-                    lastEvtobj.type == "mousewheel";
+                    lastEvtobj.name = "MouseWheel";   //lastEvtobj.type == "mousewheel"
                     lastEvtobj.action = 1;
                     NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, lastEvtobj);
                     lastEvtobj = null;
@@ -412,6 +420,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
         sn.touchEvent = function(e) {
             var evtobj = e || event;
+
             evtobj.name = "TouchEvent";
             evtobj.src = this;
             evtobj.preventDefault();
@@ -434,11 +443,15 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         sn.canvas.onmousedown = sn.mouseEvent;
         sn.canvas.onmousemove = sn.mousemove;
         sn.canvas.onkeypress = sn.keyEvent;
-        sn.canvas.onkeydown = sn.keyEvent;
-        sn.canvas.onkeyup = sn.keyEvent;
+        // sn.canvas.onkeydown = sn.keyEvent; ////
+        // sn.canvas.onkeyup = sn.keyEvent; ////
         sn.panel.onkeypress = sn.keyEvent;
-        sn.panel.onkeydown = sn.keyEvent;
-        sn.panel.onkeyup = sn.keyEvent;
+        // sn.panel.onkeydown = sn.keyEvent; ////
+        // sn.panel.onkeyup = sn.keyEvent;   ////
+        // document.onkeypress = sn.keyEvent;  ////
+        document.onkeydown = sn.keyEvent;
+        document.onkeyup = sn.keyEvent;
+
         sn.canvas.addEventListener("touchstart", sn.touchEvent, false);
         sn.canvas.addEventListener("touchend", sn.touchEvent, false);
         sn.canvas.addEventListener("touchcancel", sn.touchEvent, false);
@@ -446,6 +459,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         sn.canvas.addEventListener("touchmove", sn.touchEvent, false);
         sn.canvas.addEventListener("mousewheel", sn.mouseWheelEvent, false); // IE9, Chrome, Safari, Opera
         sn.canvas.addEventListener("DOMMouseScroll", sn.mouseWheelEvent, false); // Firefox
+
 
         sn.dirtyCanvas = null;
         sn.matrix = {
@@ -637,7 +651,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
         Log.e(TAG, "attachSurfaceToMediaPlayer: " + mediaPlayer.objectHash + ", surfaceHash: " + surfaceHash);
     };
-    this.prepareMediaPlayer = function(processId, mediaPlayerHashInt, streamName) {
+    this.prepareMediaPlayer = function(processId, mediaPlayerHashInt, streamName, totalDuration) {
         var mediaPlayerHash = mediaPlayerHashInt.toString(16);
         var mediaPlayer = mediaManager[mediaPlayerHash];
         if (!mediaPlayer) {
@@ -659,6 +673,11 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             // remove current player
 
         }
+        console.log("****prepareMediaPlayer. send videoDuration " + totalDuration);
+        mediaPlayer.totalDuration = totalDuration;
+        NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.VideoDuration),
+                            processId, mediaPlayerHashInt, totalDuration);
+
         var isLive = "true";
         if (mediaPlayer.totalDuration > 0) {
             isLive = "false";
@@ -688,9 +707,11 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         }
         mediaPlayer.videoObj.onprogress = function() {
             //alert("Downloading video");
-            Log.e(TAG, "onprogress. Current Time: " + mediaPlayer.videoObj.currentTime + ", duration: " + mediaPlayer.videoObj.duration);
+            Log.e(TAG, "onprogress. Current Time: " + mediaPlayer.videoObj.currentTime + 
+                       ", duration: " + mediaPlayer.videoObj.duration);
             var progressInt = Math.floor(mediaPlayer.videoObj.currentTime * 1000);
-            NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.VideoProgress), mediaPlayer.processId, mediaPlayer.objectHashInt, progressInt);
+            NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.VideoProgress), 
+                                mediaPlayer.processId, mediaPlayer.objectHashInt, progressInt);
         };
 
         mediaPlayer.videoObj.onended = function() {
@@ -712,7 +733,6 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                 top: 0
             });
         });
-
     };
 
     this.mediaUpdateSurface = function(mediaPlayer, data) {
@@ -730,15 +750,15 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         $("#" + mediaPlayer.videoObj.id).css(cssObj);
     };
 
-    this.startMediaPlayer = function(processId, mediaPlayerHashInt, totalDuration) {
+    this.startMediaPlayer = function(processId, mediaPlayerHashInt) {  //, totalDuration
         var mediaPlayerHash = mediaPlayerHashInt.toString(16);
         var mediaPlayer = mediaManager[mediaPlayerHash];
         if (!mediaPlayer) {
             Log.e(TAG, "Error prepareMediaPlayer mediaPlayerHash not found");
             return;
         };
-        mediaPlayer.totalDuration = totalDuration;
-
+        // mediaPlayer.totalDuration = totalDuration;
+        console.log("***startMediaPlayer.****");
         if (mediaPlayer.url) {
             // start it
             mediaPlayer.videoObj.play();

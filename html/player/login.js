@@ -185,7 +185,7 @@ var WebmailList = ["gmail", "hotmail", "yahoo", "zoho", "icloud", "aim", "window
     "gawab", "inbox.com", "lavabit", "zapak", "hotpop", "myway", "are2"
 ];
 
-var DEBUG = false;
+var DEBUG = true;
 var mgmtURL;
 var clickbgColor = '#828282';
 var bgColor = '#5B5B5B';
@@ -216,6 +216,9 @@ var playbackScale;
 var playbackFile;
 var playbackStartTime;
 var passcodeExpired = false;
+
+var WRITE_TRANSACTION_TIMEOUT = 900000;
+var passcodeTimeout = WRITE_TRANSACTION_TIMEOUT;
 
 // console.log("Starting login.js");
 $(function() {
@@ -541,6 +544,280 @@ $(function() {
         }
     });
 
+    var autoAppView = null;
+
+    var AutoAppView = Backbone.View.extend({
+        el: $("#maindiv"),
+        packageName: "none",
+        domainName: "none",
+        initialize: function() {
+            autoAppView = this;
+        },
+        timeoutId: 0,
+        render: function() {
+            var template;
+
+            isSplashTemplate = true;
+            var vars = settings.attributes;
+            template = _.template($("#splash_template").html(), vars);
+
+            this.$el.html(template);
+            formatPage();
+            this.timeoutId = setTimeout(this.checkValidation, 200);
+        },
+        events: {
+            "click #changeBtn": "clickChange"
+        },
+        clickChange: function(event) {
+            // Button clicked, you can access the element that was clicked with event.currentTarget
+            //alert( "clickCreate" );
+            settings.set({
+                workEmail: "",
+                activationKey: ""
+            });
+            settings.save();
+            window.location.hash = "createPlayer";
+        },
+        activatePlayer: function() {
+
+            function guid() {
+                function s4() {
+                    return Math.floor((1 + Math.random()) * 0x10000)
+                        .toString(16)
+                        .substring(1);
+                }
+                return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                    s4() + '-' + s4() + s4() + s4();
+            }
+
+
+            var mHideNuboAppDomain = "@" + autoAppView.domainName;
+            var mHideNuboAppPackageName = autoAppView.packageName;
+            var deviceID = guid();
+            var workEmail = "va_" + deviceID + "_" + mHideNuboAppPackageName + mHideNuboAppDomain;
+
+            settings.set({
+                'firstName': "Cellcom",
+                'lastName': "TV",
+                'jobTitle': "NA",
+                'workEmail': workEmail,
+                'deviceID': deviceID,
+                'mHideNuboAppPackageName': mHideNuboAppPackageName,
+                "domainName": autoAppView.domainName
+            });
+            settings.save();
+
+            var plain = settings.get("workEmail") + '_' + settings.get("deviceID");
+            var signature = CryptoJS.HmacSHA1(plain, "1981abe0d32d93967648319b013b03f05a119c9f619cc98f");
+
+            var url = mgmtURL + "activate?deviceid=" + encodeURIComponent(settings.get("deviceID")) + "&email=" + encodeURIComponent(settings.get("workEmail")) + "&first=" + encodeURIComponent(settings.get("firstName")) + "&last=" + encodeURIComponent(settings.get("lastName")) + "&title=" + encodeURIComponent(settings.get("jobTitle")) + "&signature=" + encodeURIComponent(signature) + "&regid=none&deviceType=Web&deviceName=Web" +
+                "&hideNuboAppPackageName=" + encodeURIComponent(mHideNuboAppPackageName);
+            if (DEBUG) {
+                console.log("activatePlayer: " + url);
+            }
+
+            getJSON(url, function(data) {
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
+                if (data.status == 0) {
+                    settings.set({
+                        'activationKey': data.activationKey
+                    });
+                    settings.save();
+                    autoAppView.checkValidation();
+
+                } else if (data.status == 2) { // domain company not found
+                    $('#workEmailSendErr').text(l("emailNotExist"));
+                    $('#workEmailSend').addClass("error");
+                    $('#sendMeActivationCreateBtn').css('visibility', 'visible');
+
+                } else if (data.status == 3) { // existing user dose not allow - use full create player
+                    settings.set({
+                        "activationKey": ""
+                    });
+                    settings.save();
+                    autoAppView.checkValidation();
+
+                } else if (data.status == 301) { // change mgmtURL
+                    mgmtURL = data.mgmtURL;
+
+                    if (mgmtURL.substr(mgmtURL.length - 1) != '/') {
+                        mgmgtURL = mgmtURL + '/';
+                    }
+                    setTimeout(createplayerView.activatePlayer, 1000);
+                } else {
+                    window.location.hash = "error";
+                }
+
+            });
+        },
+        checkValidation: function() {
+            var activationKey = settings.get("activationKey");
+            if (!activationKey || activationKey == "") {
+                console.log("checkValidation: redirect to activatePlayer..")
+                autoAppView.activatePlayer();
+                return;
+            }
+            var url = mgmtURL + "validate?username=" + encodeURIComponent(settings.get("workEmail")) +
+                "&deviceid=" + encodeURIComponent(settings.get("deviceID")) +
+                "&activationKey=" + encodeURIComponent(settings.get("activationKey")) +
+                "&playerVersion=" + playerVersion +
+                "&hideNuboAppPackageName=" + encodeURIComponent(autoAppView.packageName);
+
+            getJSON(url, function(data) {
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
+
+                if (data.status == 1) {
+                    this.timeoutId = 0;
+                    pendingValidation = false;
+                    loginToken = data.loginToken;
+                    passcodeActivationRequired = data.passcodeActivationRequired;
+                    orgName = data.orgName;
+                    authType = data.authType;
+                    authenticationRequired = data.authenticationRequired;
+                    passcodeType = data.passcodetype;
+                    passcodeMinChars = data.passcodeminchars;
+                    var passcodetypeChange = data.passcodetypechange;
+
+                    uploadExternalWallpaper = settings.get("uploadExternalWallpaper");
+
+                    if (uploadExternalWallpaper == null || uploadExternalWallpaper) {
+                        if (data.clientProperties["wallpaper"]) {
+                            wallpaperColor = "";
+                            wallpaperImage = mgmtURL + data.clientProperties["wallpaper"];
+                            uploadExternalWallpaper = false;
+                        }
+                    }
+
+                    if (data.clientProperties["passcodeTimeout"] && data.clientProperties["passcodeTimeout"] > 0) {
+                        passcodeTimeout = data.clientProperties["passcodeTimeout"] * 1000;
+                    }
+
+                    settings.set({
+                        'firstName': data.firstName,
+                        'lastName': data.lastName,
+                        'jobTitle': data.jobTitle,
+                        'wallpaperImage': wallpaperImage,
+                        'wallpaperColor': wallpaperColor,
+                        'uploadExternalWallpaper': uploadExternalWallpaper
+                    });
+                    settings.save();
+
+                    var pType = passcodeType;
+                    if (passcodeActivationRequired == false && passcodetypeChange == 1) {
+                        pType = passcodeType == 0 ? 1 : 0;
+                    }
+
+                    loggedIn = true;
+                    window.location.hash = "player";
+                } else if (data.status == 0) { //Pending
+                    var isValidationError = false;
+                    var message = data.message;
+                    if (message != undefined || message != "") {
+                        message = message.toLowerCase();
+                        var isUserPending = message.indexOf("activation pending");
+                        if (isUserPending == -1) {
+                            isValidationError = true;
+                        }
+                    }
+
+                    if (isValidationError == false) {
+                        if (DEBUG) {
+                            console.log("pending...");
+                        }
+                        pendingValidation = true;
+                        autoAppView.timeoutId = setTimeout(autoAppView.checkValidation, 1000);
+                        //}
+                    } else {
+                        if (DEBUG) {
+                            console.log("checkValidation error");
+                        }
+                        console.log("checkValidation. error " + data.status + ", " + data.message);
+                        this.timeoutId = 0;
+                        pendingValidation = false;
+                        settings.set({
+                            activationKey: ""
+                        });
+                        window.location.hash = "error";
+                    }
+                } else if (data.status == 301) {
+                    mgmtURL = data.mgmtURL;
+
+                    if (mgmtURL.substr(mgmtURL.length - 1) != '/') {
+                        mgmtURL = mgmtURL + '/';
+                    }
+                    if (DEBUG) {
+                        console.log("checkValidation. status=301, mgmtURL: " + mgmtURL);
+                    }
+                    pendingValidation = true;
+                    if (validationView == null)
+                        return;
+
+                    this.timeoutId = setTimeout(validationView.checkValidation, 0);
+
+                } else if (data.status == 2) { //Activation was denied
+                    this.timeoutId = 0;
+                    pendingValidation = false;
+                    settings.set({
+                        activationKey: ""
+                    });
+                    window.location.hash = "expired";
+
+                } else if (data.status == 3) { //Invalid player version
+                    this.timeoutId = 0;
+                    pendingValidation = false;
+                    settings.set({
+                        activationKey: ""
+                    });
+                    window.location.hash = "error";
+
+                } else if (data.status == 4) {
+                    this.timeoutId = 0;
+                    pendingValidation = false;
+                    window.location.hash = "passcodelock";
+
+                } else if (data.status == 5) {
+                    this.timeoutId = 0;
+                    pendingValidation = false;
+                    settings.set({
+                        'errorType': data.status,
+                        'adminName': data.adminName,
+                        'adminEmail': data.adminEmail
+                    });
+                    settings.save();
+
+                    window.location.hash = "disableUserDevice";
+
+                } else if (data.status == 6) {
+                    this.timeoutId = 0;
+                    pendingValidation = false;
+
+                    settings.set({
+                        'errorType': data.status,
+                        'adminName': data.adminName,
+                        'adminEmail': data.adminEmail,
+                        'orgName': data.orgName
+                    });
+                    settings.save();
+
+                    window.location.hash = "disableUserDevice";
+
+                } else {
+                    console.log("checkValidation. error status: " + data.status);
+                    this.timeoutId = 0;
+                    pendingValidation = false;
+                    settings.set({
+                        activationKey: ""
+                    });
+                    window.location.hash = "error";
+                }
+            });
+        }
+    });
+
     var validationView = null;
 
     function resetValidationEvent() {
@@ -601,6 +878,7 @@ $(function() {
         },
         checkValidation: function() {
             if (settings.get("activationKey") == "") {
+                window.location.hash = "error";
                 return;
             }
             var url = mgmtURL + "validate?username=" + encodeURIComponent(settings.get("workEmail")) +
@@ -626,18 +904,15 @@ $(function() {
 
                     uploadExternalWallpaper = settings.get("uploadExternalWallpaper");
                     if (uploadExternalWallpaper == null || uploadExternalWallpaper) {
-                        var clientProperties = data.clientProperties;
-                        for (var key in clientProperties) {
-                            if (DEBUG) {
-                                console.log(key + " : " + clientProperties[key]);
-                            }
-                            if (key.localeCompare("wallpaper") == 0) {
-                                wallpaperColor = "";
-                                wallpaperImage = mgmtURL + clientProperties[key];
-                                uploadExternalWallpaper = false;
-                                break;
-                            }
+                        if (data.clientProperties["wallpaper"]) {
+                            wallpaperColor = "";
+                            wallpaperImage = mgmtURL + data.clientProperties["wallpaper"];
+                            uploadExternalWallpaper = false;
                         }
+                    }
+
+                    if (data.clientProperties["passcodeTimeout"] && data.clientProperties["passcodeTimeout"] > 0) {
+                        passcodeTimeout = data.clientProperties["passcodeTimeout"] * 1000;
                     }
 
                     settings.set({
@@ -696,9 +971,9 @@ $(function() {
                         console.log("checkValidation. error " + data.status + ", " + data.message);
                         this.timeoutId = 0;
                         pendingValidation = false;
-                        settings.set({
-                            activationKey: ""
-                        });
+                        // settings.set({
+                        //     activationKey: ""
+                        // });
                         window.location.hash = "error";
                     }
                 } else if (data.status == 301) {
@@ -2877,8 +3152,7 @@ $(function() {
             var datadiv = document.getElementById('datadiv');
             var width = datadiv.offsetWidth;
             var height = datadiv.offsetHeight + (mobilecheck() ? 90 : 45);
-            // console.log("width: " + width + ", height: " + height);
-            uxip = new UXIP(datadiv, width, height);
+            uxip = new UXIP(datadiv, width, height, passcodeTimeout);
             uxip.PlayerView = this;
 
             var firstLogin = settings.get("firstGatewayConnection");
@@ -3020,7 +3294,7 @@ $(function() {
             $("div#recordingTimeLbl").css("width", 300 / playbackScale + "px");
             $("div#recordingTimeLbl").css("top", playbackHeight - Math.round(30 / playbackScale));
             // console.log("width: " + width + ", height: " + height);
-            uxip = new UXIP(datadiv, width, height, true);
+            uxip = new UXIP(datadiv, width, height, passcodeTimeout, true);
             uxip.PlayerView = this;
 
             var parser = document.createElement('a');
@@ -3093,7 +3367,8 @@ $(function() {
             "unlockPassword/:token/:email": "getUnlockPassword",
             "downloadApp": "getDownloadApp",
             "downloadApp/:domain": "getDownloadApp",
-            "*actions": "defaultRoute" // matches http://example.com/#anything-here
+            "autoapp/:packageName/:domainName": "autoapp",
+            "*actions": "defaultRoute"
         }
     });
     // Initiate the router
@@ -3149,6 +3424,16 @@ $(function() {
 
     });
 
+    app_router.on('route:autoapp', function(packageName, domainName) {
+        console.log("route:autoapp. packageName:" + packageName);
+        resetValidationEvent();
+        var autoapp_view = new AutoAppView();
+        autoapp_view.packageName = packageName;
+        autoapp_view.domainName = domainName;
+        appController.showView(autoapp_view);
+        return;
+    });
+
     app_router.on('route:defaultRoute', function(actions) {
         if (DEBUG) {
             console.log("route:defaultRoute. actions:" + actions);
@@ -3183,7 +3468,9 @@ $(function() {
                 "wallpaperColor": wallpaperColor,
                 "uploadExternalWallpaper": true,
                 "firstGatewayConnection": true,
-                "deviceID": ""
+                "deviceID": "",
+                "mHideNuboAppPackageName": "",
+                "domainName": ""
             });
             settings.save();
             window.location.hash = "greeting";
@@ -3218,7 +3505,8 @@ $(function() {
             appController.showView(browserVerErr_view);
             return;
         }
-        var haveActivationKey = (activationKey != null && activationKey.length > 10);
+
+         var haveActivationKey = (activationKey != null && activationKey.length > 10);
 
         if (!haveActivationKey) {
             if (actions == "createPlayer") {
@@ -3237,8 +3525,20 @@ $(function() {
         }
 
         if (actions == "validation") {
-            var validation_view = new ValidationView();
-            appController.showView(validation_view);
+            var packageName = globalSettings.get("mHideNuboAppPackageName");
+            new Android_Toast({
+                content: '<em>' + "validation. packageName: " + packageName + '</em>',
+                duration: 3500
+            });
+            if (packageName) {
+                var autoapp_view = new AutoAppView();
+                autoapp_view.packageName = packageName;
+                autoapp_view.domainName = globalSettings.get("domainName");
+                appController.showView(autoapp_view);
+            } else {
+               var validation_view = new ValidationView();
+               appController.showView(validation_view);
+            }
             return;
         }
 
@@ -3313,4 +3613,8 @@ $(function() {
 var globalSettings;
 var getDeviceId = function() {
     return encodeURIComponent(globalSettings.get("deviceID"));
+}
+
+var getHideNuboAppPackgeName = function() {
+    return encodeURIComponent(globalSettings.get("mHideNuboAppPackageName"));
 }

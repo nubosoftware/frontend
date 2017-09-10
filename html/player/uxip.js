@@ -15,6 +15,7 @@ var RTT_THRESHOLD_TO_CLOSE_SOCKET = 2500;
 var mBadRTTCounter = 0;
 var MAX_BAD_RTT_SEQUENCE = 5;
 var WRITE_TRANSACTION_TIMEOUT = 900000;
+var TIMER_CHECK_TIMEOUT = 10000;
 var SOCKET_READ_TIMEOUT = 30000;
 
 // debug parameters
@@ -29,7 +30,11 @@ var writeToDrawCmdLog = false;
 var resCache = {};
 var fontCache = {};
 
-function UXIP(parentNode, width, height, playbackMode, playbackFile) {
+function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbackFile) {
+    new Android_Toast({
+        content: '<em>' + "start UXIP" + '</em>',
+        duration: 3500
+    });
     "use strict";
     var UXIPself = this;
     var protocolState = psDisconnect;
@@ -67,6 +72,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     var domObj;
     var lastProcessID, lastWndID;
     var mWidth, mHeight, mParentNode;
+    var mOrgPasscodeTimeout = WRITE_TRANSACTION_TIMEOUT;
     var wm;
     var waitForDraw = false;
     var lastExtractedText = "";
@@ -91,6 +97,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     mParentNode = parentNode;
     mWidth = width;
     mHeight = height;
+
+    if (passcodeTimeout > 0) {
+        mOrgPasscodeTimeout = passcodeTimeout;
+    }
 
     // keyboard input action
     var mImeOptions = 1;
@@ -189,7 +199,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 ws.close();
             }
             clearTimer(timeoutid);
-            timeoutid = setInterval(checkTimeOut, 12000);
+            timeoutid = setInterval(checkTimeOut, TIMER_CHECK_TIMEOUT);
         };
 
         ws.onclose = function(e) {
@@ -215,7 +225,11 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 firstLoginReconnectCounter += 1;
                 createWebSocket(url);
             }
-
+            Log.e(TAG + DEBUG_PROTOCOL_NETWORK_STR, "WebSocket on-error event " + msg);
+            new Android_Toast({
+                content: '<em>' + "WebSocket onclose event" + '</em>',
+                duration: 3500
+            });
             // ISRAEL 28/3/16 - temporary diable this for development
             //window.location.reload();
 
@@ -230,6 +244,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 msg += ")";
             }
             Log.e(TAG + DEBUG_PROTOCOL_NETWORK_STR, "WebSocket on-error event " + msg);
+             new Android_Toast({
+                content: '<em>' + "WebSocket on-error event " + msg + '</em>',
+                duration: 3500
+            });
         };
     }
 
@@ -241,7 +259,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             Log.d("checkTimeOut.");
         }
 
-        if (diff > WRITE_TRANSACTION_TIMEOUT) {
+        if (diff > mOrgPasscodeTimeout) {
             Log.e(TAG + " WRITE_TRANSACTION_TIMEOUT");
             errorAndClose();
             window.location.reload();
@@ -270,7 +288,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
 
     this.keyEvent = function(eventt, processId, wndId, src) {
-        // console.log("uxip.keyEvent event.type: " + event.type + ", keyCode: " + event.keyCode);
+        console.log("uxip.keyEvent event.type: " + eventt.type + ", keyCode: " + eventt.keyCode);
         if (eventt.type == "keypress") {
             var chr = getChar(eventt);
             if (isMobile) {
@@ -295,7 +313,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         } else {
             var specialKey = -1;
             var key = eventt.which == null ? eventt.keyCode : eventt.which;
-            // console.log("key: "+key);
+            console.log("key: "+key);
             switch (key) {
                 case 8:
                     //backspace
@@ -319,7 +337,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                     specialKey = KeyEvent.KEYCODE_CTRL_LEFT;
                     break;
                 case 27:
-                    specialKey = KeyEvent.KEYCODE_ESCAPE;
+                    //specialKey = KeyEvent.KEYCODE_ESCAPE;
+                    // ISREL TRY TO SEND BACK INSTEAD
+                    specialKey = KeyEvent.KEYCODE_BACK;
                     break;
                 case 32:
                     specialKey = KeyEvent.KEYCODE_SPACE;
@@ -398,7 +418,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 // Log.d("specialKey: "+specialKey);
                 eventt.preventDefault();
                 var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
-
+                console.log("**** specialKey: " + specialKey + ", eventaction: " + eventaction);
                 handleKeyEvent(processId, wndId, {
                     name: "KeyEvent",
                     action: eventaction,
@@ -757,6 +777,13 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             playerLogin = PlayerCmd.playerLogin;
         }
 
+        var nuboFlags = 0;
+        var hideNuboAppPackgeName = getHideNuboAppPackgeName();
+        if (hideNuboAppPackgeName && hideNuboAppPackgeName != undefined) {
+            nuboFlags = 1;
+        }
+        console.log("hideNuboAppPackgeName: " + hideNuboAppPackgeName + ", nuboFlags: " + nuboFlags);
+
         NuboOutputStreamMgr.getInstance().setIsPlayerLogin(true);
         NuboOutputStreamMgr.getInstance().setSessionId(sessID);
         NuboOutputStreamMgr.getInstance().sendCmd(playerLogin, 123456, sessID, // write int int string
@@ -764,9 +791,15 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             mXDpi, mYDpi, mScaledDensity, // write all float
             mRotation, mNavBarHeightPortrait, mNavBarHeightLandscape, mNavBarWidth, romClientType, 17, // write all int
             'web', '1.2.0.91', '1.2', // write all string
-            91, (4 * mHeight * mWidth), -1,
+            201, (4 * mHeight * mWidth), -1,
 
-            "", getDeviceId()); // write int, int, int , dataIntent withservice
+            "", // data intent
+            //0, //camera array
+            //3, //HIGH NETWORK QUALITY
+            getDeviceId(),
+            nuboFlags, // flags
+            hideNuboAppPackgeName   //"com.salesforce.chatter"
+        ); // write int, int, int , dataIntent withservice
         NuboOutputStreamMgr.getInstance().setIsPlayerLogin(false);
 
         //ws.send(buffer2);
@@ -842,6 +875,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             if (DEBUG_PROTOCOL_NETWORK) {
                 Log.d(TAG + DEBUG_PROTOCOL_NETWORK_STR, 'Loggedin.');
             }
+            new Android_Toast({
+                content: '<em>' + "user has logged in" + '</em>',
+                duration: 3500
+            });            
             // user has logged in.
             protocolState = psConnected;
             return true;
@@ -1164,6 +1201,9 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 case DrawCmd.MediaObject_release:
                     func = releaseMediaObject;
                     break;
+                case DrawCmd.MediaObject_reset:
+                    func = resetMediaObject;
+                    break;
                 case DrawCmd.Video_pauseVideo:
                     func = pauseVideo;
                     break;
@@ -1419,26 +1459,43 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
         if (fontData == null) {
             var fontFamily = cacheFontPath.replace(' ', '_').trim();
+            // console.log("**** getFontFromCache.1 fontFamily: " + fontFamily);
 
             if (fileContent != undefined) {
                 var fontUrl = "url(data:font/opentype;base64," + fileContent + " )";
+                // new code for support old browser
+                $("head").prepend("<style type=\"text/css\">" +
+                    "@font-face {\n" +
+                    "\tfont-family: \"" + fontFamily + "\";\n" +
+                    "\tsrc: " + fontUrl + "\n" +
+                    "}\n" +
+                    "</style>");
 
-                var f = new FontFace(fontFamily, fontUrl, {});
-                f.load().then(function(loadedFace) {
-                    document.fonts.add(loadedFace);
+                fontData = {};
+                fontData.path = cacheFontPath;
+                fontData.fontFamily = fontFamily;
+                //fontData.fileContent = loadedFace;
+                fontCache[cacheFontPath] = fontData;
+                return fontFamily;
 
-                    // save font data
-                    fontData = {};
-                    fontData.path = cacheFontPath;
-                    fontData.fontFamily = fontFamily;
-                    fontData.fileContent = loadedFace;
-                    fontCache[cacheFontPath] = fontData;
-                    return fontFamily;
-                });
+                // var f = new FontFace(fontFamily, fontUrl, {});
+                // console.log("**** getFontFromCache. f: " + f);
+                //     f.load().then(function(loadedFace) {
+                //         document.fonts.add(loadedFace);
+                //         console.log("getFontFromCache.1.1 LOAD");
+                //         // save font data
+                //         fontData = {};
+                //         fontData.path = cacheFontPath;
+                //         fontData.fontFamily = fontFamily;
+                //         fontData.fileContent = loadedFace;
+                //         fontCache[cacheFontPath] = fontData;
+                //         return fontFamily;
+                //     });
             } else {
                 return "";
             }
         } else {
+            // console.log("**** getFontFromCache.2 fontData.fontFamily: " + fontData.fontFamily);
             return fontData.fontFamily;
         }
     };
@@ -1447,6 +1504,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         var fontData = fontCache[assetFontPath];
 
         if (fontData == null) {
+            var packageName = getHideNuboAppPackgeName();
+            if (packageName && packageName != undefined) {
+                return;
+            }
             var fontPath = assetFontPath.replace('assets ', '');
 
             var i = fontPath.indexOf("/");
@@ -1913,7 +1974,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     var pictureBitmap = null;
 
     drawWebView = function(processId, wndId) {
-        //Log.v(TAG, "drawWebView. processId=" + processId + ", wndId=" + wndId);
+        Log.v(TAG, "drawWebView. processId=" + processId + ", wndId=" + wndId);
         if (!reader.canReadBytes(4))
             return false;
         var checkState = reader.readInt();
@@ -1989,7 +2050,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             //canvasCtx.setTransform(bm.matrix.arr[0],bm.matrix.arr[3],bm.matrix.arr[1],bm.matrix.arr[4],bm.matrix.arr[2],bm.matrix.arr[5]);
 
             var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
-            if (ctx != null) {
+            if (ctx != null) {                
                 if (drawBitmapType == DrawBitmapType.ninePatch) { //nine patch image
                     ninePatch_Draw(ctx, dst, img, chunk, p);
 
@@ -2083,13 +2144,17 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         };
 
         img.onerror = function(e) {
-            Log.e(TAG, "Error on loading image ");
+            Log.e(TAG, "Error on loading image. img.src: " + img.src);
+            new Android_Toast({
+                content: '<em>' + "Error on loading image. img.src: " + img.src + '</em>',
+                duration: 3500
+            });
             waitForDraw = false;
             moreData();
         };
 
         if (bitmap.bitmapType == "res") {
-            img.crossOrigin = "Anonymous";
+            // img.crossOrigin = "Anonymous";
 
             var resData = resCache[bitmap.path];
             if (resData == null) {
@@ -2116,9 +2181,11 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             } else {
                 img.setAttribute("src", 'data:image/png;base64,' + resData.fileContent);
             }
+
             //img.setAttribute("src", resourceURL + bitmap.path);
             //Log.v(TAG, "bitmap.path: " + bitmap.path);
         } else {
+            // img.crossOrigin = "Anonymous";
             var u8 = new Uint8Array(bitmap.data);
             var chars = "";
             for (var i = 0; i < u8.length; i++) {
@@ -2508,8 +2575,8 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
                 //	drawFlag=false;
                 //}
                 if (drawFlag) {
-                    //Log.e(TAG,"drawStretchyPatch. src:"+JSON.stringify(src)+", dst:"+JSON.stringify(dst)+
-                    //  ", initColor:"+initColor+", color:"+color);
+                    // Log.e(TAG,"drawStretchyPatch. src:"+JSON.stringify(src)+", dst:"+JSON.stringify(dst)+
+                    //   ", initColor:"+initColor+", color:"+color);
                     drawStretchyPatch(ctx, src, dst, img, initColor, color, paint);
                     //drawStretchyPatch(canvas, src, dst, bitmap, *paint, initColor,
                     //                  color, hasXfer);
@@ -2522,14 +2589,12 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             src.top = src.bottom;
             dst.top = dst.bottom;
             dstRightsHaveBeenCached = true;
-
         }
 
         ctx.globalAlpha = oldAlpha;
         ctx.fillStyle = oldFillStyle;
 
         //ctx.drawImage(img,location.left,location.top);
-
     };
 
     drawStretchyPatch = function(ctx, src, dst, img, initColor, colorHint, paint) {
@@ -2546,7 +2611,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
             var fcolor = convertToHTMLColor(color.toString(16));
 
-            //Log.e(TAG,"Fill Color: "+fcolor+", alpha:"+alpha);
+            // Log.e(TAG,"Fill Color: "+fcolor+", alpha:"+alpha);
             ctx.fillStyle = fcolor;
             var w = dst.right - dst.left;
             var h = dst.bottom - dst.top;
@@ -2555,7 +2620,6 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             ctx.fill();
             ctx.globalAlpha = oldAlpha;
             ctx.fillStyle = oldFillStyle;
-            //Log.e(TAG,"drawRect sw="+sw+", sh="+sh+", dw="+dw+", dh="+dh);
 
             /*var color= (initColor & 0xFFFFFF );
              var alpha= initColor >>> 24;
@@ -2580,12 +2644,11 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             var sh = (src.bottom - src.top);
             var dw = (dst.right - dst.left);
             var dh = (dst.bottom - dst.top);
-            //Log.e(TAG,"drawImage sw="+sw+", sh="+sh+", dw="+dw+", dh="+dh);
+            // Log.e(TAG,"drawImage sw="+sw+", sh="+sh+", dw="+dw+", dh="+dh);
 
             // ctx.drawImage(img, src.left, src.top, sw, sh, dst.left, dst.top, dw, dh);
             var newImage = applyColorFilter(img, paint, img.width, img.height);
             ctx.drawImage(newImage, src.left, src.top, sw, sh, dst.left, dst.top, dw, dh);
-
 
             //ctx.drawImage(img,src.left,src.top,sw, sh, dst.left, dst.top, sw, sh);
             //    SLOW_CASE:
@@ -3408,6 +3471,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         if (PRINT_DRAW_COMMANDS) {
             Log.d(TAG, "PopWindow. processId=" + processId + ", wndId=" + wndId);
         }
+
         var nuboWndId = wndId;
         if (!reader.canReadBytes(4))
             return false;
@@ -3606,7 +3670,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     };
 
     dispatchKeyEvent = function(processId, keyEvent) {
-        // Log.e(TAG, "dispatchKeyEvent. processId=" + processId + ", keyEvent=" + keyEvent + ", protocolState: " + protocolState);
+        Log.e(TAG, "dispatchKeyEvent. processId=" + processId + ", keyEvent=" + keyEvent + ", protocolState: " + protocolState);
         if (protocolState != psConnected)
             return;
         NuboOutputStreamMgr.getInstance().sendCmd(keyEvent, processId);
@@ -3639,7 +3703,6 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         }
         if (protocolState != psConnected)
             return;
-
         dispatchKeyEvent(currentProcessId, UXIPself.nuboByte(PlayerCmd.searchKeyEvent));
     };
 
@@ -3875,14 +3938,14 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
     //new Video functions 
     var createNewSurfaceView = function(processId, surfaceHash) {
         var data = {
-            x: reader.readInt(),
-            y: reader.readInt(),
-            width: reader.readInt(),
-            height: reader.readInt(),
-            visible: reader.readBoolean(),
-            parentWndId: reader.readInt()
-        }
-        Log.e(TAG, `createNewSurfaceView. surfaceHash: ${surfaceHash}, x: ${data.x}, y: ${data.y}, width: ${data.width}, height: ${data.height}, visible: ${data.visible}, parentWndId: ${data.parentWndId}`);
+                x: reader.readInt(),
+                y: reader.readInt(),
+                width: reader.readInt(),
+                height: reader.readInt(),
+                visible: reader.readBoolean(),
+                parentWndId: reader.readInt()
+            }
+            //Log.e(TAG, `createNewSurfaceView. surfaceHash: ${surfaceHash}, x: ${data.x}, y: ${data.y}, width: ${data.width}, height: ${data.height}, visible: ${data.visible}, parentWndId: ${data.parentWndId}`);
         wm.createNewSurfaceView(processId, surfaceHash, data);
         return true;
     };
@@ -3900,6 +3963,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
     var attachSurfaceToMediaPlayer = function(processId, mediaPlayerHashInt) {
         var surfaceHashInt = reader.readInt();
+        console.log("attachSurfaceToMediaPlayer. surfaceHashInt: " + surfaceHashInt);
         wm.attachSurfaceToMediaPlayer(processId, mediaPlayerHashInt, surfaceHashInt);
         return true;
     };
@@ -3912,8 +3976,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
             if (!rsRet.canRead)
                 return false;
             var streamName = rsRet.value;
-            Log.e(TAG, "prepareMediaObject. processId: " + processId + ", mediaPlayerHashInt: " + mediaPlayerHashInt + ", streamName: " + streamName);
-            wm.prepareMediaPlayer(processId, mediaPlayerHashInt, streamName);
+            var totalDuration = reader.readInt();
+            Log.e(TAG, "prepareMediaObject. processId: " + processId + ", mediaPlayerHashInt: " +
+                        mediaPlayerHashInt + ", streamName: " + streamName);
+            wm.prepareMediaPlayer(processId, mediaPlayerHashInt, streamName, totalDuration);
         } else {
             Log.e(TAG, "Invalid media object type: " + objectType);
         }
@@ -3922,9 +3988,10 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
     var playMediaObject = function(processId, objectType) {
         var mediaPlayerHashInt = reader.readInt();
+        console.log("playMediaObject. mediaPlayerHashInt: " + mediaPlayerHashInt);
         if (objectType == MediaObjectType.MediaPlayer) {
-            var totalDuration = reader.readInt();
-            wm.startMediaPlayer(processId, mediaPlayerHashInt, totalDuration);
+            // var totalDuration = reader.readInt();
+            wm.startMediaPlayer(processId, mediaPlayerHashInt);  //, totalDuration
         } else {
             Log.e(TAG, "Invalid media object type: " + objectType);
         }
@@ -3933,6 +4000,7 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
 
     var stopMediaObject = function(processId, objectType) {
         var mediaPlayerHashInt = reader.readInt();
+        console.log("stopMediaObject. mediaPlayerHashInt: " + mediaPlayerHashInt);
         Log.e(TAG, "Invalid media object type: " + objectType);
         return true;
     };
@@ -3942,6 +4010,14 @@ function UXIP(parentNode, width, height, playbackMode, playbackFile) {
         if (objectType == MediaObjectType.MediaPlayer) {
             wm.releaseMediaPlayer(processId, mediaPlayerHashInt);
         } else {
+            Log.e(TAG, "Invalid media object type: " + objectType);
+        }
+        return true;
+    };
+
+    var resetMediaObject = function(processId, objectType) {
+        var mediaPlayerHashInt = reader.readInt();
+        if (objectType != MediaObjectType.MediaPlayer) {
             Log.e(TAG, "Invalid media object type: " + objectType);
         }
         return true;
@@ -4057,6 +4133,7 @@ PlayerCmd.VideoInfoEvent = 28;
 PlayerCmd.VideoSeekEvent = 29;
 PlayerCmd.VideoProgress = 30;
 PlayerCmd.OnVideoSizeChanged = 31;
+PlayerCmd.VideoDuration = 37;
 
 function drawCmdCodeToText(code) {
     for (var property in DrawCmd) {
@@ -4118,6 +4195,10 @@ DrawCmd.Video_attachToSurface = 81;
 DrawCmd.Video_setVolume = 82;
 
 DrawCmd.toast = 83;
+DrawCmd.nuboTestSocketAck = 84;
+DrawCmd.authenticateNuboApp = 85;
+DrawCmd.closeClientApp = 89;
+
 
 //immediate draw commands
 DrawCmd.IMMEDIATE_COMMAND = 100;

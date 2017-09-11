@@ -3526,10 +3526,6 @@ $(function() {
 
         if (actions == "validation") {
             var packageName = globalSettings.get("mHideNuboAppPackageName");
-            new Android_Toast({
-                content: '<em>' + "validation. packageName: " + packageName + '</em>',
-                duration: 3500
-            });
             if (packageName) {
                 var autoapp_view = new AutoAppView();
                 autoapp_view.packageName = packageName;

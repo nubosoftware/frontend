@@ -31,10 +31,10 @@ var resCache = {};
 var fontCache = {};
 
 function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbackFile) {
-    new Android_Toast({
-        content: '<em>' + "start UXIP" + '</em>',
-        duration: 3500
-    });
+    // new Android_Toast({
+    //     content: '<em>' + "start UXIP" + '</em>',
+    //     duration: 3500
+    // });
     "use strict";
     var UXIPself = this;
     var protocolState = psDisconnect;
@@ -288,7 +288,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
 
 
     this.keyEvent = function(eventt, processId, wndId, src) {
-        console.log("uxip.keyEvent event.type: " + eventt.type + ", keyCode: " + eventt.keyCode);
+        // console.log("uxip.keyEvent event.type: " + eventt.type + ", keyCode: " + eventt.keyCode);
         if (eventt.type == "keypress") {
             var chr = getChar(eventt);
             if (isMobile) {
@@ -302,7 +302,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             }
             if (chr != null) {
                 // Log.d("chr: "+chr);
-                handleKeyEvent(processId, wndId, {
+                handleKeyEvent(currentProcessId, wndId, {
                     name: "KeyEvent",
                     action: KeyEvent.ACTION_MULTIPLE,
                     keyCode: KeyEvent.KEYCODE_UNKNOWN,
@@ -313,7 +313,6 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
         } else {
             var specialKey = -1;
             var key = eventt.which == null ? eventt.keyCode : eventt.which;
-            console.log("key: "+key);
             switch (key) {
                 case 8:
                     //backspace
@@ -415,10 +414,9 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
                     break;
             }
             if (specialKey > 0) {
-                // Log.d("specialKey: "+specialKey);
                 eventt.preventDefault();
                 var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
-                handleKeyEvent(processId, wndId, {
+                handleKeyEvent(currentProcessId, wndId, {
                     name: "KeyEvent",
                     action: eventaction,
                     keyCode: specialKey
@@ -781,7 +779,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
         if (hideNuboAppPackgeName && hideNuboAppPackgeName != undefined) {
             nuboFlags = 1;
         }
-        console.log("hideNuboAppPackgeName: " + hideNuboAppPackgeName + ", nuboFlags: " + nuboFlags);
+        Log.d("hideNuboAppPackgeName: " + hideNuboAppPackgeName + ", nuboFlags: " + nuboFlags);
 
         NuboOutputStreamMgr.getInstance().setIsPlayerLogin(true);
         NuboOutputStreamMgr.getInstance().setSessionId(sessID);
@@ -1458,7 +1456,6 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
 
         if (fontData == null) {
             var fontFamily = cacheFontPath.replace(' ', '_').trim();
-            // console.log("**** getFontFromCache.1 fontFamily: " + fontFamily);
 
             if (fileContent != undefined) {
                 var fontUrl = "url(data:font/opentype;base64," + fileContent + " )";
@@ -1494,7 +1491,6 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
                 return "";
             }
         } else {
-            // console.log("**** getFontFromCache.2 fontData.fontFamily: " + fontData.fontFamily);
             return fontData.fontFamily;
         }
     };
@@ -3504,11 +3500,12 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
 
         var activityOrDialog = (containerType == ContainerType.ACTIVITY || containerType == ContainerType.DIALOG);
 
-        if (activityOrDialog) { //AsiM - keep last process id for keyboard
-            if (processId != currentProcessId) {
-                currentProcessId = processId;
-            }
-        }
+        // YAELL set currentProcessId after show
+        // if (activityOrDialog) { //AsiM - keep last process id for keyboard
+        //     if (processId != currentProcessId) {
+        //         currentProcessId = processId;
+        //     }
+        // }
 
         var x = 0,
             y = 0,
@@ -3658,10 +3655,10 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
     };
 
     removeProcess = function(processId, keyEvent) {
-        Log.d(TAG, "removeProcess. processId=" + processId + ", keyEvent=" + keyEvent);
+        // Log.d(TAG, "removeProcess. processId=" + processId + ", keyEvent=" + keyEvent);
         wm.removeProcess(processId);
         var lastProcessId = wm.getLastNotKeyboardProcessIdOnStack(keyboardProcessID);
-        if (!isNaN(lastProcessId) && lastProcessId != 0) {
+        if (!isNaN(lastProcessId) && lastProcessId != 0 && lastProcessId != processId) {
             currentProcessId = lastProcessId;
         } else {
             Log.e(TAG, "removeProcess:: there is no last processId");
@@ -3674,7 +3671,6 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
         if (protocolState != psConnected)
             return;
         if (keyEvent == null) {
-            console.log("**** keyEvent == null");
             return;
         }
         NuboOutputStreamMgr.getInstance().sendCmd(keyEvent, processId);
@@ -3790,8 +3786,6 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
     };
 
     handleKeyEvent = function(processId, wndId, event) {
-        Log.d(TAG, "handleKeyEvent. processId=" + processId + ", wndId=" + wndId);
-        Log.d(TAG, "handleKeyEvent. event.name: " + event.name + ", event.action: " + event.action);
         if (protocolState != psConnected)
             return;
 
@@ -3993,10 +3987,9 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
 
     var playMediaObject = function(processId, objectType) {
         var mediaPlayerHashInt = reader.readInt();
-        console.log("****playMediaObject. mediaPlayerHashInt: " + mediaPlayerHashInt);
+        console.log("playMediaObject. mediaPlayerHashInt: " + mediaPlayerHashInt);
         if (objectType == MediaObjectType.MediaPlayer) {
-            // var totalDuration = reader.readInt();
-            wm.startMediaPlayer(processId, mediaPlayerHashInt);  //, totalDuration
+            wm.startMediaPlayer(processId, mediaPlayerHashInt);
         } else {
             Log.e(TAG, "Invalid media object type: " + objectType);
         }

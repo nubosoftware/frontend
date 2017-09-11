@@ -330,6 +330,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         sn.wndId = wndId;
         sn.nuboWndId = nuboWndId;
         sn.processId = processId;
+        console.log("**** pushWndOnStack. sn.processId: " + sn.processId);
 
         sn.gravity = gravity;
         sn.containerType = containerType;
@@ -371,11 +372,10 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             var evtobj = e || event;
             var msgstr = "key event evtobj.type: " + evtobj.type + ", keyCode: " + evtobj.keyCode;
             console.log(msgstr);
-            new Android_Toast({
-                content: '<em>' + msgstr + '</em>',
-                duration: 3500
-            });
-
+            // new Android_Toast({
+            //     content: '<em>' + msgstr + '</em>',
+            //     duration: 3500
+            // });
             mUxip.keyEvent(evtobj, sn.processId, sn.wndId, this);
         };
 
@@ -442,15 +442,16 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         sn.canvas.onmouseup = sn.mouseEvent;
         sn.canvas.onmousedown = sn.mouseEvent;
         sn.canvas.onmousemove = sn.mousemove;
-        sn.canvas.onkeypress = sn.keyEvent;
+        //sn.canvas.onkeypress = sn.keyEvent;
         // sn.canvas.onkeydown = sn.keyEvent; ////
         // sn.canvas.onkeyup = sn.keyEvent; ////
-        sn.panel.onkeypress = sn.keyEvent;
+        //sn.panel.onkeypress = sn.keyEvent;
         // sn.panel.onkeydown = sn.keyEvent; ////
         // sn.panel.onkeyup = sn.keyEvent;   ////
         // document.onkeypress = sn.keyEvent;  ////
         document.onkeydown = sn.keyEvent;
         document.onkeyup = sn.keyEvent;
+        document.onkeypress = sn.keyEvent;
 
         sn.canvas.addEventListener("touchstart", sn.touchEvent, false);
         sn.canvas.addEventListener("touchend", sn.touchEvent, false);
@@ -568,6 +569,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         }
         fRemoveWindowStack(ws);
         delete mWindowsStackManager[processIDHash];
+        console.log("removeProcess. processId: " + processId);
     };
 
     this.killAll = function() {
@@ -592,9 +594,30 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         var stackSize = Object.keys(mWindowsStackManager).length;
         for (var i = stackSize - 1; i >= 0; i--) {
             var procId = parseInt(Object.keys(mWindowsStackManager)[i], 16);
+            console.log("getLastNotKeyboardProcessIdOnStack.1 procId: " + procId);
             if (procId != keyboardProcId) {
                 return procId;
             }
+            // if (procId == keyboardProcId) {
+            //     console.log("getLastNotKeyboardProcessIdOnStack. keyboardProcId: " + procId);
+            //     continue;
+            // }
+            // console.log("getLastNotKeyboardProcessIdOnStack.2");
+            // var ws = mWindowsStackManager[i]; //mWindowsStackManager[procId.toString(16)];            
+            // if (ws != null) {
+            //     console.log("getLastNotKeyboardProcessIdOnStack.3 ws.length: ", ws.length)
+            //     for (var j = 0; j < ws.length; l++) {
+            //         console.log("getLastNotKeyboardProcessIdOnStack. ws[" + j + "].wndId: " + ws[j].wndId +
+            //                     ", visible: " + ws[j].visible);
+            //         if (ws[j].visible) {
+            //            console.log("getLastNotKeyboardProcessIdOnStack. LAST PROCESS: " + procId);
+            //            return procId;
+            //         }
+            //     }
+            // } else {
+            //     console.log("getLastNotKeyboardProcessIdOnStack.4");    
+            // }
+            // console.log("getLastNotKeyboardProcessIdOnStack.5");
         }
         return 0;
     };
@@ -665,7 +688,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         }
         var sn = this.getWindow(mediaPlayer.processId, data.parentWndId);
         if (sn == null) {
-            Log.e(TAG, "createNewSurfaceView: parentWndId not found: " + data.parentWndId);
+            Log.e(TAG, "prepareMediaPlayer: parentWndId not found: " + data.parentWndId);
             return;
         }
 
@@ -673,10 +696,12 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             // remove current player
 
         }
-        console.log("****prepareMediaPlayer. send videoDuration " + totalDuration);
+        // mPackageNameList
+        console.log("****prepareMediaPlayer. send videoDuration... mediaPlayer.objectHashInt: " + mediaPlayer.objectHashInt + 
+                      ", videoDuration: " + totalDuration);
         mediaPlayer.totalDuration = totalDuration;
         NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.VideoDuration),
-                            processId, mediaPlayerHashInt, totalDuration);
+                            mediaPlayer.processId, mediaPlayer.objectHashInt, totalDuration);
 
         var isLive = "true";
         if (mediaPlayer.totalDuration > 0) {
@@ -722,7 +747,6 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         sn.panel.insertBefore(mediaPlayer.videoObj, sn.canvas);
         this.mediaUpdateSurface(mediaPlayer, data);
 
-
         mediaPlayer.videojs = videojs(mediaPlayer.videoObj.id);
 
         mediaPlayer.videojs.ready(function() {
@@ -732,6 +756,9 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                 left: 0,
                 top: 0
             });
+
+            Log.e(TAG, "*****prepareMediaPlayer: ready ****");
+            mediaPlayer.videoObj.play();
         });
     };
 
@@ -758,7 +785,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             return;
         };
         // mediaPlayer.totalDuration = totalDuration;
-        console.log("***startMediaPlayer.****");
+        console.log("***startMediaPlayer. mediaPlayerHash: " + mediaPlayerHash);
         if (mediaPlayer.url) {
             // start it
             mediaPlayer.videoObj.play();

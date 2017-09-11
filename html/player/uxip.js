@@ -418,7 +418,6 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
                 // Log.d("specialKey: "+specialKey);
                 eventt.preventDefault();
                 var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
-                console.log("**** specialKey: " + specialKey + ", eventaction: " + eventaction);
                 handleKeyEvent(processId, wndId, {
                     name: "KeyEvent",
                     action: eventaction,
@@ -1479,7 +1478,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
                 return fontFamily;
 
                 // var f = new FontFace(fontFamily, fontUrl, {});
-                // console.log("**** getFontFromCache. f: " + f);
+                // // console.log("**** getFontFromCache. f: " + f);
                 //     f.load().then(function(loadedFace) {
                 //         document.fonts.add(loadedFace);
                 //         console.log("getFontFromCache.1.1 LOAD");
@@ -3471,7 +3470,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
         if (PRINT_DRAW_COMMANDS) {
             Log.d(TAG, "PopWindow. processId=" + processId + ", wndId=" + wndId);
         }
-
+        Log.d(TAG, "PopWindow. processId=" + processId + ", wndId=" + wndId);
         var nuboWndId = wndId;
         if (!reader.canReadBytes(4))
             return false;
@@ -3487,6 +3486,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             //     Log.e(TAG, "popWindow:: there is no last processId");
             }
         }
+        Log.e(TAG, "popWindow:: currentProcessId: " + currentProcessId);
         return true;
     };
 
@@ -3658,7 +3658,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
     };
 
     removeProcess = function(processId, keyEvent) {
-        // Log.d(TAG, "removeProcess. processId=" + processId + ", keyEvent=" + keyEvent);
+        Log.d(TAG, "removeProcess. processId=" + processId + ", keyEvent=" + keyEvent);
         wm.removeProcess(processId);
         var lastProcessId = wm.getLastNotKeyboardProcessIdOnStack(keyboardProcessID);
         if (!isNaN(lastProcessId) && lastProcessId != 0) {
@@ -3673,6 +3673,10 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
         Log.e(TAG, "dispatchKeyEvent. processId=" + processId + ", keyEvent=" + keyEvent + ", protocolState: " + protocolState);
         if (protocolState != psConnected)
             return;
+        if (keyEvent == null) {
+            console.log("**** keyEvent == null");
+            return;
+        }
         NuboOutputStreamMgr.getInstance().sendCmd(keyEvent, processId);
     };
 
@@ -3786,7 +3790,8 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
     };
 
     handleKeyEvent = function(processId, wndId, event) {
-        // Log.d(TAG, "handleKeyEvent. processId=" + processId + ", wndId=" + wndId);
+        Log.d(TAG, "handleKeyEvent. processId=" + processId + ", wndId=" + wndId);
+        Log.d(TAG, "handleKeyEvent. event.name: " + event.name + ", event.action: " + event.action);
         if (protocolState != psConnected)
             return;
 
@@ -3978,7 +3983,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             var streamName = rsRet.value;
             var totalDuration = reader.readInt();
             Log.e(TAG, "prepareMediaObject. processId: " + processId + ", mediaPlayerHashInt: " +
-                        mediaPlayerHashInt + ", streamName: " + streamName);
+                        mediaPlayerHashInt + ", streamName: " + streamName + ", totalDuration: " + totalDuration);
             wm.prepareMediaPlayer(processId, mediaPlayerHashInt, streamName, totalDuration);
         } else {
             Log.e(TAG, "Invalid media object type: " + objectType);
@@ -3988,7 +3993,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
 
     var playMediaObject = function(processId, objectType) {
         var mediaPlayerHashInt = reader.readInt();
-        console.log("playMediaObject. mediaPlayerHashInt: " + mediaPlayerHashInt);
+        console.log("****playMediaObject. mediaPlayerHashInt: " + mediaPlayerHashInt);
         if (objectType == MediaObjectType.MediaPlayer) {
             // var totalDuration = reader.readInt();
             wm.startMediaPlayer(processId, mediaPlayerHashInt);  //, totalDuration
@@ -4001,7 +4006,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
     var stopMediaObject = function(processId, objectType) {
         var mediaPlayerHashInt = reader.readInt();
         console.log("stopMediaObject. mediaPlayerHashInt: " + mediaPlayerHashInt);
-        Log.e(TAG, "Invalid media object type: " + objectType);
+        // Log.e(TAG, "Invalid media object type: " + objectType);
         return true;
     };
 
@@ -4337,7 +4342,7 @@ KeyEvent.KEYCODE_HOME = 3;
 KeyEvent.KEYCODE_BACK = 4;
 KeyEvent.KEYCODE_MENU = 82;
 KeyEvent.KEYCODE_UNKNOWN = 0;
-KeyEvent.KEYCODE_DEL = 0x00000043;
+KeyEvent.KEYCODE_DEL = 67;  //0x00000043;
 KeyEvent.KEYCODE_FORWARD_DEL = 112;
 KeyEvent.KEYCODE_ENTER = 0x00000042;
 /** Key code constant: F1 key. */

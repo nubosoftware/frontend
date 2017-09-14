@@ -682,18 +682,19 @@ $(function() {
                     passcodeMinChars = data.passcodeminchars;
                     var passcodetypeChange = data.passcodetypechange;
 
-                    uploadExternalWallpaper = settings.get("uploadExternalWallpaper");
-
-                    if (uploadExternalWallpaper == null || uploadExternalWallpaper) {
-                        if (data.clientProperties["wallpaper"]) {
-                            wallpaperColor = "";
-                            wallpaperImage = mgmtURL + data.clientProperties["wallpaper"];
-                            uploadExternalWallpaper = false;
+                    if (data.clientProperties) {
+                        uploadExternalWallpaper = settings.get("uploadExternalWallpaper");
+                        if (uploadExternalWallpaper == null || uploadExternalWallpaper) {
+                            if (data.clientProperties["wallpaper"]) {
+                                wallpaperColor = "";
+                                wallpaperImage = mgmtURL + data.clientProperties["wallpaper"];
+                                uploadExternalWallpaper = false;
+                            }
                         }
-                    }
 
-                    if (data.clientProperties["passcodeTimeout"] && data.clientProperties["passcodeTimeout"] > 0) {
-                        passcodeTimeout = data.clientProperties["passcodeTimeout"] * 1000;
+                        if (data.clientProperties["passcodeTimeout"] && data.clientProperties["passcodeTimeout"] > 0) {
+                            passcodeTimeout = data.clientProperties["passcodeTimeout"] * 1000;
+                        }
                     }
 
                     settings.set({
@@ -902,17 +903,19 @@ $(function() {
                     passcodeMinChars = data.passcodeminchars;
                     var passcodetypeChange = data.passcodetypechange;
 
-                    uploadExternalWallpaper = settings.get("uploadExternalWallpaper");
-                    if (uploadExternalWallpaper == null || uploadExternalWallpaper) {
-                        if (data.clientProperties["wallpaper"]) {
-                            wallpaperColor = "";
-                            wallpaperImage = mgmtURL + data.clientProperties["wallpaper"];
-                            uploadExternalWallpaper = false;
+                    if (data.clientProperties) {
+                        uploadExternalWallpaper = settings.get("uploadExternalWallpaper");
+                        if (uploadExternalWallpaper == null || uploadExternalWallpaper) {
+                            if (data.clientProperties["wallpaper"]) {
+                                wallpaperColor = "";
+                                wallpaperImage = mgmtURL + data.clientProperties["wallpaper"];
+                                uploadExternalWallpaper = false;
+                            }
                         }
-                    }
 
-                    if (data.clientProperties["passcodeTimeout"] && data.clientProperties["passcodeTimeout"] > 0) {
-                        passcodeTimeout = data.clientProperties["passcodeTimeout"] * 1000;
+                        if (data.clientProperties["passcodeTimeout"] && data.clientProperties["passcodeTimeout"] > 0) {
+                            passcodeTimeout = data.clientProperties["passcodeTimeout"] * 1000;
+                        }
                     }
 
                     settings.set({
@@ -3612,5 +3615,10 @@ var getDeviceId = function() {
 }
 
 var getHideNuboAppPackgeName = function() {
-    return encodeURIComponent(globalSettings.get("mHideNuboAppPackageName"));
+    var packageName = globalSettings.get("mHideNuboAppPackageName");
+    if (packageName && packageName != undefined) {
+        return encodeURIComponent(packageName);
+    } else {
+        return "";
+    }
 }

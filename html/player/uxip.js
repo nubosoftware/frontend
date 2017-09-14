@@ -290,6 +290,9 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
     this.keyEvent = function(eventt, processId, wndId, src) {
         // console.log("uxip.keyEvent event.type: " + eventt.type + ", keyCode: " + eventt.keyCode);
         if (eventt.type == "keypress") {
+            if (eventt.keyCode == 0) {  // slash->"quick find" in firefox
+                eventt.preventDefault();
+            }
             var chr = getChar(eventt);
             if (isMobile) {
                 var newText = $("#edVirtualKeyboard").val();
@@ -2925,7 +2928,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
                 if (tileX != 1 || tileY != 1) {
                     Log.e(TAG, "drawOval.BitmapShader:: unimplemented tile types. tileX = " + tileX + " tileY = " + tileY);
                 }
-                drawBitmapIntoCanvas(processId, wndId, bm, null, null, p.shader.localMatrix, paint, bitmap, 0, 0, null, DrawBitmapType.bitmapShader);
+                drawBitmapIntoCanvas(processId, wndId, bm, null, null, paint.shader.localMatrix, paint, bitmap, 0, 0, null, DrawBitmapType.bitmapShader);
                 return true;
             } else if (paint.shader.stype == ShaderType.RadialGradient) {
                 var endRadius = Math.sqrt(paint.shader.x * paint.shader.x + paint.shader.y * paint.shader.y);
@@ -3466,7 +3469,6 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
         if (PRINT_DRAW_COMMANDS) {
             Log.d(TAG, "PopWindow. processId=" + processId + ", wndId=" + wndId);
         }
-        Log.d(TAG, "PopWindow. processId=" + processId + ", wndId=" + wndId);
         var nuboWndId = wndId;
         if (!reader.canReadBytes(4))
             return false;
@@ -3482,7 +3484,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             //     Log.e(TAG, "popWindow:: there is no last processId");
             }
         }
-        Log.e(TAG, "popWindow:: currentProcessId: " + currentProcessId);
+        // Log.e(TAG, "popWindow:: currentProcessId: " + currentProcessId);
         return true;
     };
 

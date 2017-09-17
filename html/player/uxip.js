@@ -30,11 +30,8 @@ var writeToDrawCmdLog = false;
 var resCache = {};
 var fontCache = {};
 
-function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbackFile) {
-    // new Android_Toast({
-    //     content: '<em>' + "start UXIP" + '</em>',
-    //     duration: 3500
-    // });
+
+function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playbackFile) {
     "use strict";
     var UXIPself = this;
     var protocolState = psDisconnect;
@@ -101,6 +98,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
     if (passcodeTimeout > 0) {
         mOrgPasscodeTimeout = passcodeTimeout;
     }
+    Log.d(TAG, "mOrgPasscodeTimeout: " + mOrgPasscodeTimeout);
 
     // keyboard input action
     var mImeOptions = 1;
@@ -231,7 +229,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
                 duration: 3500
             });
             // ISRAEL 28/3/16 - temporary diable this for development
-            //window.location.reload();
+            // window.location.reload();
 
         };
         ws.onerror = function(e) {
@@ -244,7 +242,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
                 msg += ")";
             }
             Log.e(TAG + DEBUG_PROTOCOL_NETWORK_STR, "WebSocket on-error event " + msg);
-             new Android_Toast({
+            new Android_Toast({
                 content: '<em>' + "WebSocket on-error event " + msg + '</em>',
                 duration: 3500
             });
@@ -782,7 +780,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
         if (hideNuboAppPackgeName && hideNuboAppPackgeName != undefined) {
             nuboFlags = 1;
         }
-        Log.d("hideNuboAppPackgeName: " + hideNuboAppPackgeName + ", nuboFlags: " + nuboFlags);
+        Log.d(TAG, "hideNuboAppPackgeName: " + hideNuboAppPackgeName + ", nuboFlags: " + nuboFlags);
 
         NuboOutputStreamMgr.getInstance().setIsPlayerLogin(true);
         NuboOutputStreamMgr.getInstance().setSessionId(sessID);
@@ -798,7 +796,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             //3, //HIGH NETWORK QUALITY
             getDeviceId(),
             nuboFlags, // flags
-            hideNuboAppPackgeName   //"com.salesforce.chatter"
+            hideNuboAppPackgeName //"com.salesforce.chatter"
         ); // write int, int, int , dataIntent withservice
         NuboOutputStreamMgr.getInstance().setIsPlayerLogin(false);
 
@@ -837,8 +835,8 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
                 Log.e("Got data while disconnect or error");
                 break;
             case psConnected:
-                if (getDrawCommand() && reader.canReadBytes(4)) {
-                    moreData();
+                while (!waitForDraw && protocolState == psConnected && reader.canReadBytes(4) && getDrawCommand()) {
+                    //moreData();
                 }
                 break;
             default:
@@ -875,10 +873,6 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             if (DEBUG_PROTOCOL_NETWORK) {
                 Log.d(TAG + DEBUG_PROTOCOL_NETWORK_STR, 'Loggedin.');
             }
-            new Android_Toast({
-                content: '<em>' + "user has logged in" + '</em>',
-                duration: 3500
-            });            
             // user has logged in.
             protocolState = psConnected;
             return true;
@@ -1230,6 +1224,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
                     if (DEBUG_PROTOCOL_NETWORK) {
                         Log.d(TAG + DEBUG_PROTOCOL_NETWORK_STR, "Before running func: " + cmdcode);
                     }
+                    var startFuncTime = new Date().getTime();
                     if (!func(processId, wndId, cmdcode)) {
                         if (DEBUG_PROTOCOL_NETWORK) {
                             Log.d(TAG + DEBUG_PROTOCOL_NETWORK_STR, "processId=" + processId + ", cmdcode=" + cmdcode + ", cmdName=" + drawCmdCodeToText(cmdcode) + ", wndId=" + wndId);
@@ -1238,6 +1233,11 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
                         reader.rollbackTransaction();
                         return false;
                     } else {
+                        /*var endFuncTime = new Date().getTime();
+                        var funcDiffTime = endFuncTime - startFuncTime;
+                        if (funcDiffTime > 1) {
+                            Log.d(TAG, "Cmd time: " + funcDiffTime + " ms, bytesCount=" + bytesCount + ", cmdName=" + drawCmdCodeToText(cmdcode));
+                        }*/
                         var transactionSize = reader.getTransactionSize();
                         if (transactionSize != bytesCount) {
                             Log.e(TAG + DEBUG_PROTOCOL_NETWORK_STR, "cmdcode : " + cmdcode);
@@ -1478,7 +1478,6 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
                 return fontFamily;
 
                 // var f = new FontFace(fontFamily, fontUrl, {});
-                // // console.log("**** getFontFromCache. f: " + f);
                 //     f.load().then(function(loadedFace) {
                 //         document.fonts.add(loadedFace);
                 //         console.log("getFontFromCache.1.1 LOAD");
@@ -2048,7 +2047,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             //canvasCtx.setTransform(bm.matrix.arr[0],bm.matrix.arr[3],bm.matrix.arr[1],bm.matrix.arr[4],bm.matrix.arr[2],bm.matrix.arr[5]);
 
             var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
-            if (ctx != null) {                
+            if (ctx != null) {
                 if (drawBitmapType == DrawBitmapType.ninePatch) { //nine patch image
                     ninePatch_Draw(ctx, dst, img, chunk, p);
 
@@ -2184,21 +2183,28 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             //Log.v(TAG, "bitmap.path: " + bitmap.path);
         } else {
             // img.crossOrigin = "Anonymous";
-            var u8 = new Uint8Array(bitmap.data);
-            var chars = "";
-            for (var i = 0; i < u8.length; i++) {
-                chars += String.fromCharCode(u8[i]);
+
+            if (!bitmap.b64encoded) {
+                var u8 = new Uint8Array(bitmap.data);
+                //var b64encoded = fromByteArray(u8);
+
+                var chars = "";
+                for (var i = 0; i < u8.length; i++) {
+                    chars += String.fromCharCode(u8[i]);
+                }
+                var b64encoded = btoa(chars);
+                bitmap.b64encoded = b64encoded;
             }
-            var b64encoded = btoa(chars);
+            //console.log("b64encoded length: " + bitmap.b64encoded.length);
             //var b64encoded = btoa(String.fromCharCode.apply(null, u8));
 
             // 9patch is always in png format
             if (drawBitmapType == DrawBitmapType.ninePatch) {
-                img.setAttribute("src", 'data:image/png;base64,' + b64encoded);
+                img.setAttribute("src", 'data:image/png;base64,' + bitmap.b64encoded);
             } else if (Modernizr.webp) { // supports webp format
-                img.setAttribute("src", 'data:image/webp;base64,' + b64encoded);
+                img.setAttribute("src", 'data:image/webp;base64,' + bitmap.b64encoded);
             } else {
-                img.setAttribute("src", 'data:image/png;base64,' + b64encoded);
+                img.setAttribute("src", 'data:image/png;base64,' + bitmap.b64encoded);
             }
         }
         waitForDraw = true;
@@ -2237,6 +2243,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             Log.e(TAG, "drawBitmap: bitmap could not be retrieved");
             return true;
         }
+
         var bitmap = bitmapRet.bitmap;
 
         drawBitmapIntoCanvas(processId, wndId, bm, src, dst, null, p, bitmap, 0, 0, null, DrawBitmapType.stdBitmap);
@@ -3338,7 +3345,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             return false;
         }
         var show = reader.readBoolean();
-        //mContrtoller.showSearchButton(show);
+        publicinterface.PlayerView.showHideSearchButton(show);
         return true;
     };
 
@@ -3480,11 +3487,9 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             var lastProcessId = wm.getLastNotKeyboardProcessIdOnStack(keyboardProcessID);
             if (!isNaN(lastProcessId) && lastProcessId != 0 && lastProcessId != processId) {
                 currentProcessId = lastProcessId;
-            // } else {
-            //     Log.e(TAG, "popWindow:: there is no last processId");
             }
         }
-        // Log.e(TAG, "popWindow:: currentProcessId: " + currentProcessId);
+        Log.e(TAG, "popWindow:: currentProcessId: " + currentProcessId);
         return true;
     };
 
@@ -3508,6 +3513,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
         //         currentProcessId = processId;
         //     }
         // }
+
 
         var x = 0,
             y = 0,
@@ -3979,7 +3985,7 @@ function UXIP(parentNode, width, height,  passcodeTimeout, playbackMode, playbac
             var streamName = rsRet.value;
             var totalDuration = reader.readInt();
             Log.e(TAG, "prepareMediaObject. processId: " + processId + ", mediaPlayerHashInt: " +
-                        mediaPlayerHashInt + ", streamName: " + streamName + ", totalDuration: " + totalDuration);
+                mediaPlayerHashInt + ", streamName: " + streamName + ", totalDuration: " + totalDuration);
             wm.prepareMediaPlayer(processId, mediaPlayerHashInt, streamName, totalDuration);
         } else {
             Log.e(TAG, "Invalid media object type: " + objectType);
@@ -4337,7 +4343,7 @@ KeyEvent.KEYCODE_HOME = 3;
 KeyEvent.KEYCODE_BACK = 4;
 KeyEvent.KEYCODE_MENU = 82;
 KeyEvent.KEYCODE_UNKNOWN = 0;
-KeyEvent.KEYCODE_DEL = 67;  //0x00000043;
+KeyEvent.KEYCODE_DEL = 67; //0x00000043;
 KeyEvent.KEYCODE_FORWARD_DEL = 112;
 KeyEvent.KEYCODE_ENTER = 0x00000042;
 /** Key code constant: F1 key. */

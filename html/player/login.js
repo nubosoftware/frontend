@@ -3165,6 +3165,7 @@ $(function() {
             if (firstLogin) {
                 $('.firstLoginPopup').css("visibility", "visible");
             }
+            $("#settingsbtn").css('visibility', 'hidden');  // default-hide search button
 
             var url = mgmtURL + "startsession?loginToken=" + encodeURIComponent(loginToken);
             if (DEBUG) {
@@ -3273,7 +3274,15 @@ $(function() {
             $('.firstLoginPopup').css("visibility", "hidden");
             settings.set({ 'firstGatewayConnection': firstLogin });
             settings.save();
+        },
+        showHideSearchButton: function(isShow) {
+            if (isShow) {
+                $("#settingsbtn").css('visibility', 'visible');
+            } else {
+                $("#settingsbtn").css('visibility', 'hidden');
+            }
         }
+
     });
 
 

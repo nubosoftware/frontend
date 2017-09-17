@@ -144,6 +144,25 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                 Log.e("writeTransaction: Missing dirtyCanvas");
                 return;
             }
+
+            // ISRAEL TEST
+            /*var dirtyW = sn.dirtyRect.right - sn.dirtyRect.left;
+            var dirtyH = sn.dirtyRect.bottom - sn.dirtyRect.top;
+            sn.ctx.drawImage(sn.dirtyCanvas, sn.dirtyRect.left, sn.dirtyRect.top, dirtyW, dirtyH, sn.dirtyRect.left, sn.dirtyRect.top, dirtyW, dirtyH);*/
+            /*sn.ctx.save();
+            sn.ctx.setTransform(1, 0, 0, 1, 0, 0);
+            //sn.ctx.beginPath();
+            var dirtyW = sn.dirtyRect.right - sn.dirtyRect.left;
+            var dirtyH = sn.dirtyRect.bottom - sn.dirtyRect.top;
+            sn.ctx.rect(sn.dirtyRect.left, sn.dirtyRect.top, dirtyW, dirtyH);
+            //sn.ctx.stroke();
+            sn.ctx.clip();
+            console.log("writeTransaction: [" + sn.dirtyRect.left + "," + sn.dirtyRect.top + "," + dirtyW + "," + dirtyH + "], width: " + mWidth + ", height: " + mHeight);
+
+            sn.ctx.drawImage(sn.dirtyCanvas, 0, 0);
+            sn.ctx.restore();*/
+
+
             var dirtyW = sn.dirtyRect.right - sn.dirtyRect.left;
             var dirtyH = sn.dirtyRect.bottom - sn.dirtyRect.top;
             // copy dirty canvas to real canvas
@@ -158,16 +177,33 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
     this.setDirtyRect = function(processId, wndId, rect) {
         var sn = this.getWindow(processId, wndId);
         if (sn != null) {
+            // ISRAEL TEST
+            /*sn.dirtyCanvas = sn.canvas;
+            sn.dirtyCtx = sn.ctx;*/
+
             // create a new dirty canvas to buffer the draws
             sn.dirtyCanvas = document.createElement('canvas');
             sn.dirtyCanvas.setAttribute('width', mWidth);
             sn.dirtyCanvas.setAttribute('height', mHeight);
             sn.dirtyCtx = sn.dirtyCanvas.getContext("2d");
             sn.saveLayers = new Array();
+            //console.log("setDirtyRect: [" + rect.left + "," + rect.top + "," + rect.right + "," + rect.bottom + "], width: " + mWidth + ", height: " + mHeight);
+
+
+
+            //sn.dirtyCtx.save();
+            sn.dirtyCtx.beginPath();
+            var dirtyW = rect.right - rect.left;
+            var dirtyH = rect.bottom - rect.top;
+            sn.dirtyCtx.rect(rect.left, rect.top, dirtyW, dirtyH);
+            sn.dirtyCtx.clip();
+
+            sn.dirtyCtx.drawImage(sn.canvas, 0, 0);
 
             // copy original canvas to dirty canvas
-            var imgData = sn.ctx.getImageData(0, 0, mWidth, mHeight);
-            sn.dirtyCtx.putImageData(imgData, 0, 0);
+            /*var imgData = sn.ctx.getImageData(0, 0, mWidth, mHeight);
+            sn.dirtyCtx.putImageData(imgData, 0, 0);*/
+
             // AsiM - not sure if i need a save here
             // sn.dirtyCtx.save();
 
@@ -397,7 +433,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                     evtobj.action = 2;
                     NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
 
-                    lastEvtobj.name = "MouseWheel";   //lastEvtobj.type == "mousewheel"
+                    lastEvtobj.name = "MouseWheel";
                     lastEvtobj.action = 1;
                     NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, lastEvtobj);
                     lastEvtobj = null;
@@ -436,13 +472,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         sn.canvas.onmouseup = sn.mouseEvent;
         sn.canvas.onmousedown = sn.mouseEvent;
         sn.canvas.onmousemove = sn.mousemove;
-        // sn.canvas.onkeypress = sn.keyEvent;
-        // sn.canvas.onkeydown = sn.keyEvent; ////
-        // sn.canvas.onkeyup = sn.keyEvent; ////
-        // sn.panel.onkeypress = sn.keyEvent;
-        // sn.panel.onkeydown = sn.keyEvent; ////
-        // sn.panel.onkeyup = sn.keyEvent;   ////
-        document.onkeypress = sn.keyEvent;  ////
+        document.onkeypress = sn.keyEvent;
         document.onkeydown = sn.keyEvent;
         document.onkeyup = sn.keyEvent;
 
@@ -592,11 +622,11 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             if (procId == keyboardProcId) {
                 continue;
             }
-            var ws = mWindowsStackManager[procId.toString(16)];            
+            var ws = mWindowsStackManager[procId.toString(16)];
             if (ws != null) {
-                for (var j =  ws.length-1; j >= 0; j--) {
+                for (var j = ws.length - 1; j >= 0; j--) {
                     if (ws[j].visible) {
-                       return procId;
+                        return procId;
                     }
                 }
             }
@@ -679,11 +709,11 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
         }
         // mPackageNameList
-        Log.d("prepareMediaPlayer. send videoDuration... mediaPlayer.objectHashInt: " + mediaPlayer.objectHashInt + 
-                      ", videoDuration: " + totalDuration);
+        Log.d("prepareMediaPlayer. send videoDuration... mediaPlayer.objectHashInt: " + mediaPlayer.objectHashInt +
+            ", videoDuration: " + totalDuration);
         mediaPlayer.totalDuration = totalDuration;
         NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.VideoDuration),
-                            mediaPlayer.processId, mediaPlayer.objectHashInt, totalDuration);
+            mediaPlayer.processId, mediaPlayer.objectHashInt, totalDuration);
 
         var isLive = "true";
         if (mediaPlayer.totalDuration > 0) {
@@ -714,11 +744,12 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         }
         mediaPlayer.videoObj.onprogress = function() {
             //alert("Downloading video");
+
             Log.d(TAG, "onprogress. Current Time: " + mediaPlayer.videoObj.currentTime +
-                       ", duration: " + mediaPlayer.videoObj.duration);
+                ", duration: " + mediaPlayer.videoObj.duration);
             var progressInt = Math.floor(mediaPlayer.videoObj.currentTime * 1000);
             NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.VideoProgress),
-                                mediaPlayer.processId, mediaPlayer.objectHashInt, progressInt);
+                mediaPlayer.processId, mediaPlayer.objectHashInt, progressInt);
         };
 
         mediaPlayer.videoObj.onended = function() {
@@ -758,6 +789,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
         $("#" + mediaPlayer.videoObj.id).css(cssObj);
     };
+
 
     this.startMediaPlayer = function(processId, mediaPlayerHashInt) {
         var mediaPlayerHash = mediaPlayerHashInt.toString(16);

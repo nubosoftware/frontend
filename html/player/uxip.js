@@ -3489,7 +3489,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                 currentProcessId = lastProcessId;
             }
         }
-        Log.e(TAG, "popWindow:: currentProcessId: " + currentProcessId);
+        // Log.e(TAG, "popWindow:: currentProcessId: " + currentProcessId);
         return true;
     };
 
@@ -3675,7 +3675,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
     };
 
     dispatchKeyEvent = function(processId, keyEvent) {
-        Log.e(TAG, "dispatchKeyEvent. processId=" + processId + ", keyEvent=" + keyEvent + ", protocolState: " + protocolState);
+        // Log.e(TAG, "dispatchKeyEvent. processId=" + processId + ", keyEvent=" + keyEvent + ", protocolState: " + protocolState);
         if (protocolState != psConnected)
             return;
         if (keyEvent == null) {

@@ -342,6 +342,12 @@ var filter = {
                 "loginToken": constraints.requestedLoginTokenConstr,
                 "streamName": constraints.pathConstrRequested
             }
+        }, {
+            "path": "/resetPasscodeLink",
+            "constraints": {
+                "token": constraints.tokenConstrRequested,
+                "email": constraints.emailConstrOptional
+            }
         }
 
     ]

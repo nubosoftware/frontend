@@ -284,6 +284,59 @@ function forwardActivationLink(req, res, next) {
     });
 }
 
+function forwardResetPasscodeLink(req, res, next) {
+    var options = getOptions();
+    options.path = '/activationLink?token=' + req.params.token + '&email=' + req.params.email;
+    options.headers['x-client-ip'] = req.realIP;
+    res.contentType = 'json';
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            res.send({
+                status: Common.STATUS_ERROR,
+                message: "Internal error"
+            });
+            return;
+        }
+
+        var resObjData;
+        try {
+            resObjData = JSON.parse(resData);
+        } catch (e) {
+            res.send({
+                status: Common.STATUS_ERROR,
+                message: "Internal error"
+            });
+            return;
+        }
+
+        logger.info("forwardResetPasscodeLink: status: " + resObjData.status + ", message: " + resObjData.message);
+        if (resObjData.status == 0) {
+            fs.readFile("html/player/resetPasscode.html", function (error, page) {
+                if (error) {
+                     res.write(resData);
+                } else {
+                    res.writeHead(200, { 'Content-Type': 'text/html' });
+                    res.write(page);
+                }
+                res.end();
+            });
+        } else {
+            fs.readFile("html/player/resetPasscodeError.html", function (error, page) {
+                if (error) {
+                    res.write(resData);
+                } else {
+                    res.writeHead(200, { 'Content-Type': 'text/html' });
+                    res.write(page);
+                }
+                res.end();
+            });
+        }
+        return;
+    });
+}
+
+
 module.exports = {
     forwardGetRequest: forwardGetRequest,
     forwardCheckStreamFile: forwardCheckStreamFile,
@@ -291,5 +344,6 @@ module.exports = {
     addMissingResource: addMissingResource,
     updateUserConnectionStatics: updateUserConnectionStatics,
     upload: upload,
-    forwardActivationLink: forwardActivationLink
+    forwardActivationLink: forwardActivationLink,
+    forwardResetPasscodeLink: forwardResetPasscodeLink
 }

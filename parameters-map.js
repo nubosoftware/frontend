@@ -50,7 +50,8 @@ var filter = {
             },
             "playerVersion": constraints.playerVersionConstrOptional,
             "additionalDeviceInfo": constraints.ExcludeSpecialCharactersOptional,
-            "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional
+            "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional,
+            "captcha": {},
         }
     }, {
         "path": "/registerOrg",
@@ -272,7 +273,8 @@ var filter = {
                 "inclusion": {
                     "within": ["0", "1"]
                 }
-            }
+            },
+            "packageID": constraints.packageNameConstrOptional
         }
     }, {
         "path": '/getResourceListByDevice',
@@ -320,11 +322,8 @@ var filter = {
             "titleText": constraints.ExcludeSpecialCharactersRequested,
             "notifyTime": constraints.ExcludeSpecialCharactersOptional,
             "notifyLocation": constraints.ExcludeSpecialCharactersOptional,
-            "appName": {
-                "inclusion": {
-                    "within": ["-1", "0", "1", "2"]
-                }
-            }
+            "appName": constraints.ExcludeSpecialCharactersRequested,
+            "authKey": {}
         }
     }, {
         "path": "/EWSListener",

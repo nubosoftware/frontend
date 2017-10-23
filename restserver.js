@@ -37,7 +37,7 @@ var mainFunction = function(err, firstTimeLoad) {
 
     watchFilterFile();
 
-    if (!firstTimeLoad)// execute the following code only in the first time
+    if (!firstTimeLoad) // execute the following code only in the first time
         return;
 
     var WebSocketServer = require('websocket').server;
@@ -135,7 +135,7 @@ var mainFunction = function(err, firstTimeLoad) {
         }
 
         var connection = request.accept('binary', request.origin);
-        
+
         if (request.resourceURL.query.playbackMode == "Y") {
             SendPlayback.sendPlayback(connection, request.origin, request.resourceURL);
         } else {
@@ -152,15 +152,15 @@ var mainFunction = function(err, firstTimeLoad) {
                     // logger.info("protocol: "+urlObj.protocol+", hostname:"+urlObj.hostname+", port: "+urlObj.port);
                     var isSSL = urlObj.protocol === "https:";
                     var port = urlObj.port;
-                    if(!port)
-                        port = ( isSSL ? 443 : 80);
+                    if (!port)
+                        port = (isSSL ? 443 : 80);
                     var host = urlObj.hostname;
                     callback(null, host, port, isSSL);
                 },
                 function(host, port, isSSL, callback) {
-                    if(isSSL) {
+                    if (isSSL) {
                         readCerts(function(err, opts) {
-                            if(err) {
+                            if (err) {
                                 callback(err);
                                 return;
                             } else {
@@ -184,22 +184,23 @@ var mainFunction = function(err, firstTimeLoad) {
                     };
                     Common.exitJobs.push(closeListener);
                     var wsServer = new WebSocketServer({
-                        httpServer : myserver,
-                        autoAcceptConnections : false
+                        httpServer: myserver,
+                        autoAcceptConnections: false
                     });
 
                     wsServer.on('request', webSocketRequest);
                 }
-            ], function(err) {
-                if(err) {
+            ],
+            function(err) {
+                if (err) {
                     logger.error("Cannot open listener for " + listenAddress + ", err: " + err);
                 }
-                if(typeof callback === "function") callback(err);
+                if (typeof callback === "function") callback(err);
             }
         );
     };
     var readCerts = function(callback) {
-        if(!Common.sslCerts) {
+        if (!Common.sslCerts) {
             Common.sslCerts = {
                 key: "../cert/server.key",
                 certificate: "../cert/server.cert",
@@ -207,13 +208,13 @@ var mainFunction = function(err, firstTimeLoad) {
             };
         }
         console.log("Common.sslCerts: " + JSON.stringify(Common.sslCerts));
-        if(!Common.sslCerts || !Common.sslCerts.ca || !Common.sslCerts.certificate || !Common.sslCerts.key) return callback("bad parameter Common.sslCerts");
+        if (!Common.sslCerts || !Common.sslCerts.ca || !Common.sslCerts.certificate || !Common.sslCerts.key) return callback("bad parameter Common.sslCerts");
         var sslCerts = {};
         async.forEachOf(
             Common.sslCerts,
             function(item, key, callback) {
                 fs.readFile(item, function(err, data) {
-                    if(err) {
+                    if (err) {
                         logger.error("Cannot read " + item + " file, err: " + err);
                     } else {
                         sslCerts[key] = data;
@@ -239,14 +240,14 @@ var mainFunction = function(err, firstTimeLoad) {
                 );
             },
             function(callback) {
-                if(Common.username) {
+                if (Common.username) {
                     require('child_process').execFile("/usr/bin/id", [Common.username], function(error, stdout, stderr) {
-                        if(error) {
+                        if (error) {
                             logger.error("Cannot get uid/gid of " + Common.username + "\nstderr:\n" + stderr + "\nerr:\n" + error);
                             callback(err);
                         } else {
                             var obj = /uid=(\d+)\(\w+\) gid=(\d+).+/.exec(stdout);
-                            if(obj === null) {
+                            if (obj === null) {
                                 logger.error("Cannot get uid/gid of " + Common.username + " bad input: " + stdout);
                             } else {
                                 logger.info("Run as " + obj[1] + ":" + obj[2]);
@@ -259,16 +260,16 @@ var mainFunction = function(err, firstTimeLoad) {
                     logger.warn("Run as root");
                 }
             }
-        ], function(err) {
-        }
+        ],
+        function(err) {}
     );
 };
 
 function returnInternalError(err, res) {
     logger.error(err.name, err.message);
     res.send({
-        status : 3,
-        message : "Internal error"
+        status: 3,
+        message: "Internal error"
     });
 }
 
@@ -283,13 +284,13 @@ function downloadFunc(req, res, next) {
         destURL = Common.urlToIOS1;
     else if (dtype === "IOS2") {
         var qs = querystring.stringify({
-            url : Common.urlToIOS2
+            url: Common.urlToIOS2
         });
         destURL = "itms-services://?action=download-manifest&amp;;;;" + qs;
     }
 
     res.writeHead(303, {
-        Location : destURL
+        Location: destURL
     });
     res.end();
 }
@@ -314,8 +315,8 @@ function tooManyUsers(req, res, next) {
     var stat = Common.fs.statSync("./TooManyUsers.txt");
 
     res.writeHead(200, {
-        'Content-Type' : 'application/json',
-        'Content-Length' : stat.size
+        'Content-Type': 'application/json',
+        'Content-Length': stat.size
     });
 
     var readStream = Common.fs.createReadStream("./TooManyUsers.txt");
@@ -325,25 +326,25 @@ function tooManyUsers(req, res, next) {
 }
 
 function nocache(req, res, next) {
-   if (!req.headers['range']) {
-       res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-       res.header('Expires', '-1');
-       res.header('Pragma', 'no-cache');
-   }
-   next();
+    if (!req.headers['range']) {
+        res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+        res.header('Expires', '-1');
+        res.header('Pragma', 'no-cache');
+    }
+    next();
 }
 
 function yescache(req, res, next) {
-  res.removeHeader('Cache-Control');
-  res.removeHeader('Expires');
-  res.removeHeader('Pragma');
-  next();
+    res.removeHeader('Cache-Control');
+    res.removeHeader('Expires');
+    res.removeHeader('Pragma');
+    next();
 }
 
 var cnt = 0;
 
 var accesslogger = accesslog({
-    path : './log/access_log.log'
+    path: './log/access_log.log'
 });
 
 var filterModule = require('permission-parser');
@@ -369,31 +370,30 @@ function watchFilterFile() {
 var refresh_filter = function() {
     try {
         delete require.cache[require.resolve(filterFile)];
-    } catch(e) {}
+    } catch (e) {}
 
     var obj;
     try {
         obj = require(filterFile);
-    } catch(e) {
+    } catch (e) {
         logger.error('Error: Cannot load ' + filterFile + ' file, err: ' + e);
         return;
     }
 
     var permittedMode = Common.parametersMapPermittedMode ? Common.parametersMapPermittedMode : false;
-    filterObj.reload(obj.rules, {permittedMode: permittedMode});
+    filterObj.reload(obj.rules, { permittedMode: permittedMode });
 };
 
 //wrapper for old client
-function filterObjUseHandlerWrapper(req, res, next){
-        var urlObj = url.parse(req.url);
-        var pathname = urlObj.pathname;
+function filterObjUseHandlerWrapper(req, res, next) {
+    var urlObj = url.parse(req.url);
+    var pathname = urlObj.pathname;
 
-        if ((pathname.indexOf("/html/player/extres/") === 0) || (pathname.indexOf("//html/player/extres/") === 0))  {
-            next();
-        }
-        else{
-            filterObj.useHandler(req,res,next);
-        }
+    if ((pathname.indexOf("/html/player/extres/") === 0) || (pathname.indexOf("//html/player/extres/") === 0)) {
+        next();
+    } else {
+        filterObj.useHandler(req, res, next);
+    }
 }
 
 function buildServerObject(server) {
@@ -418,14 +418,14 @@ function buildServerObject(server) {
     server.use(Common.restify.CORS({
         origins: Common.allowedOrigns, // defaults to ['*']
     }));
-    
-// --------------------------------------------------------------------------------------------
+
+    // --------------------------------------------------------------------------------------------
 
     // depreacted
     if (!Common.withService) {
         server.get('/sendEmailForUnknownJobTitle', SendEmailForUnknownJobTitle.func);
     }
-//--------------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------------
 
     server.get('/checkFidoAuth', internalRequests.forwardGetRequest);
     server.get('/reregisterFidoAuth', internalRequests.forwardGetRequest);
@@ -457,8 +457,8 @@ function buildServerObject(server) {
     server.post('/file/uploadFileToLoginToken', internalRequests.upload);
 
     if (Common.isHandlingMediaStreams) {
-        server.get('/getStreamsFile' , internalRequests.getStreamsFile);
-        server.get('/checkStreamsFile' , checkStreamFile.func);
+        server.get('/getStreamsFile', internalRequests.getStreamsFile);
+        server.get('/checkStreamsFile', checkStreamFile.func);
     }
     // if Exchange is external to organization (like office 365) the notification will come from it
     if (Common.EWSServerURL) {
@@ -466,9 +466,10 @@ function buildServerObject(server) {
     }
     server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
     server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
-    
+    server.get('/Notifications/pushNotification', internalRequests.forwardGetRequest);
+
     server.opts('/.*/', optionsHandler);
-    
+
     function optionsHandler(req, res) {
         if (!isPermittedUrl(req.url)) {
             logger.info("Access to " + req.url + " does not permitted");
@@ -488,7 +489,7 @@ function buildServerObject(server) {
     }
 
     var webclientfile = new nodestatic.Server('./', {
-        cache : 10
+        cache: 10
     });
 
     var resourcesfile;
@@ -500,22 +501,22 @@ function buildServerObject(server) {
     var isPermittedUrl = function(url) {
         var match;
         match = url.match('^.*/html/(.*)');
-        if (match !== null){
+        if (match !== null) {
             return true;
         }
 
         match = url.match('^.*/favicon.ico');
-        if (match !== null){
+        if (match !== null) {
             return true;
         }
 
         match = url.match('^.*/streams/(.*)');
-        if (match !== null){
+        if (match !== null) {
             return true;
         }
 
         match = url.match('^.*/file/(.*)');
-        if (match !== null){
+        if (match !== null) {
             return true;
         }
 
@@ -523,9 +524,9 @@ function buildServerObject(server) {
     };
     server.use(yescache);
     server.get(/^\/.*/, function(req, res, next) {
-        if(!isPermittedUrl(req.url)) {
+        if (!isPermittedUrl(req.url)) {
             logger.info("Access to " + req.url + " does not permitted");
-            res.writeHead(404,  {
+            res.writeHead(404, {
                 "Content-Type": "application/json",
                 "Transfer-Encoding": ""
             });
@@ -538,9 +539,9 @@ function buildServerObject(server) {
         var pathname = urlObj.pathname;
 
         //handle apps resoureces
-        if (!Common.withService &&  (pathname.indexOf("/html/player/extres/") === 0 || pathname.indexOf("//html/player/extres/") === 0)) {
+        if (!Common.withService && (pathname.indexOf("/html/player/extres/") === 0 || pathname.indexOf("//html/player/extres/") === 0)) {
             resourcesfile.serve(req, res, function(err, result) {
-                if (err) { 
+                if (err) {
                     logger.error("Error serving " + req.url + " - " + err.message);
                     res.writeHead(404, {
                         "Content-Type": "application/json",
@@ -550,13 +551,12 @@ function buildServerObject(server) {
                     res.end();
                     internalRequests.addMissingResource(req.url);
                     return;
-                }
-                else{
+                } else {
 
                     internalRequests.updateUserConnectionStatics(req.params.deviceName, req.params.resolution, pathname);
                 }
             });
-        //handle web client resources
+            //handle web client resources
         } else {
             webclientfile.serve(req, res, function(err, result) {
                 if (err) { // There was an error serving the file
@@ -569,8 +569,7 @@ function buildServerObject(server) {
                     res.end();
                     internalRequests.addMissingResource(req.url);
                     return;
-                }
-                else{
+                } else {
                     if (!Common.withService) {
                         internalRequests.updateUserConnectionStatics(req.params.deviceName, req.params.resolution, pathname);
                     }
@@ -583,5 +582,5 @@ function buildServerObject(server) {
 
 Common.loadCallback = mainFunction;
 if (module) {
-    module.exports = {mainFunction: mainFunction};
+    module.exports = { mainFunction: mainFunction };
 }

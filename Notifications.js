@@ -76,6 +76,7 @@ function sendNotificationFromRemoteServer(req, res) {
     var enableSound = req.params["enableSound"]; //readParam("enableSound");
     var enableVibrate = req.params["enableVibrate"]; //readParam("enableVibrate");
     var showFullNotif = req.params["showFullNotif"]; //readParam("showFullNotif");
+    var packageID = req.params["packageID"];
 
     if (response.status !== 1) {
         res.send(response);
@@ -83,7 +84,7 @@ function sendNotificationFromRemoteServer(req, res) {
     }
 
     if (notifyLocation != null && notifyLocation.indexOf("#!#offline") != -1) {
-        notifyLocation = notifyLocation.replace("#!#offline",'');
+        notifyLocation = notifyLocation.replace("#!#offline", '');
     }
 
     if (Common.withService) {
@@ -113,7 +114,7 @@ function sendNotificationFromRemoteServer(req, res) {
         });
 
     } else {
-        sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, function(err, pushregid) {
+        sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, function(err, pushregid) {
             if (err) {
                 logger.error("sendNotificationFromRemoteServer: " + err);
                 response.status = 0;
@@ -137,8 +138,8 @@ function sendNotificationFromRemoteServer(req, res) {
  * Deliver the push notification to remote server (gateway)
  * Detailed of the gateway are located in Settings.json
  */
-function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, callback) {
-    var urlstr = Common.NotificationGateway.url+"?"+ querystring.stringify({
+function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, callback) {
+    var urlstr = Common.NotificationGateway.url + "?" + querystring.stringify({
         deviceType: deviceType,
         pushRegID: pushRegID,
         notifyTitle: notifyTitle,
@@ -148,42 +149,43 @@ function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notif
         type: type,
         enableSound: enableSound,
         showFullNotif: showFullNotif,
+        packageID: (packageID === undefined ? "" : packageID),
         serverID: Common.NotificationGateway.serverID,
         serverAuthKey: Common.NotificationGateway.authKey
     });
 
     request({
-            'method' : 'GET',
-            url : urlstr,
-            'strictSSL' : true,
-            timeout : 5000
-        }, function(error, response, body) {
-            if (error) {
-                logger.error('sendNotificationToRemoteSever: ' + error);
-                var msg = "Connection error";
-                callback(msg);
-                return;
-            }
+        'method': 'GET',
+        url: urlstr,
+        'strictSSL': true,
+        timeout: 5000
+    }, function(error, response, body) {
+        if (error) {
+            logger.error('sendNotificationToRemoteSever: ' + error);
+            var msg = "Connection error";
+            callback(msg);
+            return;
+        }
 
-            try {
-                var resObj = JSON.parse(body);
-            } catch (err) {
-                logger.error('sendNotificationToRemoteSever: ' + err);
-                callback("failed parse server response");
-                return;
-            }
+        try {
+            var resObj = JSON.parse(body);
+        } catch (err) {
+            logger.error('sendNotificationToRemoteSever: ' + err);
+            callback("failed parse server response");
+            return;
+        }
 
-            if (resObj.status === 1){
-                callback(null, resObj.pushregid);
-                return;
-            }
+        if (resObj.status === 1) {
+            callback(null, resObj.pushregid);
+            return;
+        }
 
-            logger.error('sendNotificationToRemoteSever: got error from remote server: ' + JSON.stringify(resObj));
-            callback('error form remote server');
+        logger.error('sendNotificationToRemoteSever: got error from remote server: ' + JSON.stringify(resObj));
+        callback('error form remote server');
     });
 }
 
-function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, callback) {
+function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, callback) {
     // Hanan - removing time and location due to security issue raised by Israel that content is displayed on physical client
     if (showFullNotif != 1) {
         notifyLocation = '';
@@ -191,22 +193,22 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
     }
 
     if (!pushRegID || pushRegID == '' || pushRegID == '(null)') {
-       logger.info('Aborting push notification to ' + deviceType + ', push reg id is null');
-       return;
+        logger.info('Aborting push notification to ' + deviceType + ', push reg id is null');
+        return;
     }
 
     if (Common.NotificationGateway) {
-        sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, callback);
+        sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, callback);
         return;
     }
-    
+
     var entities = new Entities();
     notifyTitle = entities.decode(entities.decode(notifyTitle));
-    
-    logger.info("Sending notification to "+pushRegID);
+
+    logger.info("Sending notification to " + pushRegID);
     if (deviceType === "Android") {
         if (!sender) {
-            sender = new gcm.Sender( Common.GCMSender);
+            sender = new gcm.Sender(Common.GCMSender);
         }
         var message = new gcm.Message();
         var nOfRetries = 4;
@@ -217,23 +219,24 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         message.addData('notifyLocation', notifyLocation);
         message.addData('enableSound', enableSound);
         message.addData('enableVibrate', enableVibrate);
+        message.addData('nuboPackageID', packageID);
         message.collapseKey = 'demo';
         message.delayWhileIdle = false;
         message.timeToLive = 3;
         sender.send(message, [pushRegID], nOfRetries, function(err, result) {
             if (err) {
-                logger.error("Cannot send message to GCM err: " +  err + "; res: " + result);
+                logger.error("Cannot send message to GCM err: " + err + "; res: " + result);
                 callback(err);
                 return;
             }
-                
+
             logger.info("Notifications.js::sender.send result: ", result);
             if (result.canonical_ids === 1) {
                 logger.info("Notifications.js::sender.send activation updated with new regid: ", result.results[0].registration_id);
                 callback(null, result.results[0].registration_id);
                 return;
             }
-            
+
             callback(null);
         });
         //@TODO - fix the iPhone notification params
@@ -251,9 +254,9 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             // production
         }
 
-        if(!apnConnection || (JSON.stringify(apnConnectionOptions) !== JSON.stringify(options))) {
+        if (!apnConnection || (JSON.stringify(apnConnectionOptions) !== JSON.stringify(options))) {
             apnConnectionOptions = options;
-            if(apnConnection) apnConnection.shutdown();
+            if (apnConnection) apnConnection.shutdown();
             apnConnection = new apn.Connection(options);
         }
         var myDevice = new apn.Device(pushRegID);
@@ -283,20 +286,22 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
 
         if (enableSound == 1) {
             note.payload = {
-                "aps" : {
-                    "alert" : alert,
-                    "sound" : "default"
+                "aps": {
+                    "alert": alert,
+                    "sound": "default"
                 },
-                "when" : "if calendar - send time in utc",
-                "AppId" : type
+                "when": "if calendar - send time in utc",
+                "AppId": type,
+                "packageID": (packageID === undefined ? "" : packageID)
             };
         } else {
             note.payload = {
-                "aps" : {
-                    "alert" : alert
+                "aps": {
+                    "alert": alert
                 },
-                "when" : "if calendar - send time in utc",
-                "AppId" : type
+                "when": "if calendar - send time in utc",
+                "AppId": type,
+                "packageID": (packageID === undefined ? "" : packageID)
             };
         }
 
@@ -328,4 +333,3 @@ function udpNotification(email, titleText, notifyTime, notifyLocation, appName, 
     });
 
 }
-

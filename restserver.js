@@ -427,6 +427,10 @@ function buildServerObject(server) {
     }
 //--------------------------------------------------------------------------------------------
 
+    server.get('/checkFidoAuth', internalRequests.forwardGetRequest);
+    server.get('/reregisterFidoAuth', internalRequests.forwardGetRequest);
+    server.get('/reregisterFidoDevice', internalRequests.forwardGetRequest);
+    
 	server.get('/authenticateUser', internalRequests.forwardGetRequest);
     server.get('/checkPasscode', internalRequests.forwardGetRequest);
     server.get('/setPasscode', internalRequests.forwardGetRequest);

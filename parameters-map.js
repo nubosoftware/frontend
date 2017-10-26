@@ -79,7 +79,8 @@ var filter = {
                 "activationKey": constraints.tokenConstrRequested,
                 "playerVersion": constraints.playerVersionConstrRequested,
                 "timeZone": constraints.timeZoneConstrOptional,
-                "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional
+                "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional,
+                "fingerprint" : constraints.boolConstrOptional
             }
         }, {
             "path": "/startsession",
@@ -347,6 +348,21 @@ var filter = {
             "constraints": {
                 "token": constraints.tokenConstrRequested,
                 "email": constraints.emailConstrOptional
+            }
+        }, {
+            "path": "/checkFidoAuth",
+            "constraints": {
+                "loginToken": constraints.requestedLoginTokenConstr
+            }
+        }, {
+            "path": "/reregisterFidoAuth",
+            "constraints": {
+                "loginToken": constraints.requestedLoginTokenConstr
+            }
+        }, {
+            "path": "/reregisterFidoDevice",
+            "constraints": {
+                "loginToken": constraints.requestedLoginTokenConstr
             }
         }
 

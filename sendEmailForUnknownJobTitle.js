@@ -7,7 +7,7 @@ function sendEmailForUnknownJobTitle(req, res, next) {
 	// http://login.nubosoftware.com/sendEmailForUnknownJobTitle?jobTitle=[title]
 	res.contentType = 'json';
 	res.send({
-		status: Common.STATUS_OK,
+		status: 1,
 		message: "ok"
 	});
 	return;

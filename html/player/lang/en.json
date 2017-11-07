@@ -29,7 +29,7 @@
     "userPasswordLock": "You have incorrectly typed your password 3 times. An email was sent to you.",
     "unlockPassword": " Open your email to unlock your password.",
     "resetPasswordText": "Your password is successfully reset. \n Open Nubo to continue",
-    "passwordRequired":"* Required: \n- Minimum N1 Characters. \n- The use of both upper-case and lower-case letters (case sensitivity.) \n- Inclusion of one or more numerical digits.",
+    "passwordRequired":"* Required: \n- Minimum N1 Characters. \n- The use of both upper-case and lower-case letters (case sensitivity.) \n- Inclusion of one or more numerical digits. \n- Inclusion of one or more special character. ",
 
     "passcodeExpired":"Your passcode has expired.",
     "pleaseEnterNewPasscode":"Please enter new passcode",

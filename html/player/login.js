@@ -2424,6 +2424,7 @@ $(function() {
             passwordRequired = passwordRequired.replace("\n", "<br/>");
             passwordRequired = passwordRequired.replace("\n", "<br/>");
             passwordRequired = passwordRequired.replace("\n", "<br/>");
+            passwordRequired = passwordRequired.replace("\n", "<br/>");
             $('#passwordRequired').html(passwordRequired);
 
             if (passcodeActivationRequired) {
@@ -2542,6 +2543,16 @@ $(function() {
             if (matches == null) {
                 this.isPasswordValid = false;
                 $('#passcodeErrMsg').text("Password must include lower case character");
+                $('#passcodeErrMsg').css("visibility", "visible");
+                $('#passcodeErrMsg2').css("visibility", "visible");
+                $('#enterPassword').val("");
+                return;
+            }
+
+            var matches = password.match(/[$&+,:;=\\?@#|/'<>.^*_~{}()%!-]/);
+            if (matches == null) {
+                this.isPasswordValid = false;
+                $('#passcodeErrMsg').text("Password must include special character");
                 $('#passcodeErrMsg').css("visibility", "visible");
                 $('#passcodeErrMsg2').css("visibility", "visible");
                 $('#enterPassword').val("");

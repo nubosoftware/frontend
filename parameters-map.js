@@ -51,7 +51,7 @@ var filter = {
             "playerVersion": constraints.playerVersionConstrOptional,
             "additionalDeviceInfo": constraints.ExcludeSpecialCharactersOptional,
             "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional,
-            "captcha": {},
+            "captcha": {}
         }
     }, {
         "path": "/registerOrg",
@@ -323,7 +323,7 @@ var filter = {
             "notifyTime": constraints.ExcludeSpecialCharactersOptional,
             "notifyLocation": constraints.ExcludeSpecialCharactersOptional,
             "appName": constraints.ExcludeSpecialCharactersRequested,
-            "authKey": {}
+            "authKey": constraints.ExcludeSpecialCharactersRequested
         }
     }, {
         "path": "/EWSListener",

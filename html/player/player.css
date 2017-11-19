@@ -742,7 +742,8 @@ span#passcodeErrMsg {
     margin-top: 30px;
       
     width: 359px;
-    height: 31px;
+    /*height: 31px;*/
+    height: 61px;
     background-color: #941914;
     visibility: hidden;
     font-family: NuboRoboto;
@@ -752,21 +753,7 @@ span#passcodeErrMsg {
     padding-top: 5px;
     box-sizing: border-box;
 }
-span#passcodeErrMsg2 {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 359px;
-    height: 25px;
-    background-color: #941914;
-    visibility: hidden;
-    font-family: NuboRoboto;
-    font-style: normal;
-    font-size: 18px;
-    text-align: center;
-    /*padding-top: 5px;*/
-    box-sizing: border-box;
-}
+
 input#enterPasscode {
     display: block;
     margin-left: auto;
@@ -1870,10 +1857,10 @@ div.spinner {
         display: none;
     }       
             
-    /*div#maindiv {
+    div#maindiv {
        width: 100%;
        height: 100%;
-    }*/
+    }
     
     div.mobiletoolbardiv {
         display: inline-block;
@@ -1972,7 +1959,7 @@ div.spinner {
         opacity: 0;
     }   
     
-    div.subdiv, span#passcodeErrMsg, span#passcodeErrMsg2 {
+    div.subdiv, span#passcodeErrMsg {
         width: 100%;   
         height: 100%;
     }
@@ -2000,7 +1987,7 @@ div.spinner {
     }
     
     span#lorem, span#activationSent, span#activationEmail, span#authMsg, span#expiredMsg,
-    span#lockMsg, span#unlockMsg, span#forgotBtn, span#passcodeErrMsg, span#passcodeErrMsg2,
+    span#lockMsg, span#unlockMsg, span#forgotBtn, span#passcodeErrMsg,
     span#unlockPasscodeTxt, span#resetPasscodeTxt, span#downloadMessage, span#iosMessage {
         font-size: 30px;
     }
@@ -2029,7 +2016,7 @@ div.spinner {
         font-size: 22px;
     }    
     
-    span#passcodeErrMsg, span#passcodeErrMsg2 {
+    span#passcodeErrMsg {
         height: 50px;
     }
     img#passcodeImg, img#setPasscodeImg, input#enterPasscode, input#selectPasscode {      

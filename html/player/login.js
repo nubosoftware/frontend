@@ -217,6 +217,9 @@ var playbackFile;
 var playbackStartTime;
 var passcodeExpired = false;
 
+var passcodeState = 0; // 0-first passcode 1-second passcode
+var passwordState = 0; // 0-first password 1-second password
+
 var WRITE_TRANSACTION_TIMEOUT = 900000;
 var passcodeTimeout = WRITE_TRANSACTION_TIMEOUT;
 
@@ -1875,22 +1878,18 @@ $(function() {
 
         on_keypress: function(event) {
             var code = event.keyCode || event.which;
-            // console.log("PasscodeView.on_keypress code: " + code + " event.type: " + event.type);
 
             $('#passcodeErrMsg').css("visibility", "hidden");
-            $('#passcodeErrMsg2').css("visibility", "hidden");
             $('#passwordExpired').css("visibility", "hidden");
 
             if (code >= 48 && code <= 57) { // 1-9
                 enterPasscode = enterPasscode + String.fromCharCode(code);
-                // console.log("PasscodeView. passcode: " + enterPasscode);
 
                 if (enterPasscode.length > 8) {
-                    $('#passcodeErrMsg').text(l('noMatchPasscode4'));
+                    var msg = l('noMatchPasscode4');
+                    msg = msg.replace("\n", "<br/>");
+                    $('#passcodeErrMsg').html(msg);
                     $('#passcodeErrMsg').css("visibility", "visible");
-
-                    $('#passcodeErrMsg2').text(l('noMatchPasscode5'));
-                    $('#passcodeErrMsg2').css("visibility", "visible");
                     enterPasscode = "";
 
                 } else {
@@ -1906,20 +1905,16 @@ $(function() {
 
         },
         clickForgotBtn: function(event) {
-            // console.log("PasscodeView. click: " + event.target.id + " type: " + event.type);
             enterPasscode = "";
             window.location.hash = "resetpasscode";
         },
         click: function(event) {
-            // console.log("PasscodeView. click: " + event.target.id + " type: " + event.type);
-
             if (isMobile.any() == true && event.type == "click") {
                 console.log("PasscodeView mobile");
                 return;
             }
 
             $('#passcodeErrMsg').css("visibility", "hidden");
-            $('#passcodeErrMsg2').css("visibility", "hidden");
             $('#passwordExpired').css("visibility", "hidden");
 
             var id = event.target.id;
@@ -1941,10 +1936,10 @@ $(function() {
                 }
 
                 if (enterPasscode.length < 6) {
-                    $('#passcodeErrMsg').text(l('noMatchPasscode4'));
+                    var msg = l('noMatchPasscode3');
+                    msg = msg.replace("\n", "<br/>");
+                    $('#passcodeErrMsg').html(msg);
                     $('#passcodeErrMsg').css("visibility", "visible");
-                    $('#passcodeErrMsg2').text(l('noMatchPasscode7'));
-                    $('#passcodeErrMsg2').css("visibility", "visible");
                     $('#enterPasscode').val("");
                     enterPasscode = "";
                     return;
@@ -1961,11 +1956,10 @@ $(function() {
             } else if (passcode.length <= 8) {
                 $('#enterPasscode').val(enterPasscode);
             } else {
-                $('#passcodeErrMsg').text(l('noMatchPasscode4'));
+                var msg = l('noMatchPasscode4');
+                msg = msg.replace("\n", "<br/>");
+                $('#passcodeErrMsg').html(msg);
                 $('#passcodeErrMsg').css("visibility", "visible");
-
-                $('#passcodeErrMsg2').text(l('noMatchPasscode5'));
-                $('#passcodeErrMsg2').css("visibility", "visible");
                 enterPasscode = "";
                 $('#enterPasscode').val("");
             }
@@ -1993,7 +1987,6 @@ $(function() {
         },
 
         deleteChar: function() {
-            // console.log("passcodeView.deleteChar  enterPasscode: " + enterPasscode);
             if (enterPasscode.length >= 1) {
                 enterPasscode = enterPasscode.substr(0, enterPasscode.length - 1);
                 console.log("passcodeView.deleteChar  enterPasscode: " + enterPasscode);
@@ -2045,7 +2038,9 @@ $(function() {
                     }
 
                     if (isError == false) {
-                        $('#passcodeErrMsg').text(l('wrongPassCode1') + "      " + l('wrongPassCode2'));
+                        var msg = l('wrongPassCode');
+                        msg = msg.replace("\n", "<br/>");
+                        $('#passcodeErrMsg').html(msg);
                         $('#passcodeErrMsg').css("visibility", "visible");
                         enterPasscode = "";
                         $('#enterPasscode').val("");
@@ -2100,7 +2095,6 @@ $(function() {
     var SetPasscodeView = Backbone.View.extend({
         el: $("#maindiv"),
         changedNode: null,
-        state: 0, // 0-first passcode 1-second passcode
         savedPasscode: "",
         oldPasscode: "",
 
@@ -2109,6 +2103,7 @@ $(function() {
 
             this.oldPasscode = enterPasscode;
             enterPasscode = "";
+            passcodeState = 0;
 
             _.bindAll(this, 'on_keypress', 'on_keydown');
             $(document).unbind('keypress').bind('keypress', this.on_keypress);
@@ -2157,20 +2152,16 @@ $(function() {
             var code = event.keyCode || event.which;
 
             $('#passcodeErrMsg').css("visibility", "hidden");
-            $('#passcodeErrMsg2').css("visibility", "hidden");
             $('#passwordExpired').css("visibility", "hidden");
-
-            // console.log("setPasscodeView.on_keypress code: " + code + " event.type: " + event.type);
 
             if (code >= 48 && code <= 57) { // 1-9
                 enterPasscode = enterPasscode + String.fromCharCode(code);
 
                 if (enterPasscode.length > 8) {
-                    $('#passcodeErrMsg').text(l('noMatchPasscode4'));
+                    var msg = l('noMatchPasscode4');
+                    msg = msg.replace("\n", "<br/>");
+                    $('#passcodeErrMsg').html(msg);
                     $('#passcodeErrMsg').css("visibility", "visible");
-
-                    $('#passcodeErrMsg2').text(l('noMatchPasscode5'));
-                    $('#passcodeErrMsg2').css("visibility", "visible");
                     enterPasscode = "";
                     $('#selectPasscode').val("");
 
@@ -2190,18 +2181,15 @@ $(function() {
         click: function(event) {
 
             // console.log("SetPasscodeView. click: " + event.target.id + " type: " + event.type);
-
             if (isMobile.any() == true && event.type == "click") {
                 return;
             }
 
             $('#passcodeErrMsg').css("visibility", "hidden");
-            $('#passcodeErrMsg2').css("visibility", "hidden");
             $('#passwordExpired').css("visibility", "hidden");
 
             var id = event.target.id;
             var passcode = enterPasscode;
-            //$('#selectPasscode').val();
 
             if (id != "keyok" && id != "keydel" && id != "btndel") {
                 var num = id.substring(3);
@@ -2225,13 +2213,10 @@ $(function() {
             } else if (passcode.length <= 8) {
                 $('#selectPasscode').val(enterPasscode);
             } else {
-                $('#passcodeErrMsg').text(l('noMatchPasscode4'));
-                $('#passcodeErrMsg').css({
-                    "visibility": "visible"
-                });
-
-                $('#passcodeErrMsg2').text(l('noMatchPasscode5'));
-                $('#passcodeErrMsg2').css("visibility", "visible");
+                var msg = l('noMatchPasscode4');
+                msg = msg.replace("\n", "<br/>");
+                $('#passcodeErrMsg').html(msg);
+                $('#passcodeErrMsg').css({"visibility": "visible"});
                 enterPasscode = "";
                 $('#selectPasscode').val("");
             }
@@ -2259,19 +2244,13 @@ $(function() {
         },
 
         okButton: function() {
-            // console.log("SetPasscodeView.okButton  this.state: " + this.state);
-
-            if (this.state == 0) { // first passcode
+            if (passcodeState == 0) { // first passcode
 
                 if (enterPasscode.length < 6) {
-                    var errText = l('noMatchPasscode4');
-                    $('#passcodeErrMsg').html(errText);
+                    var msg = l('noMatchPasscode3');
+                    msg = msg.replace("\n", "<br/>");
+                    $('#passcodeErrMsg').html(msg);
                     $('#passcodeErrMsg').css("visibility", "visible");
-
-                    var errText1 = l('noMatchPasscode7');
-                    $('#passcodeErrMsg2').html(errText1);
-                    $('#passcodeErrMsg2').css("visibility", "visible");
-
                     enterPasscode = "";
                     $('#selectPasscode').val("");
                     return;
@@ -2284,7 +2263,7 @@ $(function() {
 
                 this.savedPasscode = enterPasscode;
                 $('#selectPasscodeTitle').text(l('reEnterPasscode'));
-                this.state = 1;
+                passcodeState = 1;
                 enterPasscode = "";
                 $('#selectPasscode').val("");
 
@@ -2294,7 +2273,7 @@ $(function() {
                     $('#passcodeErrMsg').text(l('noMatchPasscode1'));
                     $('#passcodeErrMsg').css("visibility", "visible");
                     this.savedPasscode = "";
-                    this.state = 0;
+                    passcodeState = 0;
                     $('#selectPasscodeTitle').text(l('selectPasscode'));
                     enterPasscode = "";
                     $('#selectPasscode').val("");
@@ -2328,11 +2307,10 @@ $(function() {
             }
 
             if (isConsecutive == true) {
-                // "A Combinations of consecutive numbers is not allowed"
-                $('#passcodeErrMsg').html(l('noMatchPasscode8'));
-                $('#passcodeErrMsg2').html(l('noMatchPasscode81'));
+                var msg = l('noMatchPasscode8'); // "A Combinations of consecutive numbers is not allowed"
+                msg = msg.replace("\n", "<br/>");
+                $('#passcodeErrMsg').html(msg);
                 $('#passcodeErrMsg').css({ "visibility": "visible" });
-                $('#passcodeErrMsg2').css({ "visibility": "visible" });
 
                 enterPasscode = "";
                 $('#selectPasscode').val("");
@@ -2340,8 +2318,7 @@ $(function() {
             }
 
             if (minimumChars.length < 4) {
-                $('#passcodeErrMsg').html(l('noMatchPasscode9'));
-                // Select at least 4 different numbers
+                $('#passcodeErrMsg').html(l('noMatchPasscode9'));  // Select at least 4 different numbers
                 $('#passcodeErrMsg').css({ "visibility": "visible" });
 
                 enterPasscode = "";
@@ -2371,7 +2348,7 @@ $(function() {
                     $('#passcodeErrMsg').css("visibility", "visible");
                     enterPasscode = "";
                     $('#enterPasscode').val("");
-                    this.state = 0;
+                    passcodeState = 0;
                     $('#selectPasscodeTitle').text(l('selectPasscode'));
                 } else if (data.status == 2) { // expired login token
                     window.location.hash = "validation";
@@ -2397,11 +2374,11 @@ $(function() {
 
     var EnterPasswordView = Backbone.View.extend({
         el: $("#maindiv"),
-        state: 0, // 0-first passcode 1-second passcode
         savedPassword: "",
         isPasswordValid: false,
 
         initialize: function() {
+            passwordState = 0;
             enterPasswordView = this;
         },
         render: function() {
@@ -2455,7 +2432,6 @@ $(function() {
         resetError: function(event) {
             $('#passcodeErrMsg').text("");
             $('#passcodeErrMsg').css("visibility", "hidden");
-            $('#passcodeErrMsg2').css("visibility", "hidden");
             $('#passwordExpired').css("visibility", "hidden");
         },
         clickForgotPassword: function(event) {
@@ -2469,21 +2445,21 @@ $(function() {
             }
 
             if (passcodeActivationRequired) { // setPassword
-                if (this.state == 0) {
+                if (passwordState == 0) {
                     this.passwordValidate();
                     if (this.isPasswordValid == false) {
                         this.savedPassword = "";
                     } else {
-                        this.state += 1;
+                        passwordState ++;
                         this.savedPassword = password;
                         $('#passwordTitle').text(l('renterPassword'));
                         $('#enterPassword').attr('placeholder', l('renterPassword')); // ('placeholder','Re-Enter Password');
                         $('#enterPassword').val("");
                     }
                     return;
-                } else if (this.state == 1) {
+                } else if (passwordState == 1) {
                     if (this.savedPassword.localeCompare(password) != 0) {
-                        this.state = 0;
+                        passwordState = 0;
                         this.savedPassword = "";
                         $('#passcodeErrMsg').html(l('noMatchPasscode1'));
                         $('#passcodeErrMsg').css("visibility", "visible");
@@ -2534,7 +2510,6 @@ $(function() {
                 this.isPasswordValid = false;
                 $('#passcodeErrMsg').text("Password must include upper case character");
                 $('#passcodeErrMsg').css("visibility", "visible");
-                $('#passcodeErrMsg2').css("visibility", "visible");
                 $('#enterPassword').val("");
                 return;
             }
@@ -2544,7 +2519,6 @@ $(function() {
                 this.isPasswordValid = false;
                 $('#passcodeErrMsg').text("Password must include lower case character");
                 $('#passcodeErrMsg').css("visibility", "visible");
-                $('#passcodeErrMsg2').css("visibility", "visible");
                 $('#enterPassword').val("");
                 return;
             }
@@ -2554,7 +2528,6 @@ $(function() {
                 this.isPasswordValid = false;
                 $('#passcodeErrMsg').text("Password must include special character");
                 $('#passcodeErrMsg').css("visibility", "visible");
-                $('#passcodeErrMsg2').css("visibility", "visible");
                 $('#enterPassword').val("");
                 return;
             }
@@ -2612,7 +2585,9 @@ $(function() {
                     }
 
                     if (isError == false) {
-                        $('#passcodeErrMsg').text(l('wrongPassCode1') + "      " + l('wrongPassCode2'));
+                        var msg = l('wrongPassCode');
+                        msg = msg.replace("\n", "<br/>");
+                        $('#passcodeErrMsg').html(msg);
                         $('#passcodeErrMsg').css("visibility", "visible");
                         $('#enterPassword').val("");
                     } else {
@@ -2656,7 +2631,7 @@ $(function() {
                     } else {
                         passcodeActivationRequired = true;
                         oldPassword = password;
-                        this.state = 0;
+                        passwordState = 0;
                         this.savePassword = "";
                         $('#passwordExpired').css("visibility", "visible");
                         $('#enterPassword').val("");
@@ -2687,14 +2662,13 @@ $(function() {
                 }
 
                 if (data.status == 0) { // failed
-                    $('#passcodeErrMsg').text(l('errorChangePassword')); //data.message
+                    $('#passcodeErrMsg').text(data.message);
                     $('#passcodeErrMsg').css("visibility", "visible");
-                    $('#passcodeErrMsg2').css("visibility", "visible");
                     this.savePassword = "";
                     $('#enterPassword').val("");
                     $('#enterPassword').attr('placeholder', l('selectPassword'));
                     $('#passwordTitle').text(l('selectPassword'));
-                    this.state = 0;
+                    passwordState = 0;
                 } else if (data.status == 2) { // expired login token
                     enterPasswordView.newLoginToken();
                     return;

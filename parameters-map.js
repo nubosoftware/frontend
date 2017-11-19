@@ -42,7 +42,7 @@ var filter = {
             "signature": constraints.ExcludeSpecialCharactersRequested,
             "regid": {
                 "presence": false,
-                "format": "^[.a-zA-Z0-9_\\-()]+$",
+                "format": "^[.a-zA-Z0-9_\\-():]+$",
                 "length": {
                     "minimum": 1,
                     "maximum": 255
@@ -250,7 +250,7 @@ var filter = {
             },
             "pushRegID": {
                 "presence": false,
-                "format": "^[a-zA-Z0-9_\\-]+$",
+                "format": "^[a-zA-Z0-9_\\-:]+$",
                 "length": {
                     "minimum": 1,
                     "maximum": 255

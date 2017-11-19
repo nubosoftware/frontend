@@ -6,7 +6,8 @@ var logger = Common.logger;
 var async = require('async');
 // notification/GCM variables
 var gcm = require('node-gcm');
-var sender = null;
+var senderFCM = null;
+var senderGCM = null;
 var apn = require('apn');
 var request = require('./request.js');
 var querystring = require('querystring');
@@ -207,8 +208,23 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
 
     logger.info("Sending notification to " + pushRegID);
     if (deviceType === "Android") {
-        if (!sender) {
-            sender = new gcm.Sender(Common.GCMSender);
+        var sender;
+        if (pushRegID && pushRegID.length > 150) {
+            // use FCM key
+            if (!senderFCM) {
+                senderFCM = new gcm.Sender(Common.FCMSender);
+            }
+            sender = senderFCM;
+            if (pushRegID.startsWith("base64")) {
+                pushRegID = new Buffer(pushRegID.substring(6), 'base64').toString();
+                logger.info("Found base64 encoded FCM token. Translte to: " + pushRegID);
+            }
+        } else {
+            // use GCM key
+            if (!senderGCM) {
+                senderGCM = new gcm.Sender(Common.GCMSender);
+            }
+            sender = senderGCM;
         }
         var message = new gcm.Message();
         var nOfRetries = 4;

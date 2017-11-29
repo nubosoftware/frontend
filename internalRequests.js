@@ -7,7 +7,7 @@ var _ = require('underscore');
 var nodeHttp = require('http');
 var nodeHttps = require('https');
 var fs = require('fs');
-
+var async = require('async');
 
 function getOptions() {
     var options = {};
@@ -32,7 +32,7 @@ function forwardCheckStreamFile(loginToken, streamFileName, callback) {
             try {
                 resObjData = JSON.parse(resData);
                 if (resObjData.status === 1) {
-                    callback(null,resObjData.status);
+                    callback(null, resObjData.status);
                 } else if (resObjData.status === 0) {
                     callback(resObjData.message);
                 } else {
@@ -59,7 +59,7 @@ function upload(req, res, next) {
     options.method = req.method;
     options.agent = false;
     _.extend(options, getOptions());
-    _.extend(options.headers,req.headers);
+    _.extend(options.headers, req.headers);
 
     var request;
     if (options.key) request = nodeHttps.request;
@@ -71,7 +71,7 @@ function upload(req, res, next) {
         res.writeHeader(serverResponse.statusCode, serverResponse.headers);
         serverResponse.pipe(res);
         serverResponse.resume();
-    });		
+    });
     req.pipe(connector);
     req.resume();
     return;
@@ -85,8 +85,8 @@ function getStreamsFile(req, res, next) {
     req.pause();
     var options = getOptions();
     console.log("SharonLog url = " + req.url)
-    options.path = "/readStreamFile" + "?loginToken=" + loginToken + "&streamFileName=" + streamName + "&isLive="+isLive;
-    _.extend(options.headers,req.headers);
+    options.path = "/readStreamFile" + "?loginToken=" + loginToken + "&streamFileName=" + streamName + "&isLive=" + isLive;
+    _.extend(options.headers, req.headers);
     options.method = req.method;
     options.agent = false;
     var request;
@@ -136,6 +136,52 @@ function forwardGetRequest(req, res, next) {
 
 }
 
+function checkServerAndForwardGetRequest(req, res, next) {
+
+    if (!Common.withService) {
+        forwardGetRequest(req, res, next);
+        return;
+    }
+
+    var options = getOptions();
+    options.path = '/checkStatus';
+
+    var response = {
+        status: Common.STATUS_DATA_CENTER_UNAVALIBLE,
+        msg: "data center isn't avalible"
+    };
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            logger.error("checkServerAndForwardGetRequest: " + err);
+            res.send(response);
+            return;
+        }
+
+        var resObjData;
+        try {
+            resObjData = JSON.parse(resData);
+        } catch (e) {
+            logger.error("checkServerAndForwardGetRequest: " + e);
+            res.send(response);
+            return;
+        }
+
+        if (resObjData.status === Common.STATUS_DATA_CENTER_UNAVALIBLE) {
+            res.send(response);
+            return;
+        } else if (resObjData.status === Common.STATUS_OK) {
+            forwardGetRequest(req, res, next);
+            return;
+        } else {
+            logger.error("checkServerAndForwardGetRequest: unknown status " + resObjData.status);
+            res.send(response);
+            return;
+        }
+    });
+}
+
+
 function addMissingResource(resource) {
     var options = getOptions();
     options.path = "/addMissingResource";
@@ -150,7 +196,7 @@ function addMissingResource(resource) {
         'Content-Length': postData.length
     };
 
-    _.extend(options.headers,reqHeaders);
+    _.extend(options.headers, reqHeaders);
 
     http.doPostRequest(options, postData, function(err, resData) {
         if (err) {
@@ -183,7 +229,7 @@ function addMissingResource(resource) {
 
 function updateUserConnectionStatics(deviceName, resolution, pathname) {
 
-    if(!deviceName && !resolution){
+    if (!deviceName && !resolution) {
         return;
     }
 
@@ -260,21 +306,25 @@ function forwardActivationLink(req, res, next) {
 
         logger.info("forwardActivationLink: status: " + resObjData.status + ", message: " + resObjData.message);
         if (resObjData.status == 0) {
-            fs.readFile("html/player/activateDevice.html", function (error, page) {
+            fs.readFile("html/player/activateDevice.html", function(error, page) {
                 if (error) {
-                     res.write(resData);
+                    res.write(resData);
                 } else {
-                    res.writeHead(200, { 'Content-Type': 'text/html' });
+                    res.writeHead(200, {
+                        'Content-Type': 'text/html'
+                    });
                     res.write(page);
                 }
                 res.end();
             });
         } else {
-            fs.readFile("html/player/activateErrorDevice.html", function (error, page) {
+            fs.readFile("html/player/activateErrorDevice.html", function(error, page) {
                 if (error) {
                     res.write(resData);
                 } else {
-                    res.writeHead(200, { 'Content-Type': 'text/html' });
+                    res.writeHead(200, {
+                        'Content-Type': 'text/html'
+                    });
                     res.write(page);
                 }
                 res.end();
@@ -312,21 +362,25 @@ function forwardResetPasscodeLink(req, res, next) {
 
         logger.info("forwardResetPasscodeLink: status: " + resObjData.status + ", message: " + resObjData.message);
         if (resObjData.status == 0) {
-            fs.readFile("html/player/resetPasscode.html", function (error, page) {
+            fs.readFile("html/player/resetPasscode.html", function(error, page) {
                 if (error) {
-                     res.write(resData);
+                    res.write(resData);
                 } else {
-                    res.writeHead(200, { 'Content-Type': 'text/html' });
+                    res.writeHead(200, {
+                        'Content-Type': 'text/html'
+                    });
                     res.write(page);
                 }
                 res.end();
             });
         } else {
-            fs.readFile("html/player/resetPasscodeError.html", function (error, page) {
+            fs.readFile("html/player/resetPasscodeError.html", function(error, page) {
                 if (error) {
                     res.write(resData);
                 } else {
-                    res.writeHead(200, { 'Content-Type': 'text/html' });
+                    res.writeHead(200, {
+                        'Content-Type': 'text/html'
+                    });
                     res.write(page);
                 }
                 res.end();
@@ -340,10 +394,11 @@ function forwardResetPasscodeLink(req, res, next) {
 module.exports = {
     forwardGetRequest: forwardGetRequest,
     forwardCheckStreamFile: forwardCheckStreamFile,
-    getStreamsFile : getStreamsFile,
+    getStreamsFile: getStreamsFile,
     addMissingResource: addMissingResource,
     updateUserConnectionStatics: updateUserConnectionStatics,
     upload: upload,
     forwardActivationLink: forwardActivationLink,
-    forwardResetPasscodeLink: forwardResetPasscodeLink
+    forwardResetPasscodeLink: forwardResetPasscodeLink,
+    checkServerAndForwardGetRequest: checkServerAndForwardGetRequest
 }

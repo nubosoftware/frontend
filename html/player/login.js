@@ -1641,6 +1641,7 @@ $(function() {
                 if (DEBUG) {
                     console.log(JSON.stringify(data, null, 4));
                 }
+
                 if (data.status == 0) {
                     settings.set({
                         'activationKey': data.activationKey
@@ -1662,7 +1663,12 @@ $(function() {
                         "activationKey": ""
                     });
                     settings.save();
-                    window.location.hash = "createPlayer";
+                    if (Common.withService) {
+                        $('#workEmailSendErr').text(l("emailNotExist"));
+                        $('#workEmailSend').addClass("error");
+		            } else {
+                        window.location.hash = "createPlayer";
+                    }
 
                 } else if (data.status == 301) { // change mgmtURL
                     mgmtURL = data.mgmtURL;

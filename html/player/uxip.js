@@ -1528,6 +1528,11 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             getJSON(url, function(data) {
                 if (data.status == 0) {
                     var fileContent = data.fileContent;
+                    if (Common.withService) {
+                        fileContent += (fileContent.length % 4) ? Array(5 - fileContent.length % 4).join('=') : "";
+                        fileContent = fileContent.replace(/\-/g, '+') // Convert '-' to '+'
+                        .replace(/\_/g, '/'); // Convert '_' to '/'
+                    }
 
                     var i1 = fileName.lastIndexOf('/');
                     var i2 = fileName.lastIndexOf('.');
@@ -2159,6 +2164,11 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                     // Log.d("getJSON: "+JSON.stringify(data,null,2));
                     if (data.status == 0) {
                         var fileContent = data.fileContent;
+                        if (Common.withService) {
+                            fileContent += (fileContent.length % 4) ? Array(5 - fileContent.length % 4).join('=') : "";
+                            fileContent = fileContent.replace(/\-/g, '+') // Convert '-' to '+'
+                            .replace(/\_/g, '/'); // Convert '_' to '/'
+                        }
                         img.setAttribute("src", 'data:image/png;base64,' + fileContent);
 
                         // save data

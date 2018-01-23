@@ -8,6 +8,8 @@ var accesslog = require('accesslog');
 var async = require("async");
 var fs = require("fs");
 var restify = require("restify");
+var cluster = require("cluster");
+var nodestatic = require('node-static');
 
 var Common = require('./common.js');
 var logger = Common.logger;
@@ -19,12 +21,17 @@ var Notifications = require('./Notifications.js');
 var SmsNotification = require('./SmsNotification.js');
 var internalRequests = require('./internalRequests.js');
 var checkStreamFile = require('./checkStreamFile.js');
+var filterModule = require('permission-parser');
+var parametersMap = require("./parameters-map.js");
+var websocket = require('websocket');
+var mgmtPublicRegistration = require("./mgmtPublicRegistration.js");
 
+var accesslogger = accesslog({
+    path: './log/access_log.log'
+});
 
-var port = 8443;
-if (process.argv.length >= 3) {
-    port = process.argv[2];
-}
+var filterObj;
+var serverAtExitProcess = false;
 
 var mainFunction = function(err, firstTimeLoad) {
     if (err) {
@@ -33,14 +40,10 @@ var mainFunction = function(err, firstTimeLoad) {
         return;
     }
 
-    refresh_filter();
-
-    watchFilterFile();
-
     if (!firstTimeLoad) // execute the following code only in the first time
         return;
 
-    var WebSocketServer = require('websocket').server;
+    var WebSocketServer = websocket.server;
 
     // Handle new WebSocket client
     var new_client = function(client, clientAddr, resourceURL) {
@@ -228,53 +231,105 @@ var mainFunction = function(err, firstTimeLoad) {
         );
     };
 
-    async.series(
-        [
-            function(callback) {
-                async.each(
-                    Common.listenAddresses,
-                    initPortListener,
-                    function(err) {
-                        callback(null);
+
+    var refreshTTLService = mgmtPublicRegistration.refreshTTLService();
+
+    async.series([
+        function(callback) {
+            if (cluster.isMaster) {
+                mgmtPublicRegistration.register(function(err){
+                    if(err){
+                        return callback(err);
                     }
-                );
-            },
-            function(callback) {
-                if (Common.username) {
-                    require('child_process').execFile("/usr/bin/id", [Common.username], function(error, stdout, stderr) {
-                        if (error) {
-                            logger.error("Cannot get uid/gid of " + Common.username + "\nstderr:\n" + stderr + "\nerr:\n" + error);
-                            callback(err);
-                        } else {
-                            var obj = /uid=(\d+)\(\w+\) gid=(\d+).+/.exec(stdout);
-                            if (obj === null) {
-                                logger.error("Cannot get uid/gid of " + Common.username + " bad input: " + stdout);
-                            } else {
-                                logger.info("Run as " + obj[1] + ":" + obj[2]);
-                                process.setgid(Number(obj[2]));
-                                process.setuid(Number(obj[1]));
-                            }
-                        }
-                    });
-                } else {
-                    logger.warn("Run as root");
-                }
+                    refreshTTLService.start();
+                    return callback(null);
+                });
+            } else {
+                return callback(null);
             }
-        ],
-        function(err) {}
-    );
+        },
+        function(callback) {
+
+            var permittedMode = Common.parametersMapPermittedMode ? Common.parametersMapPermittedMode : false;
+
+            var filterOpts = {
+                loge: logger.error,
+                mode: filterModule.mode.URL,
+                permittedMode: permittedMode
+            };
+            filterObj = new filterModule.filter(parametersMap.rules, filterOpts);
+            return callback(null);
+        },
+        function(callback) {
+            async.each(
+                Common.listenAddresses,
+                initPortListener,
+                callback
+            );
+        },
+        function(callback) {
+            if (Common.username) {
+                require('child_process').execFile("/usr/bin/id", [Common.username], function(error, stdout, stderr) {
+                    if (error) {
+                        logger.error("Cannot get uid/gid of " + Common.username + "\nstderr:\n" + stderr + "\nerr:\n" + error);
+                        callback(err);
+                    } else {
+                        var obj = /uid=(\d+)\(\w+\) gid=(\d+).+/.exec(stdout);
+                        if (obj === null) {
+                            return callback("Cannot get uid/gid of " + Common.username + " bad input: " + stdout);
+                        } else {
+                            logger.info("Run as " + obj[1] + ":" + obj[2]);
+                            process.setgid(Number(obj[2]));
+                            process.setuid(Number(obj[1]));
+                            return callback(null);
+                        }
+                    }
+                });
+            } else {
+                logger.warn("Run as root");
+                return callback(null);
+            }
+        }
+    ], function(err) {
+        if(err){
+            logger.error("restserver: " + err);
+            process.exit(1);
+        }
+
+        logger.info("restserver: started");
+    });
+
+    if (cluster.isMaster) {
+        process.on('SIGINT', function() {
+            if (serverAtExitProcess) {
+                return;
+            } else {
+                serverAtExitProcess = true;
+            }
+
+            logger.info("restserver: caught interrupt signal");
+
+            async.series([
+                function(callback) {
+                    refreshTTLService.stop(callback);
+                },
+                function(callback) {
+                    mgmtPublicRegistration.unregister(callback);
+                }
+            ], function(err) {
+                if (err) {
+                    logger.error("restserver: " + err);
+                    process.exit(1);
+                }
+
+                logger.info("restserver: exited");
+                process.exit(0);
+            })
+        });
+    }
 };
 
-function returnInternalError(err, res) {
-    logger.error(err.name, err.message);
-    res.send({
-        status: 3,
-        message: "Internal error"
-    });
-}
 
-var nodestatic = require('node-static');
-var http = require('http');
 
 function downloadFunc(req, res, next) {
 
@@ -310,21 +365,6 @@ function debugFunc(req, res, next) {
     return next();
 }
 
-function tooManyUsers(req, res, next) {
-
-    var stat = Common.fs.statSync("./TooManyUsers.txt");
-
-    res.writeHead(200, {
-        'Content-Type': 'application/json',
-        'Content-Length': stat.size
-    });
-
-    var readStream = Common.fs.createReadStream("./TooManyUsers.txt");
-    // We replaced all the event handlers with a simple call to
-    // readStream.pipe()
-    readStream.pipe(res);
-}
-
 function nocache(req, res, next) {
     if (!req.headers['range']) {
         res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
@@ -340,49 +380,6 @@ function yescache(req, res, next) {
     res.removeHeader('Pragma');
     next();
 }
-
-var cnt = 0;
-
-var accesslogger = accesslog({
-    path: './log/access_log.log'
-});
-
-var filterModule = require('permission-parser');
-
-var filterOpts = {
-    loge: logger.error,
-    mode: filterModule.mode.URL
-};
-
-var filterObj = new filterModule.filter([], filterOpts);
-var filterFile = "./parameters-map.js";
-
-function watchFilterFile() {
-    Common.fs.watchFile(filterFile, {
-        persistent: false,
-        interval: 5007
-    }, function(curr, prev) {
-        logger.info(filterFile + ' been modified');
-        refresh_filter();
-    });
-}
-
-var refresh_filter = function() {
-    try {
-        delete require.cache[require.resolve(filterFile)];
-    } catch (e) {}
-
-    var obj;
-    try {
-        obj = require(filterFile);
-    } catch (e) {
-        logger.error('Error: Cannot load ' + filterFile + ' file, err: ' + e);
-        return;
-    }
-
-    var permittedMode = Common.parametersMapPermittedMode ? Common.parametersMapPermittedMode : false;
-    filterObj.reload(obj.rules, { permittedMode: permittedMode });
-};
 
 //wrapper for old client
 function filterObjUseHandlerWrapper(req, res, next) {

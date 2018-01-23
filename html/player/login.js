@@ -1252,6 +1252,8 @@ $(function() {
         },
         token: null,
         email: null,
+        mainDomain: null,
+        deviceID: null,
         cloneActivation: null,
         timeoutId: 0,
         afterValidation: false,
@@ -1284,7 +1286,11 @@ $(function() {
 
         },
         checkUnlockLink: function() {
-            var url = mgmtURL + "unlockPassword?loginemailtoken=" + encodeURIComponent(this.token) + "&email=" + encodeURIComponent(this.email);
+            var url = mgmtURL + "unlockPassword?loginemailtoken=" + encodeURIComponent(this.token)
+            + "&email=" + encodeURIComponent(this.email)
+            + "&mainDomain=" + encodeURIComponent(this.mainDomain)
+            + "&deviceID=" + encodeURIComponent(this.deviceID);
+
             if (DEBUG) {
                 console.log("checkUnlockLink. " + url);
             }
@@ -3367,7 +3373,7 @@ $(function() {
             "ppage/:id": "getPlayerPage",
             "activationLink/:token/:email": "getActivationLink",
             "resetPasscodeLink/:token/:email": "getResetPasscodeLink",
-            "unlockPassword/:token/:email": "getUnlockPassword",
+            "unlockPassword/:token/:email/:mainDomain/:deviceID": "getUnlockPassword",
             "downloadApp": "getDownloadApp",
             "downloadApp/:domain": "getDownloadApp",
             "autoapp/:packageName/:domainName": "autoapp",
@@ -3417,12 +3423,14 @@ $(function() {
 
     });
 
-    app_router.on('route:getUnlockPassword', function(token, email) {
+    app_router.on('route:getUnlockPassword', function(token, email, mainDomain, deviceID) {
         // console.log("route:getUnlockPassword. token:" + token + ", email:" + email);
         resetValidationEvent();
         var unlockPasscode_link_view = new UnlockPasscodeLinkView();
         unlockPasscode_link_view.token = token;
         unlockPasscode_link_view.email = email;
+        unlockPasscode_link_view.mainDomain = mainDomain;
+        unlockPasscode_link_view.deviceID = deviceID;
         appController.showView(unlockPasscode_link_view);
 
     });

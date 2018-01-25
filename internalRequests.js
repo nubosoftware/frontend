@@ -390,6 +390,84 @@ function forwardResetPasscodeLink(req, res, next) {
     });
 }
 
+function registerFrontEnd(hostname, callback) {
+    var options = getOptions();
+    options.path = '/frontEndService/registerFrontEnd?hostname=' + hostname;
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            return callback(err);
+        }
+
+        try {
+            resObjData = JSON.parse(resData);
+            //console.log(resObjData)
+            if (resObjData.status == Common.STATUS_OK) {
+                callback(null, resObjData.index);
+            } else if (resObjData.status == Common.STATUS_ERROR) {
+                callback(resObjData.message);
+            } else {
+                callback("unknown status code");
+            }
+            return;
+        } catch (e) {
+            callback(e);
+            return;
+        }
+    });
+}
+
+function refreshFrontEndTTL(index, callback) {
+    var options = getOptions();
+    options.path = '/frontEndService/refreshFrontEndTTL?index=' + index;
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            return callback(err);
+        }
+
+        try {
+            resObjData = JSON.parse(resData);
+            if (resObjData.status == Common.STATUS_OK) {
+                callback(null);
+            } else if (resObjData.status == Common.STATUS_ERROR) {
+                callback(resObjData.message);
+            } else {
+                callback("unknown status code");
+            }
+            return;
+        } catch (e) {
+            callback(e);
+            return;
+        }
+    });
+}
+
+function unregisterFrontEnd(index, callback) {
+    var options = getOptions();
+    options.path = '/frontEndService/unregisterFrontEnd?index=' + index;
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            return callback(err);
+        }
+
+        try {
+            resObjData = JSON.parse(resData);
+            if (resObjData.status === Common.STATUS_OK) {
+                callback(null);
+            } else if (resObjData.status === Common.STATUS_ERROR) {
+                callback(resObjData.message);
+            } else {
+                callback("unknown status code");
+            }
+            return;
+        } catch (e) {
+            callback(e);
+            return;
+        }
+    });
+}
 
 module.exports = {
     forwardGetRequest: forwardGetRequest,
@@ -400,5 +478,10 @@ module.exports = {
     upload: upload,
     forwardActivationLink: forwardActivationLink,
     forwardResetPasscodeLink: forwardResetPasscodeLink,
-    checkServerAndForwardGetRequest: checkServerAndForwardGetRequest
+    checkServerAndForwardGetRequest: checkServerAndForwardGetRequest,
+    registerFrontEnd: registerFrontEnd,
+    refreshFrontEndTTL: refreshFrontEndTTL,
+    unregisterFrontEnd: unregisterFrontEnd
+
+
 }

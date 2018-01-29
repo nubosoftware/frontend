@@ -10,21 +10,22 @@ var fs = require("fs");
 var restify = require("restify");
 var cluster = require("cluster");
 var nodestatic = require('node-static');
+var websocket = require('websocket');
 
 var Common = require('./common.js');
 var logger = Common.logger;
 
-
-var SendEmailForUnknownJobTitle = require('./sendEmailForUnknownJobTitle.js');
-var ThreadedLogger = require('./ThreadedLogger.js');
-var Notifications = require('./Notifications.js');
-var SmsNotification = require('./SmsNotification.js');
-var internalRequests = require('./internalRequests.js');
-var checkStreamFile = require('./checkStreamFile.js');
-var filterModule = require('permission-parser');
-var parametersMap = require("./parameters-map.js");
-var websocket = require('websocket');
-var mgmtPublicRegistration = require("./mgmtPublicRegistration.js");
+//================= requires =================================
+var SendEmailForUnknownJobTitle;
+var ThreadedLogger;
+var Notifications;
+var SmsNotification;
+var internalRequests;
+var checkStreamFile;
+var filterModule;
+var parametersMap;
+var mgmtPublicRegistration;
+//===============================================================
 
 var accesslogger = accesslog({
     path: './log/access_log.log'
@@ -43,6 +44,8 @@ var mainFunction = function(err, firstTimeLoad) {
     if (!firstTimeLoad) // execute the following code only in the first time
         return;
 
+    loadRequires();
+    
     var WebSocketServer = websocket.server;
 
     // Handle new WebSocket client
@@ -575,6 +578,19 @@ function buildServerObject(server) {
             });
         }
     });
+}
+
+function loadRequires() {
+
+    SendEmailForUnknownJobTitle = require('./sendEmailForUnknownJobTitle.js');
+    ThreadedLogger = require('./ThreadedLogger.js');
+    Notifications = require('./Notifications.js');
+    SmsNotification = require('./SmsNotification.js');
+    internalRequests = require('./internalRequests.js');
+    filterModule = require('permission-parser');
+    parametersMap = require("./parameters-map.js");
+    mgmtPublicRegistration = require("./mgmtPublicRegistration.js");
+    checkStreamFile = require('./checkStreamFile.js');
 }
 
 Common.loadCallback = mainFunction;

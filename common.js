@@ -95,7 +95,8 @@ var Common = {
     backendAuth:{
         user: "",
         password : ""
-    }
+    },
+    geoRedundancy: false
 };
 
 try {

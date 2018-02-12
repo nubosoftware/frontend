@@ -54,9 +54,6 @@ div#datadiv {
    left: 0;
    top: 46px;
    bottom: 0;*/
-
-   /*width: 100%;
-   height: 100%;*/
 }
 span.toolbarmargin {
     display: inline-block;
@@ -103,9 +100,6 @@ img#iconsearch {
     top: 9px;
 }
 img#nubologo {
-    /*position: absolute;
-    left: 431px;
-    top: 102px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -132,10 +126,6 @@ span#workEmail {
     text-align: center;
 }
 span#nameTitle {
-    /*position: absolute;
-    left: 0px;
-    top: 247px;
-    width: 1024px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -148,11 +138,6 @@ span#nameTitle {
     text-align: center;
 }
 span#greetings {
-    /*position: absolute;
-    left: 320px;
-    top: 213px;
-    width: 388px;
-    height: 80px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -163,10 +148,6 @@ span#greetings {
     text-align: center;
 }
 span#lorem {
-    /*position: absolute;
-    left: 320px;
-    top: 355px;    
-    height: 79px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -185,7 +166,7 @@ span.appbutton {
     border-radius: 6px;
     border-color: white;
     border-style: solid;
-    border-width: 1px;
+    border-width: 2px;
     cursor: pointer;
     font-family: NuboRobotoLight;
     font-style: normal;
@@ -220,9 +201,6 @@ span.errText {
 }
 
 span#create {
-    /*position: absolute;
-    left: 357px;
-    top: 470px; */
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -232,9 +210,6 @@ span#create {
     padding-top: 4px;
 }
 span#signin {
-    /*position: absolute;
-    left: 357px;
-    top: 530px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -245,9 +220,6 @@ span#signin {
     padding-top: 4px;
 }
 span#demo {
-    /*position: absolute;
-    left: 357px;
-    top: 594;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -258,9 +230,6 @@ span#demo {
     padding-top: 4px;
 }
 span#create_create {
-    /*position: absolute;
-    left: 362px;
-    top: 241px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -360,9 +329,6 @@ select {
     font-size: 20px;
 }
 input#edFirstName {
-    /*position: absolute;
-    left: 362px;
-    top: 310px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -374,9 +340,6 @@ input#edFirstName {
     font-size: 19px;
 }
 span#FirstNameErr {
-    /*position: absolute;
-    left: 372px;
-    top: 358px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -387,9 +350,6 @@ span#FirstNameErr {
     height: 26px;
 }
 input#edLastName {
-    /*position: absolute;
-    left: 362px;
-    top: 387px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -401,9 +361,6 @@ input#edLastName {
     font-size: 19px;
 }
 span#LastNameErr {
-    /*position: absolute;
-    left: 372px;
-    top: 435px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -414,9 +371,6 @@ span#LastNameErr {
     height: 26px;
 }
 input#edJobTitle {
-    /*position: absolute;
-    left: 362px;
-    top: 465px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -440,12 +394,9 @@ div.dropdiv {
     
 span#drop1 {
     background-color: #C2C1C3;
-    position: absolute;    
-     /*left: 362px;
-    top: 486px;*/
-       
+    position: absolute;
     width: 309px;
-    height: 50px; /*63px;*/
+    height: 50px;
     visibility: hidden;
     z-index: 9;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
@@ -456,11 +407,8 @@ span#drop2 {
     background-color: #EDEDED;
     position: absolute;
     top: 48px;
-    /*left: 362px;
-    top: 528px;*/     
-    
     width: 309px;
-    height: 50px; /*63px;*/
+    height: 50px;
     visibility: hidden;
     z-index: 8;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
@@ -471,11 +419,8 @@ span#drop3 {
     background-color: #C2C1C3;
     position: absolute;
     top: 96px;
-    /*left: 362px;
-    top: 570px;*/    
-       
     width: 309px;    
-    height: 50px; /*63px;*/
+    height: 50px;
     visibility: hidden;
     z-index: 7;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
@@ -486,11 +431,8 @@ span#drop4 {
     background-color: #EDEDED;
     position: absolute;
     top: 144px;
-    /*left: 362px;
-    top: 612px;*/    
-       
     width: 309px;
-    height: 50px; /*63px;*/
+    height: 50px;
     visibility: hidden;
     z-index: 6;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
@@ -502,7 +444,7 @@ span.dropCommon {
     font-style: normal;
     font-size: 22px;
     color: black;
-    padding-top: 10px;   /*25px;*/
+    padding-top: 10px;
     padding-bottom: 0px;
     padding-right: 10px;
     padding-left: 10px;
@@ -522,10 +464,6 @@ span.roundDrop {
     border-width: 0px;
 }
 span#JobTitleErr {
-    /*position: absolute;
-    left: 372px;
-    top: 513px;
-    font-size: 19px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -536,9 +474,6 @@ span#JobTitleErr {
     height: 26px;    
 }
 input#edWorkEmail {
-    /*position: absolute;
-    left: 362px;
-    top: 544px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -549,9 +484,6 @@ input#edWorkEmail {
     font-size: 19px;
 }
 span#WorkEmailErr {
-    /*position: absolute;
-    left: 372px;
-    top: 592px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -562,9 +494,6 @@ span#WorkEmailErr {
     height: 26px;
 }
 span#activationSent {
-    /*position: absolute;
-    left: 306px;
-    top: 228px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -577,9 +506,6 @@ span#activationSent {
     text-align: center;
 }
 span#activationEmail {
-    /*position: absolute;
-    left: 346px;
-    top: 264px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -588,13 +514,10 @@ span#activationEmail {
     width: 349px;
     height: 28px;
     font-family: NuboRobotoLight;
-    font-size: 26px; /*32px;*/
+    font-size: 26px;
     text-align: center;
 }
 span#checkInbox {
-    /*position: absolute;
-    left: 346px;
-    top: 314px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -607,9 +530,6 @@ span#checkInbox {
     text-align: center;
 }
 span#changeBtn {
-    /*position: absolute;
-    left: 363px;
-    top: 400px; */
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -626,10 +546,6 @@ span#changeText {
     height: 44px;
 }
 span#authMsg {
-    /*position: absolute;
-    left: 327px;
-    top: 227px;
-    width: 388px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -663,9 +579,6 @@ span#enterPasswordOKBtn {
     height: 52px;
 }
 span#signInBtn {
-    /*position: absolute;
-    left: 363px;
-    top: 307px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -684,9 +597,6 @@ input#enterPassword {
     font-size: 20px;
 }
 input#authUserName {
-    /*position: absolute;
-    left: 362px;
-    top: 383px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -697,9 +607,6 @@ input#authUserName {
     font-size: 20px;
 }
 span#authUserNameErr {
-    /*position: absolute;
-    left: 372px;
-    top: 431px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -710,9 +617,6 @@ span#authUserNameErr {
     height: 26px;
 }
 input#authPassword {
-    /*position: absolute;
-    left: 362px;
-    top: 469px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -723,9 +627,6 @@ input#authPassword {
     font-size: 20px;
 }
 span#authPasswordErr {
-    /*position: absolute;
-    left: 372px;
-    top: 517px;*/
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -740,9 +641,7 @@ span#passcodeErrMsg {
     margin-left: auto;
     margin-right: auto;
     margin-top: 30px;
-      
     width: 359px;
-    /*height: 31px;*/
     height: 61px;
     background-color: #941914;
     visibility: hidden;
@@ -828,7 +727,7 @@ span#passwordExpired {
     position: absolute;
     text-align: center;
     font-family: NuboRoboto;
-    top: 80px;
+    top: 150px;
     width: 500px;
     height: 50px;
     font-size: 18px;
@@ -839,14 +738,6 @@ img#passwordExpiredImg {
 
 span.numbutton {
     background-color: #FFFFFF;
-    /*
-     -moz-border-radius: 6px;
-     -webkit-border-radius: 6px;
-     -khtml-border-radius: 6px;
-     border-radius: 6px;
-     border-color: white;
-     border-style: solid;
-     border-width: 0px; */
     cursor: pointer;
     -moz-user-select: none;
     -webkit-user-select: none;
@@ -856,7 +747,7 @@ span.numbutton {
     position: absolute;
     width: 98px;
     height: 53px;
-    opacity: 0.3;
+    opacity: 0.5;
     filter: alpha(opacity=30); /* For IE8 and earlier */
 }
 span.numKey {
@@ -976,7 +867,7 @@ span#btnok {
     /*left: 360px;
     top: 523px;*/
       
-    background-color: #000000;
+    background-color: #555555;
     opacity: 0.75;
     filter: alpha(opacity=75); /* For IE8 and earlier */
 }

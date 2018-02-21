@@ -138,11 +138,6 @@ function forwardGetRequest(req, res, next) {
 
 function checkServerAndForwardGetRequest(req, res, next) {
 
-    if (!Common.geoRedundancy) {
-        forwardGetRequest(req, res, next);
-        return;
-    }
-
     var options = getOptions();
     options.path = '/checkStatus';
 

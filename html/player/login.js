@@ -3152,7 +3152,16 @@ $(function() {
             var datadiv = document.getElementById('datadiv');
             var width = datadiv.offsetWidth;
             var height = datadiv.offsetHeight + (mobilecheck() ? 90 : 45);
-            uxip = new UXIP(datadiv, width, height, passcodeTimeout);
+
+            var specialLanguage = false;
+            if (Common.specialLanguage != undefined && typeof Common.specialLanguage === 'boolean') {
+                specialLanguage = Common.specialLanguage;
+            }
+            if (DEBUG) {
+                console.log("PlayerView. specialLanguage: " +  specialLanguage);
+            }
+
+            uxip = new UXIP(datadiv, width, height, passcodeTimeout, specialLanguage);
             uxip.PlayerView = this;
 
             var firstLogin = settings.get("firstGatewayConnection");
@@ -3194,10 +3203,16 @@ $(function() {
                     window.loginToken = loginToken;
                     uxip.connect(wsURL, data.sessionid);
                     var ed = $("#edVirtualKeyboard");
+                    $(document).off("keypress");
                     ed.off("keypress keydown keyup");
-                    ed.on("keypress", uxip.virtualKeyboardEvent);
+                    // ed.on("keypress", uxip.virtualKeyboardEvent);
                     ed.on("keydown", uxip.virtualKeyboardEvent);
                     ed.on("keyup", uxip.virtualKeyboardEvent);
+
+                    if (!specialLanguage) {
+                        document.getElementById("edVirtualKeyboard").style.display = "none";
+                    }
+
                 } else if (data.status == 2) { // expired login token
                     // console.log("PlayerView. expired login token");
                     window.location.hash = "validation";
@@ -3303,7 +3318,7 @@ $(function() {
             $("div#recordingTimeLbl").css("width", 300 / playbackScale + "px");
             $("div#recordingTimeLbl").css("top", playbackHeight - Math.round(30 / playbackScale));
             // console.log("width: " + width + ", height: " + height);
-            uxip = new UXIP(datadiv, width, height, passcodeTimeout, true);
+            uxip = new UXIP(datadiv, width, height, passcodeTimeout, false, true);
             uxip.PlayerView = this;
 
             var parser = document.createElement('a');

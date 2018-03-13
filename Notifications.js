@@ -199,8 +199,12 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
     }
 
     if (Common.NotificationGateway) {
-        sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, callback);
-        return;
+        if (Common.NotificationGateway.deviceType && deviceType != Common.NotificationGateway.deviceType) {
+            logger.info('Device type does not match NotificationGateway.deviceType. Sending directly to ' + deviceType);
+        } else {
+            sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, callback);
+            return;
+        }
     }
 
     var entities = new Entities();
@@ -320,7 +324,6 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
                 "packageID": (packageID === undefined ? "" : packageID)
             };
         }
-
         apnConnection.pushNotification(note, myDevice);
         callback(null);
     }

@@ -8,6 +8,12 @@ var psDisconnect = 0,
     psDisconnecting = 3,
     psError = 4;
 var keyboardProcessID = 0;
+var showKeyboard = false;
+
+var inputCursorPositionStart = 0;
+var inputCursorPositionEnd = 0;
+var inputIgnoreSelection = false;
+
 
 // used by roundTrip
 var START_ROUND_TRIP_CHECK = true;
@@ -31,7 +37,7 @@ var resCache = {};
 var fontCache = {};
 
 
-function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playbackFile) {
+function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, playbackMode, playbackFile) {
     "use strict";
     var UXIPself = this;
     var protocolState = psDisconnect;
@@ -55,7 +61,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         setWindowPos, getColorFromInt, setShaderToGrdColorStop, clearProcessCacheAck, setPackageName, getFontFromAsset,
         getFontFromCache, createWebSocket,
         drawOval, drawArc, drawCircle,
-        drawEllipse, convertToHTMLColor, applyColorFilter;
+        drawEllipse, convertToHTMLColor, applyColorFilter,
+        updateCursor, sendFinishComposing, sendCommitText, sendComposingText, sendDeleteText, sendSetTextRegion,
+        sendSetSelection, sendEditorAction;
 
     var writer = new UXIPWriter(function(buffer) {
         ws.send(buffer);
@@ -99,6 +107,8 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         mOrgPasscodeTimeout = passcodeTimeout;
     }
     Log.d(TAG, "mOrgPasscodeTimeout: " + mOrgPasscodeTimeout);
+
+    var specialLanguage = isSpecialLanguage;
 
     // keyboard input action
     var mImeOptions = 1;
@@ -284,41 +294,31 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         }
     }
 
+    this.getSpecialLanguage = function() {
+        return specialLanguage;
+    }
+
+    this.getkeyboardProcessId = function() {
+        return keyboardProcessID;
+    }
+
+    this.virtualKeyboardSetFocus = function() {
+        if (specialLanguage) {
+            $("#edVirtualKeyboard").css({ top: lastTouchY, left: lastTouchX, position: 'fixed' });
+            document.getElementById("edVirtualKeyboard").focus();
+        }
+    }
 
     this.keyEvent = function(eventt, processId, wndId, src) {
-        // console.log("uxip.keyEvent event.type: " + eventt.type + ", keyCode: " + eventt.keyCode);
-        if (eventt.type == "keypress") {
-            if (eventt.keyCode == 0) {  // slash->"quick find" in firefox
-                eventt.preventDefault();
-            }
-            var chr = getChar(eventt);
-            if (isMobile) {
-                var newText = $("#edVirtualKeyboard").val();
-                // Log.d("newText: \""+newText+"\" , oldInputText: \""+oldInputText+"\"");
-                if (chr == " " && (newText.length - oldInputText.length) > 1) {
-                    chr = newText.substr(oldInputText.length);
-                }
-                oldInputText = newText;
-                // Log.d("#edVirtualKeyboard: "+newText+", chr: "+chr);
-            }
-            if (chr != null) {
-                // Log.d("chr: "+chr);
-                handleKeyEvent(currentProcessId, wndId, {
-                    name: "KeyEvent",
-                    action: KeyEvent.ACTION_MULTIPLE,
-                    keyCode: KeyEvent.KEYCODE_UNKNOWN,
-                    characters: chr
-                });
-                return true;
-            }
-        } else {
+
+        if (specialLanguage) {
             var specialKey = -1;
             var key = eventt.which == null ? eventt.keyCode : eventt.which;
+            // console.log("keyEvent.  keyCode: " + eventt.keyCode + ", type: " + eventt.type);
+
+            inputIgnoreSelection = true;
+
             switch (key) {
-                case 8:
-                    //backspace
-                    specialKey = KeyEvent.KEYCODE_DEL;
-                    break;
                 case 9:
                     if (mImeOptions == 5) { // keyboard input action next
                         specialKey = KeyEvent.KEYCODE_TAB;
@@ -327,9 +327,6 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                     }
 
                     break;
-                case 13:
-                    specialKey = KeyEvent.KEYCODE_ENTER;
-                    break;
                 case 17:
                     specialKey = KeyEvent.KEYCODE_ALT_LEFT;
                     break;
@@ -337,12 +334,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                     specialKey = KeyEvent.KEYCODE_CTRL_LEFT;
                     break;
                 case 27:
-                    //specialKey = KeyEvent.KEYCODE_ESCAPE;
-                    // ISREL TRY TO SEND BACK INSTEAD
                     specialKey = KeyEvent.KEYCODE_BACK;
-                    break;
-                case 32:
-                    specialKey = KeyEvent.KEYCODE_SPACE;
                     break;
                 case 33:
                     specialKey = KeyEvent.KEYCODE_PAGE_UP;
@@ -352,9 +344,12 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                     break;
                 case 35:
                     specialKey = KeyEvent.KEYCODE_MOVE_END;
+                    var val = $("#edVirtualKeyboard").val();
+                    setPosition(val.length);
                     break;
                 case 36:
                     specialKey = KeyEvent.KEYCODE_MOVE_HOME;
+                    setPosition(1);
                     break;
                 case 37:
                     specialKey = KeyEvent.KEYCODE_DPAD_LEFT;
@@ -414,17 +409,252 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                     specialKey = KeyEvent.KEYCODE_NUM_LOCK;
                     break;
             }
+
+            // console.log("uxip.keyEvent specialKey: " + specialKey);
             if (specialKey > 0) {
-                eventt.preventDefault();
+                if (key != 37 && key != 39) {
+                    eventt.preventDefault();
+                }
                 var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
                 handleKeyEvent(currentProcessId, wndId, {
                     name: "KeyEvent",
                     action: eventaction,
                     keyCode: specialKey
                 });
+
+                return true;
+            }
+
+            if (!showKeyboard) {
+                return true;
+            }
+            var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
+
+            var val = $("#edVirtualKeyboard").val();
+            var text = val.replace("#", "");
+
+            // console.log("uxip.keyEvent. val: " + val + ", text: " + text + ", oldInputText: " + oldInputText);
+            // console.log("uxip.keyEvent. inputCursorPositionStart: " + inputCursorPositionStart + ", inputCursorPositionEnd: " + inputCursorPositionEnd);
+
+            switch (key) {
+                case 8:  //DELETE
+                    if (eventt.type == "keyup") {
+                        if (text.length == oldInputText.length) {
+                            var newCharPos = getSelectionStart() - 2;
+                            var char = text.charAt(newCharPos);
+                            // console.log("keyEvent. DELETE  newCharPos: " + newCharPos + ", char: " + char);
+
+                            sendSetTextRegion(keyboardProcessID, newCharPos, inputCursorPositionEnd);
+                            sendComposingText(keyboardProcessID, char);
+                        } else {
+                            handleKeyEvent(currentProcessId, wndId, {
+                                name: "KeyEvent",
+                                action: KeyEvent.ACTION_DOWN,
+                                keyCode: KeyEvent.KEYCODE_DEL
+                            });
+
+                            handleKeyEvent(currentProcessId, wndId, {
+                                name: "KeyEvent",
+                                action: KeyEvent.ACTION_UP,
+                                keyCode: KeyEvent.KEYCODE_DEL
+                            });
+
+                            sendFinishComposing(keyboardProcessID);
+                        }
+                    }
+                    break;
+
+                case 9: //TAB
+                    // console.log("uxip.keyEvent. TAB text: " + text);
+                    break;
+                case 13:  //ENTER
+                    // console.log("uxip.keyEvent. ENTER ");
+
+                    if (eventt.type == "keydown") {
+                        sendFinishComposing(keyboardProcessID);
+                    }
+
+                    handleKeyEvent(currentProcessId, wndId, {
+                        name: "KeyEvent",
+                        action: eventaction,
+                        keyCode: KeyEvent.KEYCODE_ENTER
+                    });
+                    break;
+                case 16:  //SHIFT
+                    console.log("uxip.keyEvent. SHIFT ");
+                    break;
+                case 32:  //SPACE
+                    if (eventt.type == "keyup") {
+                        var newCharPos = getSelectionStart() - 2;
+                        var char = text.charAt(newCharPos);
+                        // console.log("keyEvent. SPACE  newCharPos: " + newCharPos + ", char: " + char);
+
+                        sendSetTextRegion(keyboardProcessID, newCharPos, inputCursorPositionEnd);
+                        sendCommitText(keyboardProcessID, " ");
+                    }
+                    break;
+
+                default:
+                    if (eventt.type == "keyup") {
+                        var newCharPos = getSelectionStart() - 2;
+                        // console.log("keyEvent. DEFAULT newCharPos: " + newCharPos);
+                        if (newCharPos >= 0) {
+                            var char = text.charAt(newCharPos);
+                            // console.log("keyEvent. ELSE char: " + char);
+                            sendSetTextRegion(keyboardProcessID, newCharPos, inputCursorPositionEnd);
+                            sendCommitText(keyboardProcessID, char);
+                        }
+                    }
+                    break;
+            }
+
+            if (text.length == 0) {
+                $("#edVirtualKeyboard").val("#");
+                oldInputText = "";
+            } else {
+                oldInputText = text;
+            }
+
+            return true;
+
+        } else {
+
+            if (eventt.type == "keypress") {
+                if (eventt.keyCode == 0) {  // slash->"quick find" in firefox
+                    eventt.preventDefault();
+                }
+                var chr = getChar(eventt);
+                if (isMobile) {
+                    var newText = $("#edVirtualKeyboard").val();
+                    if (chr == " " && (newText.length - oldInputText.length) > 1) {
+                        chr = newText.substr(oldInputText.length);
+                    }
+                    oldInputText = newText;
+                }
+                if (chr != null) {
+                    handleKeyEvent(currentProcessId, wndId, {
+                        name: "KeyEvent",
+                        action: KeyEvent.ACTION_MULTIPLE,
+                        keyCode: KeyEvent.KEYCODE_UNKNOWN,
+                        characters: chr
+                    });
+                    return true;
+                }
+            } else {
+            var specialKey = -1;
+                var key = eventt.which == null ? eventt.keyCode : eventt.which;
+                switch (key) {
+                    case 8:
+                        //backspace
+                        specialKey = KeyEvent.KEYCODE_DEL;
+                        break;
+                    case 9:
+                        if (mImeOptions == 5) { // keyboard input action next
+                            specialKey = KeyEvent.KEYCODE_TAB;
+                        } else {
+                            specialKey = -1;
+                        }
+
+                        break;
+                    case 13:
+                        specialKey = KeyEvent.KEYCODE_ENTER;
+                        break;
+                    case 17:
+                        specialKey = KeyEvent.KEYCODE_ALT_LEFT;
+                        break;
+                    case 18:
+                        specialKey = KeyEvent.KEYCODE_CTRL_LEFT;
+                        break;
+                    case 27:
+                        //specialKey = KeyEvent.KEYCODE_ESCAPE;
+                        // ISREL TRY TO SEND BACK INSTEAD
+                        specialKey = KeyEvent.KEYCODE_BACK;
+                        break;
+                    case 32:
+                        specialKey = KeyEvent.KEYCODE_SPACE;
+                        break;
+                    case 33:
+                        specialKey = KeyEvent.KEYCODE_PAGE_UP;
+                        break;
+                    case 34:
+                        specialKey = KeyEvent.KEYCODE_PAGE_DOWN;
+                        break;
+                    case 35:
+                        specialKey = KeyEvent.KEYCODE_MOVE_END;
+                        break;
+                    case 36:
+                        specialKey = KeyEvent.KEYCODE_MOVE_HOME;
+                        break;
+                    case 37:
+                        specialKey = KeyEvent.KEYCODE_DPAD_LEFT;
+                        break;
+                    case 38:
+                        specialKey = KeyEvent.KEYCODE_DPAD_UP;
+                        break;
+                    case 39:
+                        specialKey = KeyEvent.KEYCODE_DPAD_RIGHT;
+                        break;
+                    case 40:
+                        specialKey = KeyEvent.KEYCODE_DPAD_DOWN;
+                        break;
+                    case 46:
+                        specialKey = KeyEvent.KEYCODE_FORWARD_DEL;
+                        break;
+                    case 91:
+                        specialKey = KeyEvent.KEYCODE_BUTTON_START;
+                        break;
+                    case 112:
+                        specialKey = KeyEvent.KEYCODE_F1;
+                        break;
+                    case 113:
+                        specialKey = KeyEvent.KEYCODE_F2;
+                        break;
+                    case 114:
+                        specialKey = KeyEvent.KEYCODE_F3;
+                        break;
+                    case 115:
+                        specialKey = KeyEvent.KEYCODE_F4;
+                        break;
+                    case 116:
+                        specialKey = KeyEvent.KEYCODE_F5;
+                        break;
+                    case 117:
+                        specialKey = KeyEvent.KEYCODE_F6;
+                        break;
+                    case 118:
+                        specialKey = KeyEvent.KEYCODE_F7;
+                        break;
+                    case 119:
+                        specialKey = KeyEvent.KEYCODE_F8;
+                        break;
+                    case 120:
+                        specialKey = KeyEvent.KEYCODE_F9;
+                        break;
+                    case 121:
+                        specialKey = KeyEvent.KEYCODE_F10;
+                        break;
+                    case 122:
+                        specialKey = KeyEvent.KEYCODE_F11;
+                        break;
+                    case 123:
+                        specialKey = KeyEvent.KEYCODE_F12;
+                        break;
+                    case 144:
+                        specialKey = KeyEvent.KEYCODE_NUM_LOCK;
+                        break;
+                }
+                if (specialKey > 0) {
+                    eventt.preventDefault();
+                    var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
+                    handleKeyEvent(currentProcessId, wndId, {
+                        name: "KeyEvent",
+                        action: eventaction,
+                        keyCode: specialKey
+                    });
+                }
+                return true;
             }
         }
-        return true;
     };
 
     this.protocolState = function() {
@@ -524,12 +754,12 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             writer.writeFloat(velocityY);
         }
 
+        inputIgnoreSelection = false;
         return true;
     };
 
     this.touchEvent = function(eventt) {
-
-        //        Log.e(TAG, "touchEvent. eventt.type: " + eventt.type);
+//        Log.e(TAG, "touchEvent. eventt.type: " + eventt.type);
         var lastMouseDownTouchTime = eventt.lastMouseDownTouchTime;
 
         var src = eventt.src;
@@ -612,6 +842,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             writer.writeFloat(velocityY);
         }
 
+        inputIgnoreSelection = false;
         return true;
     };
 
@@ -1119,6 +1350,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                 case DrawCmd.prepKeyboardLayout:
                     func = prepKeyboardLayout;
                     break;
+                case DrawCmd.UpdateCursor:
+                    func = updateCursor;
+                    break;
                 case DrawCmd.removeProcess:
                     func = removeProcess;
                     break;
@@ -1217,9 +1451,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
                     //break;
             }
             if (func != null) {
-                if (cmdcode > 70 && cmdcode <= 82) {
-                    Log.d(TAG, "processId=" + processId + ", cmdcode=" + cmdcode + ", cmdName=" + drawCmdCodeToText(cmdcode) + ", wndId=" + wndId);
-                }
+                // Log.d(TAG, "processId: " + processId + ", cmdcode: " + cmdcode + ", cmdName: " + drawCmdCodeToText(cmdcode) + ", wndId: " + wndId);
                 try {
                     if (DEBUG_PROTOCOL_NETWORK) {
                         Log.d(TAG + DEBUG_PROTOCOL_NETWORK_STR, "Before running func: " + cmdcode);
@@ -3373,7 +3605,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             return false;
         }
         var show = reader.readBoolean();
-        // Log.e(TAG, "showSoftKeyboard. processId=" + processId + ", wndId=" + wndId + ", show=" + show);
+        showKeyboard = show;
 
         // notify platform on keyboard state
         // check if need to pass currentProcessId instead
@@ -3381,7 +3613,6 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         keyboardProcessID = processId;
 
         if (show) {
-            Log.e(TAG, "open edVirtualKeyboard");
             $(window).scroll(function() {
                 Log.d("$( window ).scrollTop(): " + $(window).scrollTop());
             });
@@ -3407,7 +3638,8 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
             focus();
             //document.getElementById("edVirtualKeyboard").focus();
             // check if need to pass currentProcessId instead
-            NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.setKeyboardHeight), processId, mHeight / 2);
+
+            // NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.setKeyboardHeight), processId, mHeight / 2);
         } else {
             if (DEBUG_PROTOCOL_NETWORK) {
                 Log.d("Hide soft keyboard");
@@ -3604,21 +3836,64 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         if (!text.canRead) {
             return false;
         }
+
+        inputCursorPositionStart = reader.readInt();
+        inputCursorPositionEnd = reader.readInt();
+
         if (isMobile) {
             if (PRINT_DRAW_COMMANDS) {
                 Log.d("prepKeyboardLayout. text: " + text.value);
             }
             $("#edVirtualKeyboard").val(text.value);
             $("#edVirtualKeyboard").setCursorPosition(text.value.length);
+
             oldInputText = text.value;
             if (oldInputText == null) {
                 oldInputText = "";
+            }
+        } else {
+            // Log.d(TAG, "prepKeyboardLayout. text: " + text.value);
+            if (specialLanguage) {
+                if (text.value.length > 0) {
+                    $("#edVirtualKeyboard").val("#" + text.value);
+                    sendFinishComposing(keyboardProcessID);
+                } else {
+                    $("#edVirtualKeyboard").val("#");
+                }
+
+                if (inputCursorPositionEnd < text.value.length) {
+                    setPosition(inputCursorPositionEnd + 1);
+                }
+
+                oldInputText = text.value;
+                if (oldInputText == null) {
+                    oldInputText = "";
+                }
             }
         }
 
         isPrepareKeyboard = true;
         return true;
     };
+
+    updateCursor = function(processId, selStart) {
+        var selEnd = reader.readInt();
+        // console.log( "updateCursor. processId: " + processId + ", selStart: " + selStart + ", selEnd: " + selEnd);
+
+        if (!specialLanguage) {
+            return true;
+        }
+
+        if (!inputIgnoreSelection && (inputCursorPositionStart != selStart || inputCursorPositionEnd != selEnd)) {
+            sendFinishComposing(keyboardProcessID);
+            setPosition(selEnd + 1);
+        }
+
+        inputCursorPositionStart = selStart;
+        inputCursorPositionEnd = selEnd;
+
+        return true;
+    }
 
     readNotification = function(processId, wndId) {
         var rsRet = reader.readString();
@@ -3779,8 +4054,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         var sn = wm.getWindow(currentProcessId, 0);
         if (sn == null)
             return;
-        //console.log("key event from virtual keyboard");
-        //console.log(evtobj);
+        // console.log("virtualKeyboardEvent. evtobj.type: " + evtobj.type);
         var retCode = uxipObj.keyEvent(evtobj, currentProcessId, sn.wndId, this);
         return retCode;
     };
@@ -3806,8 +4080,63 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
     handleKeyEvent = function(processId, wndId, event) {
         if (protocolState != psConnected)
             return;
-
         NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.keyEvent), processId, wndId, event);
+    };
+
+    sendFinishComposing = function(processId) {
+        if (protocolState != psConnected)
+            return;
+        // console.log("sendFinishComposing. processId: " + processId);
+        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtFinishComposing), processId);
+    };
+
+    sendCommitText = function(processId, text) {
+        if (protocolState != psConnected)
+            return;
+        // console.log("sendCommitText. processId: " + processId + ", text: " + text);
+        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtCommit), processId, text, 1);
+    };
+
+    sendComposingText = function(processId, text) {
+        if (protocolState != psConnected)
+            return;
+        // console.log("sendComposingText. processId: " + processId + ", text: " + text);
+        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtCompose), processId, text, 1);
+    };
+
+    sendDeleteText = function(processId, beforeLength, afterLength) {
+        if (protocolState != psConnected)
+            return;
+        // console.log("sendDeleteText. processId: " + processId + ", beforeLength: " + beforeLength + ", afterLength: " + afterLength);
+        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtDeleteText), processId, beforeLength, afterLength);
+    };
+
+    sendSetTextRegion = function(processId, start, end) {
+        if (protocolState != psConnected)
+            return;
+        // console.log("sendSetTextRegion. processId: " + processId + ", start: " + start + ", end: " + end);
+        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtDeleteText), processId, start, end);
+    };
+
+    sendSetTextRegion = function(processId, start, end) {
+        if (protocolState != psConnected)
+            return;
+        // console.log("sendSetTextRegion. processId: " + processId + ", start: " + start + ", end: " + end);
+        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtSetRegion), processId, start, end);
+    };
+
+    sendSetSelection = function(processId, start, end) {
+        if (protocolState != psConnected)
+            return;
+        // console.log("sendSetSelection. processId: " + processId + ", start: " + start + ", end: " + end);
+        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtSetSelection), processId, start, end);
+    };
+
+    sendEditorAction = function(processId, action) {
+        if (protocolState != psConnected)
+            return;
+        // console.log("sendEditorAction. processId: " + processId + ", action: " + action);
+        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtEditorAction), processId, action);
     };
 
     if (START_ROUND_TRIP_CHECK && !mPlaybackMode) {
@@ -3925,6 +4254,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, playbackMode, playback
         if (!rsRet.canRead)
             return false;
         lastExtractedText = (rsRet.value == null) ? "" : rsRet.value;
+        console.log("**** sendKeyboardExtractedText. lastExtractedText: " + lastExtractedText);
         return true;
     };
 
@@ -4150,6 +4480,18 @@ PlayerCmd.VideoSeekEvent = 29;
 PlayerCmd.VideoProgress = 30;
 PlayerCmd.OnVideoSizeChanged = 31;
 PlayerCmd.VideoDuration = 37;
+
+// Keyboard commands
+PlayerCmd.TxtCompose = 50;
+PlayerCmd.TxtCommit = 51;
+PlayerCmd.TxtDeleteText = 52;
+PlayerCmd.TxtSetRegion = 53;
+PlayerCmd.TxtFinishComposing = 54;
+PlayerCmd.TxtSetSelection = 55;
+PlayerCmd.TxtKeyEvent = 56;
+PlayerCmd.TxtEditorAction = 57;
+
+
 
 function drawCmdCodeToText(code) {
     for (var property in DrawCmd) {
@@ -4473,22 +4815,53 @@ if (typeof module != 'undefined') {
     NuboCache = require('./nubocache.js').NuboCache;
 }
 
-new function($) {
-    $.fn.setCursorPosition = function(pos) {
-        if (this.setSelectionRange) {
-            this.setSelectionRange(pos, pos);
-        } else if (this.createTextRange) {
-            var range = this.createTextRange();
+function setPosition(pos) {
+    var ctrl =  document.getElementById("edVirtualKeyboard");
+    if (ctrl.setSelectionRange) {
+        ctrl.focus();
+        ctrl.setSelectionRange(pos, pos);
+
+    } else if (ctrl.createTextRange) {
+        var range = ctrl.createTextRange();
+        range.collapse(true);
+        range.moveEnd('character', pos);
+        range.moveStart('character', pos);
+        range.select();
+    }
+}
+
+function getSelectionStart() {
+    var ctrl =  document.getElementById("edVirtualKeyboard");
+    if (ctrl.setSelectionRange) {
+        return ctrl.selectionStart;
+    } else {
+        var range = document.selection.createRange();
+        var isCollapsed = range.compareEndPoints("StartToEnd", range) == 0;
+        if (!isCollapsed)
             range.collapse(true);
-            if (pos < 0) {
-                pos = $(this).val().length + pos;
-            }
-            range.moveEnd('character', pos);
-            range.moveStart('character', pos);
-            range.select();
-        }
-    };
-}(jQuery);
+        var b = range.getBookmark();
+        return b.charCodeAt(2) - 2;
+    }
+}
+
+// new function($) {
+//     $.fn.setCursorPosition = function(pos) {
+//         if (this.setSelectionRange) {
+//             this.setSelectionRange(pos, pos);
+//         } else if (this.createTextRange) {
+//             var range = this.createTextRange();
+//             range.collapse(true);
+//             if (pos < 0) {
+//                 pos = $(this).val().length + pos;
+//             }
+//             range.moveEnd('character', pos);
+//             range.moveStart('character', pos);
+//             range.select();
+//         }
+//     };
+// }(jQuery);
+
+
 /*
  Res_png_9patch
 

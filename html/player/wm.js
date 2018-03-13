@@ -60,6 +60,9 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
     };
 
     this.getWindow = function(processId, wndId) {
+        if (processId == mUxip.getkeyboardProcessId()) {
+            return;
+        }
         var processIDHash = processId.toString(16);
         var ws = mWindowsStackManager[processIDHash];
         if (ws == null) { //  process not found
@@ -96,6 +99,9 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
     };
 
     this.updateWndId = function(processId, wndId, nuboWndId) {
+        if (processId == mUxip.getkeyboardProcessId()) {
+            return;
+        }
         var processIDHash = processId.toString(16);
         var ws = mWindowsStackManager[processIDHash];
         if (ws == null) { //  process not found
@@ -111,6 +117,9 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
     };
 
     this.removeWindowFromStack = function(processId, nuboWndId) {
+        if (processId == mUxip.getkeyboardProcessId()) {
+            return;
+        }
         var processIDHash = processId.toString(16);
 
         var ws = mWindowsStackManager[processIDHash];
@@ -388,7 +397,13 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
             evtobj.lastMouseDownTouchTime = lastMouseDownTouchTime;
             NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
+
+            if (event.type == "mouseup") {
+                mUxip.virtualKeyboardSetFocus();
+            }
+
         };
+
         sn.mousemove = function(e) {
             // trigger mouse move event
             var evtobj = e || event;
@@ -450,7 +465,6 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
         sn.touchEvent = function(e) {
             var evtobj = e || event;
-
             evtobj.name = "TouchEvent";
             evtobj.src = this;
             evtobj.preventDefault();
@@ -472,9 +486,12 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         sn.canvas.onmouseup = sn.mouseEvent;
         sn.canvas.onmousedown = sn.mouseEvent;
         sn.canvas.onmousemove = sn.mousemove;
-        document.onkeypress = sn.keyEvent;
-        document.onkeydown = sn.keyEvent;
-        document.onkeyup = sn.keyEvent;
+
+        if (!mUxip.getSpecialLanguage()) {
+            document.onkeypress = sn.keyEvent;
+            document.onkeydown = sn.keyEvent;
+            document.onkeyup = sn.keyEvent;
+        }
 
         sn.canvas.addEventListener("touchstart", sn.touchEvent, false);
         sn.canvas.addEventListener("touchend", sn.touchEvent, false);
@@ -584,6 +601,10 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
     };
 
     this.removeProcess = function(processId) {
+        if (processId == mUxip.getkeyboardProcessId()) {
+            return;
+        }
+
         var processIDHash = processId.toString(16);
         var ws = mWindowsStackManager[processIDHash];
         if (ws == null) { // new process

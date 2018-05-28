@@ -433,20 +433,24 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             var val = $("#edVirtualKeyboard").val();
             var text = val.replace("#", "");
 
-            // console.log("uxip.keyEvent. val: " + val + ", text: " + text + ", oldInputText: " + oldInputText);
+            //console.log("uxip.keyEvent. val: " + val + ", text: " + text + ", oldInputText: " + oldInputText);
             // console.log("uxip.keyEvent. inputCursorPositionStart: " + inputCursorPositionStart + ", inputCursorPositionEnd: " + inputCursorPositionEnd);
 
             switch (key) {
                 case 8:  //DELETE
                     if (eventt.type == "keyup") {
-                        if (text.length == oldInputText.length) {
-                            var newCharPos = getSelectionStart() - 2;
-                            var char = text.charAt(newCharPos);
-                            // console.log("keyEvent. DELETE  newCharPos: " + newCharPos + ", char: " + char);
-
-                            sendSetTextRegion(keyboardProcessID, newCharPos, inputCursorPositionEnd);
-                            sendComposingText(keyboardProcessID, char);
-                        } else {
+                        var overrideDel = false;
+                        if (isTextComposed) {
+                            var lenDiff = text.length - startComposeTextLen;
+                            //console.log("keyEvent. DELETE, startComposePos: "+startComposePos+", text: "+text+", oldInputText: "+oldInputText+", lenDiff: "+lenDiff);
+                            if (lenDiff > 0 ) {
+                                var composedText = text.substr(startComposePos,lenDiff);
+                                //console.log("keyEvent. composedText: "+composedText);
+                                sendComposingText(keyboardProcessID,composedText);
+                                overrideDel = true;
+                            }
+                        }
+                        if (!overrideDel) {
                             handleKeyEvent(currentProcessId, wndId, {
                                 name: "KeyEvent",
                                 action: KeyEvent.ACTION_DOWN,
@@ -460,6 +464,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                             });
 
                             sendFinishComposing(keyboardProcessID);
+                            resetComposing();
                         }
                     }
                     break;
@@ -472,6 +477,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
 
                     if (eventt.type == "keydown") {
                         sendFinishComposing(keyboardProcessID);
+                        resetComposing();
                     }
 
                     handleKeyEvent(currentProcessId, wndId, {
@@ -491,18 +497,25 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
 
                         sendSetTextRegion(keyboardProcessID, newCharPos, inputCursorPositionEnd);
                         sendCommitText(keyboardProcessID, " ");
+                        resetComposing();
                     }
                     break;
 
                 default:
                     if (eventt.type == "keyup") {
-                        var newCharPos = getSelectionStart() - 2;
-                        // console.log("keyEvent. DEFAULT newCharPos: " + newCharPos);
-                        if (newCharPos >= 0) {
-                            var char = text.charAt(newCharPos);
-                            // console.log("keyEvent. ELSE char: " + char);
-                            sendSetTextRegion(keyboardProcessID, newCharPos, inputCursorPositionEnd);
-                            sendCommitText(keyboardProcessID, char);
+                        if (!isTextComposed) {
+                            var newCharPos = getSelectionStart() - 2;
+                            if (newCharPos>0) {
+                                newCharPos = 0;
+                            }
+                            startComposing(oldInputText,newCharPos);
+                        }
+                        var lenDiff = text.length - startComposeTextLen;
+                        //console.log("keyEvent. char: " + char+", startComposePos: "+startComposePos+", text: "+text+", oldInputText: "+oldInputText+", lenDiff: "+lenDiff);
+                        if (lenDiff >= 0 && text.length > 0) {
+                            var composedText = text.substr(startComposePos,lenDiff);
+                            //console.log("keyEvent. composedText: "+composedText);
+                            sendComposingText(keyboardProcessID,composedText);
                         }
                     }
                     break;
@@ -3614,7 +3627,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
 
         if (show) {
             $(window).scroll(function() {
-                Log.d("$( window ).scrollTop(): " + $(window).scrollTop());
+                //Log.d(TAG,"$( window ).scrollTop(): " + $(window).scrollTop());
             });
             $("#edVirtualKeyboard").css({ top: lastTouchY, left: lastTouchX, position: 'fixed' });
             var input = document.querySelector('#edVirtualKeyboard');
@@ -3809,6 +3822,22 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
     var isPrepareKeyboard = false;
     var oldInputText = "";
 
+    var startComposePos = 0;
+    var startComposeTextLen = 0;
+    var isTextComposed = false;
+
+    var resetComposing = function() {
+        isTextComposed = false;
+        startComposeTextLen = 0;
+        startComposePos = 0;
+    };
+
+    var startComposing = function(prevText,pos) {
+        isTextComposed = true;
+        startComposeTextLen = prevText.length;
+        startComposePos = pos;
+    }
+
     prepKeyboardLayout = function(processId, wndId) {
         if (PRINT_DRAW_COMMANDS) {
             Log.d(TAG, "prepKeyboardLayout. processId=" + processId + ", wndId=" + wndId);
@@ -3852,7 +3881,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                 oldInputText = "";
             }
         } else {
-            // Log.d(TAG, "prepKeyboardLayout. text: " + text.value);
+            //Log.d(TAG, "prepKeyboardLayout. text: " + text.value);
             if (specialLanguage) {
                 if (text.value.length > 0) {
                     $("#edVirtualKeyboard").val("#" + text.value);
@@ -3860,6 +3889,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                 } else {
                     $("#edVirtualKeyboard").val("#");
                 }
+                resetComposing();
 
                 if (inputCursorPositionEnd < text.value.length) {
                     setPosition(inputCursorPositionEnd + 1);
@@ -3887,6 +3917,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
         if (!inputIgnoreSelection && (inputCursorPositionStart != selStart || inputCursorPositionEnd != selEnd)) {
             sendFinishComposing(keyboardProcessID);
             setPosition(selEnd + 1);
+            resetComposing();
         }
 
         inputCursorPositionStart = selStart;

@@ -21,7 +21,8 @@ var Notifications = {
 
 module.exports = Notifications;
 
-var apnConnection = null;
+var apnProviderProd = null;
+var apnProviderSand = null;
 var apnConnectionOptions = {};
 
 var NEW_ACTIVATION_TYPE = '-2';
@@ -186,6 +187,20 @@ function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notif
     });
 }
 
+
+function getAPNOptions(production) {
+    var options = {};
+    // apn options
+    if (Common.apnOptions) {
+        options = Common.apnOptions;
+    } else {
+        options.cert = Common.iosPushCertFile;
+        options.key = Common.iosPushKeyFile;
+    }
+    options.production = production;
+    return options;
+}
+
 function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, callback) {
     // Hanan - removing time and location due to security issue raised by Israel that content is displayed on physical client
     if (showFullNotif != 1) {
@@ -261,25 +276,36 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         });
         //@TODO - fix the iPhone notification params
     } else if (deviceType === "iPhone" || deviceType === "iPad") {
+        var apnProvider;
 
-        var options = {};
-        // apn options
-        options.cert = Common.iosPushCertFile;
-        options.key = Common.iosPushKeyFile;
-        if (Common.iosPushUseSandbox) {
-            options.gateway = "gateway.sandbox.push.apple.com";
-            // sandbox
+        var regidArr = pushRegID.split(":");
+        var token,buildType,bundleID;
+        if (regidArr && regidArr.length == 3) {
+            buildType = regidArr[0];
+            bundleID = regidArr[1];
+            token = regidArr[2];
         } else {
-            options.gateway = "gateway.push.apple.com";
-            // production
+            buildType = "R";
+            bundleID = "com.nubo.NuboClientIOS";
+            token = pushRegID;
         }
 
-        if (!apnConnection || (JSON.stringify(apnConnectionOptions) !== JSON.stringify(options))) {
-            apnConnectionOptions = options;
-            if (apnConnection) apnConnection.shutdown();
-            apnConnection = new apn.Connection(options);
+        if (buildType != "D") { // release - use production server
+            if (apnProviderProd) {
+                apnProvider = apnProviderProd;
+            } else {
+                apnProviderProd = new apn.Provider(getAPNOptions(true));
+                apnProvider = apnProviderProd;
+            }
+        } else { // debug - use sandbox
+            if (apnProviderSand) {
+                apnProvider = apnProviderSand;
+            } else {
+                apnProviderSand = new apn.Provider(getAPNOptions(false));
+                apnProvider = apnProviderSand;
+            }
         }
-        var myDevice = new apn.Device(pushRegID);
+        //var myDevice = new apn.Device(pushRegID);
         var note = new apn.Notification();
         note.expiry = Math.floor(Date.now() / 1000) + 360000;
         // Expires 100 hour from now.
@@ -304,28 +330,21 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             alert = "Email from " + notifyTitle + notifyLocation;
         }
 
+        note.alert = alert;
+        //note.topic = "com.nubo.NuboClientIOS";
+        note.topic = bundleID;
+        note.payload = {
+            "AppId": type,
+            "packageID": (packageID === undefined ? "" : packageID)
+        };
         if (enableSound == 1) {
-            note.payload = {
-                "aps": {
-                    "alert": alert,
-                    "sound": "default"
-                },
-                "when": "if calendar - send time in utc",
-                "AppId": type,
-                "packageID": (packageID === undefined ? "" : packageID)
-            };
-        } else {
-            note.payload = {
-                "aps": {
-                    "alert": alert
-                },
-                "when": "if calendar - send time in utc",
-                "AppId": type,
-                "packageID": (packageID === undefined ? "" : packageID)
-            };
+            note.sound = "default";
         }
-        apnConnection.pushNotification(note, myDevice);
-        callback(null);
+        //apnConnection.pushNotification(note, myDevice);
+        apnProvider.send(note, token).then( (result) => {
+            logger.info("APN result: "+JSON.stringify(result,null,2));
+            callback(null);
+        });
     }
 }
 

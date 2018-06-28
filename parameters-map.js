@@ -250,7 +250,7 @@ var filter = {
             },
             "pushRegID": {
                 "presence": false,
-                "format": "^[a-zA-Z0-9_\\-:]+$",
+                "format": "^[.a-zA-Z0-9_\\-():]+$",
                 "length": {
                     "minimum": 1,
                     "maximum": 255
@@ -274,7 +274,15 @@ var filter = {
                     "within": ["0", "1"]
                 }
             },
-            "packageID": constraints.packageNameConstrOptional
+            "packageID": {
+                "presence": false,
+                "format": "^[.a-zA-Z0-9_]+[a-zA-Z0-9_]([,][a-zA-Z0-9_]+)?$",
+                "length": {
+                    "minimum": 1,
+                    "maximum": 255
+                }
+            }
+            //"packageID": constraints.packageNameConstrOptional
         }
     }, {
         "path": '/getResourceListByDevice',
@@ -381,7 +389,14 @@ var filter = {
             "loginToken": constraints.requestedLoginTokenConstr,
             "supportedConf": constraints.NaturalNumberConstrRequested
         }
-    }]
+    },
+    {
+        "path": "/logoutUser",
+        "constraints": {
+            "loginToken": constraints.requestedLoginTokenConstr,
+        }
+    }
+    ]
 };
 
 module.exports = filter;

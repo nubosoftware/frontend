@@ -493,7 +493,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                     if (eventt.type == "keyup") {
                         var newCharPos = getSelectionStart() - 2;
                         var char = text.charAt(newCharPos);
-                        // console.log("keyEvent. SPACE  newCharPos: " + newCharPos + ", char: " + char);
+                        //console.log("keyEvent. SPACE  newCharPos: " + newCharPos + ", char: " + char);
 
                         sendSetTextRegion(keyboardProcessID, newCharPos, inputCursorPositionEnd);
                         sendCommitText(keyboardProcessID, " ");
@@ -505,16 +505,15 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                     if (eventt.type == "keyup") {
                         if (!isTextComposed) {
                             var newCharPos = getSelectionStart() - 2;
-                            if (newCharPos>0) {
+                            if (newCharPos<0) {
                                 newCharPos = 0;
                             }
                             startComposing(oldInputText,newCharPos);
                         }
                         var lenDiff = text.length - startComposeTextLen;
-                        //console.log("keyEvent. char: " + char+", startComposePos: "+startComposePos+", text: "+text+", oldInputText: "+oldInputText+", lenDiff: "+lenDiff);
+                        console.log("keyEvent. char: " + char+", startComposePos: "+startComposePos+", text: "+text+", oldInputText: "+oldInputText+", lenDiff: "+lenDiff);
                         if (lenDiff >= 0 && text.length > 0) {
                             var composedText = text.substr(startComposePos,lenDiff);
-                            //console.log("keyEvent. composedText: "+composedText);
                             sendComposingText(keyboardProcessID,composedText);
                         }
                     }
@@ -3830,12 +3829,14 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
         isTextComposed = false;
         startComposeTextLen = 0;
         startComposePos = 0;
+        //console.log("resetComposing");
     };
 
     var startComposing = function(prevText,pos) {
         isTextComposed = true;
         startComposeTextLen = prevText.length;
         startComposePos = pos;
+        //console.log("startComposing. startComposeTextLen: "+startComposeTextLen+", startComposePos: "+startComposePos);
     }
 
     prepKeyboardLayout = function(processId, wndId) {
@@ -4140,13 +4141,6 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             return;
         // console.log("sendDeleteText. processId: " + processId + ", beforeLength: " + beforeLength + ", afterLength: " + afterLength);
         NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtDeleteText), processId, beforeLength, afterLength);
-    };
-
-    sendSetTextRegion = function(processId, start, end) {
-        if (protocolState != psConnected)
-            return;
-        // console.log("sendSetTextRegion. processId: " + processId + ", start: " + start + ", end: " + end);
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtDeleteText), processId, start, end);
     };
 
     sendSetTextRegion = function(processId, start, end) {
@@ -4847,6 +4841,7 @@ if (typeof module != 'undefined') {
 }
 
 function setPosition(pos) {
+    // console.log("setPosition: "+pos);
     var ctrl =  document.getElementById("edVirtualKeyboard");
     if (ctrl.setSelectionRange) {
         ctrl.focus();
@@ -4864,6 +4859,7 @@ function setPosition(pos) {
 function getSelectionStart() {
     var ctrl =  document.getElementById("edVirtualKeyboard");
     if (ctrl.setSelectionRange) {
+        //console.log("getSelectionStart. ctrl.selectionStart: "+ctrl.selectionStart);
         return ctrl.selectionStart;
     } else {
         var range = document.selection.createRange();
@@ -4871,6 +4867,7 @@ function getSelectionStart() {
         if (!isCollapsed)
             range.collapse(true);
         var b = range.getBookmark();
+        //console.log("getSelectionStart. bookmark: "+b+", isCollapsed: "+isCollapsed);
         return b.charCodeAt(2) - 2;
     }
 }

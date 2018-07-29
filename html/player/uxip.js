@@ -83,6 +83,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
     var lastExtractedText = "";
     var uxipObj = this;
     var lastTimeReceiveData = new Date().getTime();
+    var lastInteraction = new Date().getTime();
     var lastDataTime = 0;
     var timeoutid = 0;
     var mPlaybackMode = playbackMode;
@@ -262,9 +263,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
     function checkTimeOut() {
         var d = new Date();
         var currTime = d.getTime();
-        var diff = currTime - lastTimeReceiveData;
+        var diff = currTime - lastInteraction;
         if (PRINT_NETWORK_COMMANDS) {
-            Log.d("checkTimeOut.");
+            Log.d("checkTimeOut. diff: "+diff+", mOrgPasscodeTimeout: "+mOrgPasscodeTimeout);
         }
 
         if (diff > mOrgPasscodeTimeout) {
@@ -668,6 +669,10 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             }
         }
     };
+
+    this.resetLastInteraction = function() {
+        lastInteraction = new Date().getTime();
+    }
 
     this.protocolState = function() {
         return protocolState;
@@ -1252,7 +1257,6 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                     firstLoginReconnect = false;
                     lastTimeReceiveData = new Date().getTime();
                     publicinterface.PlayerView.setFirstGatewayConnection(false);
-
                     func = writeTransaction;
                     break;
                 case DrawCmd.drawColor1:

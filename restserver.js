@@ -347,10 +347,9 @@ function downloadFunc(req, res, next) {
         destURL = "itms-services://?action=download-manifest&amp;;;;" + qs;
     }
 
-    res.writeHead(303, {
+    res.send(303, "Moved",{
         Location: destURL
     });
-    res.end();
 }
 
 function debugFunc(req, res, next) {
@@ -474,12 +473,10 @@ function buildServerObject(server) {
     function optionsHandler(req, res) {
         if (!isPermittedUrl(req.url)) {
             logger.info("Access to " + req.url + " does not permitted");
-            res.writeHead(404, {
+            res.send(401, "Access denied", {
                 "Content-Type": "application/json",
                 "Transfer-Encoding": ""
             });
-            res.write("");
-            res.end();
             return;
         }
         var allowHeaders = ['accept', 'cache-control', 'content-type', 'x-file-name', 'x-requested-with'];
@@ -527,12 +524,10 @@ function buildServerObject(server) {
     server.get(/^\/.*/, function(req, res, next) {
         if (!isPermittedUrl(req.url)) {
             logger.info("Access to " + req.url + " does not permitted");
-            res.writeHead(404, {
+            res.send(401, "Access denied", {
                 "Content-Type": "application/json",
                 "Transfer-Encoding": ""
             });
-            res.write("");
-            res.end();
             return;
         }
 
@@ -544,12 +539,10 @@ function buildServerObject(server) {
             resourcesfile.serve(req, res, function(err, result) {
                 if (err) {
                     logger.error("Error serving " + req.url + " - " + err.message);
-                    res.writeHead(404, {
+                    res.send(404, "Not found", {
                         "Content-Type": "application/json",
                         "Transfer-Encoding": ""
                     });
-                    res.write("");
-                    res.end();
                     internalRequests.addMissingResource(req.url);
                     return;
                 } else {
@@ -562,12 +555,10 @@ function buildServerObject(server) {
             webclientfile.serve(req, res, function(err, result) {
                 if (err) { // There was an error serving the file
                     logger.error("Error serving " + req.url + " - " + err.message);
-                    res.writeHead(404, {
+                    res.send(404, "Not found", {
                         "Content-Type": "application/json",
                         "Transfer-Encoding": ""
                     });
-                    res.write("");
-                    res.end();
                     internalRequests.addMissingResource(req.url);
                     return;
                 } else {

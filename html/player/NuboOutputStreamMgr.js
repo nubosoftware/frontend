@@ -35,15 +35,22 @@ var NuboOutputStreamMgr = (function(window, undefined) {
 
             //write cmdCode
             var cmdCode = arguments[0];
+            var cmdCodeNum = 0;
             if ( typeof cmdCode === 'number') {
                 writer.writeInt(cmdCode);
+                cmdCodeNum = cmdCode;
             } else if (typeof cmdCode === 'object' &&
                         cmdCode.name === 'nuboByte') {
                 writer.writeByte(cmdCode.val);
+                cmdCodeNum = cmdCode.val;
             } else {
                 console.log('NuboOutStreamMgr, Illegal type of cmdCode (not a number or nuboByte). Aborting command: '+cmdCode);
                 writer.endNuboCmd();
                 return;
+            }
+
+            if (cmdCodeNum != PlayerCmd.roundTripData ) {
+                mUxip.resetLastInteraction();
             }
 
             //write sessionId

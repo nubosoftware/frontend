@@ -248,7 +248,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         var message = new gcm.Message();
         var nOfRetries = 4;
         message.addData('type', type);
-        // is this 0 or 1?        
+        // is this 0 or 1?
         message.addData('notifyTime', notifyTime.toString());
         message.addData('title', notifyTitle);
         message.addData('notifyLocation', notifyLocation);
@@ -291,19 +291,9 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         }
 
         if (buildType != "D") { // release - use production server
-            if (apnProviderProd) {
-                apnProvider = apnProviderProd;
-            } else {
-                apnProviderProd = new apn.Provider(getAPNOptions(true));
-                apnProvider = apnProviderProd;
-            }
+            apnProvider = new apn.Provider(getAPNOptions(true));
         } else { // debug - use sandbox
-            if (apnProviderSand) {
-                apnProvider = apnProviderSand;
-            } else {
-                apnProviderSand = new apn.Provider(getAPNOptions(false));
-                apnProvider = apnProviderSand;
-            }
+            apnProvider = new apn.Provider(getAPNOptions(false));
         }
         //var myDevice = new apn.Device(pushRegID);
         var note = new apn.Notification();
@@ -315,7 +305,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         }
 
         var alert = "";
-        if (type != 0) {
+        if (type != 0 && type != 6 && type != 7 ) {
             // calendar
             if (type == 1) {
                 alert = notifyTitle;
@@ -330,21 +320,38 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             alert = "Email from " + notifyTitle + notifyLocation;
         }
 
-        note.alert = alert;
+
+
         //note.topic = "com.nubo.NuboClientIOS";
         note.topic = bundleID;
         note.payload = {
             "AppId": type,
-            "packageID": (packageID === undefined ? "" : packageID)
+            "packageID": (packageID === undefined ? "" : packageID),
+            "notifyTitle": notifyTitle,
+            "notifyLocation": notifyLocation,
+            "enableSound": enableSound,
+            "enableVibrate": enableVibrate
         };
-        if (enableSound == 1) {
-            note.sound = "default";
+
+
+        if (type != 6 && type != 7) {
+            note.alert = alert;
+            if (enableSound == 1) {
+                note.sound = "default";
+            }
+        } else {
+            note.contentAvailable = true;
         }
-        //apnConnection.pushNotification(note, myDevice);
         apnProvider.send(note, token).then( (result) => {
             logger.info("APN result: "+JSON.stringify(result,null,2));
+            apnProvider.shutdown();
             callback(null);
-        });
+        })
+        .catch((err) => {
+            // Handle any error that occurred in any of the previous
+            // promises in the chain.
+            logger.info("APN errpr",err);
+        });;
     }
 }
 

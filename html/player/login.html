@@ -35,6 +35,8 @@
     <script type="text/javascript" src="dropzone.js"></script>
     <script type="text/javascript" src="video.js"></script>
     <script type="text/javascript" src="videojs-contrib-hls.min.js"></script>
+    <script type="text/javascript" src="adapter.js"></script>
+    <script type="text/javascript" src="janus.js"></script>
 
     <script language="javascript" type="text/javascript">
         var production = true;
@@ -386,7 +388,7 @@
                     <option value="20:00:00">08:00PM</option>
                     <option value="21:00:00">09:00PM</option>
                     <option value="22:00:00">10:00PM</option>
-                    <option value="23:00:00">11:00PM</option>                 
+                    <option value="23:00:00">11:00PM</option>
                 </select>
             <label for="To">To:</label>
             <select id="toSelector">
@@ -413,7 +415,7 @@
                     <option value="20:00:00">08:00PM</option>
                     <option value="21:00:00">09:00PM</option>
                     <option value="22:00:00">10:00PM</option>
-                    <option value="23:00:00">11:00PM</option>                   
+                    <option value="23:00:00">11:00PM</option>
                 </select>
             <button id="buttonSearch" class="buttonSearch">Search</button>
         </div>
@@ -429,7 +431,7 @@
                         <th>Duration</th>
                     </tr>
                 </thead>
-                <% for (var i=0; i<data.length; i++) { 
+                <% for (var i=0; i<data.length; i++) {
                     var item = data[i];
                 %>
                     <tbody>
@@ -531,7 +533,8 @@
     </script>
 
     <div id="maindiv"></div>
-
+    <audio class="rounded centered" id="audioout" width="1" height="1" autoplay/>
+    <audio class="rounded centered" id="audioin" width="1" height="1" autoplay/>
     <div id="uploadFiles" style="left:100;top:100;">
         <div id="uploadTitle">
             Uploads

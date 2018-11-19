@@ -15,7 +15,7 @@ if (!String.prototype.format) {
 var startsWith = function(str, searchString){
       if (!str) {
           return false;
-      }      
+      }
       return (str.substr(0, searchString.length) == searchString);
 };*/
 
@@ -3213,6 +3213,154 @@ $(function() {
                         document.getElementById("edVirtualKeyboard").style.display = "none";
                     }
 
+                    // connect audio
+                    if (data.webRTCToken) {
+                        Janus.init({debug: "all", callback: function() {
+                            console.log("janus init");
+                            let janusOut = new Janus( {
+                                server: "https://"+data.webRTCHost+":8089/janus",
+                                token: data.webRTCToken,
+                                success: function() {
+                                    console.log("out janus created!")
+                                    let streaming;
+                                    // handle audio out
+
+                                    janusOut.attach({
+                                        plugin: "janus.plugin.streaming",
+                                        opaqueId: "sess_out_"+data.sessionid,
+                                        success: function(pluginHandle) {
+                                            console.log("out attach success. pluginHandle: "+pluginHandle);
+                                            streaming = pluginHandle;
+                                            //
+                                            var body = {
+                                                "request": "watch",
+                                                id: parseInt(data.webRTCStreamID),
+                                                pin: data.webRTCToken
+                                            };
+	                                        streaming.send({"message": body});
+
+                                        },
+                                        error: function(cause) {
+                                            console.log("out janus attach error!",casue);
+                                        },
+                                        onmessage: function(msg, jsep) {
+                                            console.log("out onmessage");
+                                            console.log(msg);
+                                            if(jsep !== undefined && jsep !== null) {
+                                                console.log("out Handling SDP as well...");
+                                                console.log(jsep);
+                                                // Offer from the plugin, let's answer
+                                                streaming.createAnswer(
+                                                    {
+                                                        jsep: jsep,
+                                                        // We want recvonly audio/video and, if negotiated, datachannels
+                                                        media: { audioSend: false, videoSend: false, data: false },
+                                                        success: function(jsep) {
+                                                            console.log("out Got SDP!");
+                                                            console.log(jsep);
+                                                            var body = { "request": "start" };
+                                                            streaming.send({"message": body, "jsep": jsep});
+                                                        },
+                                                        error: function(error) {
+                                                            console.log("out WebRTC error:", error);
+                                                        }
+                                                    });
+                                            }
+                                        },
+                                        onremotestream: function(stream) {
+                                            console.log("out onremotestream");
+                                            Janus.attachMediaStream($('#audioout').get(0), stream);
+                                        }
+                                    }); // attach
+                                },
+                                error: function(cause) {
+                                    console.log("janus error!",casue);
+                                },
+                                destroyed: function() {
+                                    console.log("janus destroyed!");
+                                }
+                            });
+
+                            let janusIn = new Janus( {
+                                server: "https://"+data.webRTCHost+":8089/janus",
+                                token: data.webRTCToken,
+                                success: function() {
+                                    console.log("in janus created!")
+
+
+                                    let mixertest;
+                                    let myid;
+                                    let webrtcUp = false;
+                                    janusIn.attach( {
+                                            plugin: "janus.plugin.audiobridge",
+                                            opaqueId: "sess_in_"+data.sessionid,
+                                            success: function(pluginHandle) {
+                                                mixertest = pluginHandle;
+                                                console.log("in attach success. pluginHandle: "+pluginHandle);
+                                                var register = {
+                                                    "request": "join",
+                                                    "room": parseInt(data.webRTCStreamID),
+                                                    "display": data.webRTCStreamID,
+                                                    "token": data.webRTCToken
+                                                    //""
+                                                };
+		                                        mixertest.send({"message": register});
+
+                                            },
+                                            error: function(cause) {
+                                                console.log("in attach error!",casue);
+                                            },
+                                            onmessage: function(msg, jsep) {
+                                                console.log("in onmessage");
+                                                console.log(msg);
+                                                var event = msg["audiobridge"];
+                                                if(event != undefined && event != null) {
+                                                    if(event === "joined") {
+                                                        // Successfully joined, negotiate WebRTC now
+											            myid = msg["id"];
+											            console.log("Successfully joined room " + msg["room"] + " with ID " + myid);
+											            if(!webrtcUp) {
+												            webrtcUp = true;
+												            // Publish our stream
+												            mixertest.createOffer({
+														            media: { video: false},	// This is an audio only room
+														            success: function(jsep) {
+															            console.log("in Got SDP!");
+															            console.log(jsep);
+															            var publish = { "request": "configure", "muted": false };
+															            mixertest.send({"message": publish, "jsep": jsep});
+														            },
+														            error: function(error) {
+															            console.log("in WebRTC error:", error);
+														            }
+													        });
+											            }
+                                                    }
+                                                }
+                                                if(jsep !== undefined && jsep !== null) {
+                                                    console.log("in Handling SDP as well...");
+                                                    console.log(jsep);
+                                                    mixertest.handleRemoteJsep({jsep: jsep});
+                                                }
+
+                                            },
+                                            onremotestream: function(stream) {
+                                                console.log("in onremotestream...");
+                                                Janus.attachMediaStream($('#audioin').get(0), stream);
+                                            }
+                                    }); //attach
+                                },
+                                error: function(cause) {
+                                    console.log("in  janus error!",casue);
+                                },
+                                destroyed: function() {
+                                    console.log("in janus destroyed!");
+                                }
+                            });
+
+                        }});
+                    }
+
                 } else if (data.status == 2) { // expired login token
                     // console.log("PlayerView. expired login token");
                     window.location.hash = "validation";
@@ -3342,7 +3490,7 @@ $(function() {
             uxip.connect(wsURL, "NA");
         },
         events: {
-            // "click #linkvolcano" : "clickHome"            
+            // "click #linkvolcano" : "clickHome"
         }
 
     });

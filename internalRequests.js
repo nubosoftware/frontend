@@ -388,26 +388,26 @@ function forwardResetPasscodeLink(req, res, next) {
 function registerFrontEnd(hostname, callback) {
     var options = getOptions();
     options.path = '/frontEndService/registerFrontEnd?hostname=' + hostname;
-
     http.doGetRequest(options, function(err, resData) {
         if (err) {
             return callback(err);
         }
+        let resObjData = {};
 
         try {
             resObjData = JSON.parse(resData);
             //console.log(resObjData)
-            if (resObjData.status == Common.STATUS_OK) {
-                callback(null, resObjData.index);
-            } else if (resObjData.status == Common.STATUS_ERROR) {
-                callback(resObjData.message);
-            } else {
-                callback("unknown status code");
-            }
-            return;
         } catch (e) {
+            console.log("ERROR!!");
             callback(e);
             return;
+        }
+        if (resObjData.status == Common.STATUS_OK) {
+            callback(null, resObjData.index);
+        } else if (resObjData.status == Common.STATUS_ERROR) {
+            callback(resObjData.message);
+        } else {
+            callback("unknown status code");
         }
     });
 }

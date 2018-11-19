@@ -1,8 +1,6 @@
 "use strict";
 
-var winston = require('winston');
 var crypto = require('crypto');
-var poolModule = require('generic-pool');
 var dataEncryptor = require('./dataEncryptor.js');
 var url = require('url');
 var async = require('async');
@@ -32,7 +30,6 @@ var Common = {
     internalurl : "https://lab.nubosoftware.com/",
     restify : require('restify'),
     crypto : require('crypto'),
-    nodemailer : require("nodemailer"),
     internalServerCredentials: {
         key: "",
         cert: ""
@@ -62,7 +59,7 @@ var Common = {
     withServiceDeviceID : "virtualDevice",
     withServiceWebDeviceID : "virtualDeviceWeb",
     withServiceNuboAdmin : "Nubo Administrator",
-	withServiceIMAdmin : { 
+	withServiceIMAdmin : {
 		IMAdmin1 : 1,
 		IMAdmin2 : 2
 	},
@@ -107,22 +104,24 @@ var loggerName = Common.path.basename(process.argv[1], '.js') + ".log";
 var exceptionLoggerName = Common.path.basename(process.argv[1], '.js') + "_exceptions.log";
 console.log("log file: " + loggerName);
 
-Common.logger = new (winston.Logger)({
-    transports : [new (winston.transports.Console)({
+const  createLogger = require('winston').createLogger;
+const  transports = require('winston').transports;
+Common.logger = createLogger({
+    transports : [new (transports.Console)({
         json : false,
         timestamp: true,
         colorize: true
-    }), new winston.transports.File({
+    }), new transports.File({
         filename : __dirname + '/log/' + loggerName,
         handleExceptions : true,
         maxsize: 100*1024*1024, //100MB
         maxFiles: 4,
         json : false
     })],
-    exceptionHandlers : [new (winston.transports.Console)({
+    exceptionHandlers : [new (transports.Console)({
         json : false,
         timestamp : true
-    }), new winston.transports.File({
+    }), new transports.File({
         filename : __dirname + '/log/' + exceptionLoggerName,
         json : false
     })],
@@ -280,7 +279,7 @@ function parse_configs() {
 
 
         // if (firstTimeLoad) {
-            
+
         // }
 
 
@@ -292,33 +291,6 @@ function parse_configs() {
         if (Common.isGeoIP == true) {
             Common.geoip.settings.license = Common.geoipLicense;
         }
-
-        if (!Common.mailOptions) {
-            logger.info("nodemailer has not been configured");
-        }
-        Common.mailer = Common.nodemailer.createTransport("SMTP", Common.mailOptions);
-
-        logger.info("Common.mailOptions: " + JSON.stringify(Common.mailOptions, null, 2));
-
-        Common.mailer.send = function(mailOptions, callback) {
-            if (!Common.mailOptions) {
-                callback(false, "nodemailer has not been configured");
-                return;
-            }
-            if (mailOptions.fromname)
-                mailOptions.from = mailOptions.fromname + "<" + mailOptions.from + ">";
-            if (mailOptions.toname)
-                mailOptions.to = mailOptions.toname + "<" + mailOptions.to + ">";
-            Common.mailer.sendMail(mailOptions, function(error, response) {
-                if (error) {
-                    logger.info("Common.mailer.send: " + error);
-                    callback(false, error);
-                    return;
-                }
-                callback(true, "");
-                return;
-            });
-        };
     });
 
 }
@@ -354,8 +326,6 @@ Common.fs.watchFile('Settings.json', {
     parse_configs();
 });
 
-//Common.mailer =  new Common.SendGrid("nubo", "Nubo2022");
-//Common.mailer =  require('sendgrid')("nubo", "Nubo2022");
 
 Common.quit = function() {
     try {

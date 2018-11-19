@@ -45,7 +45,7 @@ var mainFunction = function(err, firstTimeLoad) {
         return;
 
     loadRequires();
-    
+
     var WebSocketServer = websocket.server;
 
     // Handle new WebSocket client
@@ -401,7 +401,7 @@ function buildServerObject(server) {
         response.send(error);
         return true;
     });
-    server.use(Common.restify.queryParser());
+    server.use(Common.restify.plugins.queryParser({ mapParams: true }));
     server.use(filterObjUseHandlerWrapper);
     server.use(function(req, res, next) {
 
@@ -414,9 +414,9 @@ function buildServerObject(server) {
     server.use(accesslogger);
     server.use(nocache);
     // server.use(Common.restify.gzipResponse());
-    server.use(Common.restify.CORS({
+    /*server.use(Common.restify.CORS({
         origins: Common.allowedOrigns, // defaults to ['*']
-    }));
+    }));*/
 
     // --------------------------------------------------------------------------------------------
 
@@ -521,7 +521,8 @@ function buildServerObject(server) {
         return false;
     };
     server.use(yescache);
-    server.get(/^\/.*/, function(req, res, next) {
+    //server.get(/^\/.*/, function(req, res, next) {
+    server.get("/*", function(req, res, next) {
         if (!isPermittedUrl(req.url)) {
             logger.info("Access to " + req.url + " does not permitted");
             res.send(401, "Access denied", {

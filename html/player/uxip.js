@@ -64,6 +64,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
         drawEllipse, convertToHTMLColor, applyColorFilter,
         updateCursor, sendFinishComposing, sendCommitText, sendComposingText, sendDeleteText, sendSetTextRegion,
         sendSetSelection, sendEditorAction;
+    var glRenderCmd, glAttachToWindow;
 
     var writer = new UXIPWriter(function(buffer) {
         ws.send(buffer);
@@ -72,6 +73,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
         writer.notifyClearProcessCache(processId);
     });
     var reader = new UXIPReader(nuboCache);
+    var openGlModule = new OpenGlModule(reader, NuboOutputStreamMgr.getInstance());
     var sessID;
     var canvasCtx;
     var domObj;
@@ -1250,6 +1252,12 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             }
             // Log.e(TAG, "CMDCODE: " + cmdcode);
             switch (cmdcode) {
+                case DrawCmd.glRenderCmd:
+                    func = glRenderCmd;
+                    break;
+                case DrawCmd.glAttachToWindow:
+                    func = glAttachToWindow;
+                    break;
                 case DrawCmd.setDirtyRect:
                     func = setDirtyRect;
                     break;
@@ -1532,6 +1540,29 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                 insideGetDrawCommand = false;
         }
     };
+
+    glRenderCmd = function(processId, wndId) {
+        if(!reader.canReadBytes(4)) return false;
+        var openglChunkSize = reader.readInt();
+        if(!reader.canReadBytes(4 + openglChunkSize)) return false;
+        var chunkIdx = reader.readInt();
+        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.gl_Feedback), processId, wndId, 1, chunkIdx);
+        var res = reader.readNBytes(openglChunkSize);
+        openGlModule.handleData(res.data, function(err, res) {
+            setTimeout(function() {
+                if(res && res.name) {
+                    NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.gl_Return), processId, wndId, chunkIdx, res.data.byteLength, res);
+                }
+            }, 0);
+        });
+        return true;
+    }
+
+    glAttachToWindow = function(processId, wndId) {
+        if(!reader.canReadBytes(4)) return false;
+        var surfaceHash = reader.readInt;
+        return true;
+    }
 
     setDirtyRect = function(processId, wndId) {
         var rect = reader.readRect();
@@ -4186,7 +4217,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             errorAndClose();
             return;
         }
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.roundTripData), processId, wndId, getNuboLongAsFloat(time));
+        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.roundTripData), processId || -1, wndId || -1, getNuboLongAsFloat(time));
     };
 
     function getNuboLongAsFloat(nuboLongAsFloat) {
@@ -4520,6 +4551,9 @@ PlayerCmd.TxtSetSelection = 55;
 PlayerCmd.TxtKeyEvent = 56;
 PlayerCmd.TxtEditorAction = 57;
 
+PlayerCmd.gl_Return = 90;
+PlayerCmd.gl_Feedback = 91;
+
 
 
 function drawCmdCodeToText(code) {
@@ -4533,6 +4567,9 @@ function drawCmdCodeToText(code) {
 
 function DrawCmd() {}
 
+DrawCmd.glRenderCmd = 128;
+DrawCmd.glAttachToWindow = 129;
+DrawCmd.audioCmd = -126;
 DrawCmd.setDirtyRect = 1;
 DrawCmd.drawColor1 = 2;
 DrawCmd.saveLayer = 3;

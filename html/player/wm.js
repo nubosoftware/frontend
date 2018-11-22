@@ -398,7 +398,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             evtobj.lastMouseDownTouchTime = lastMouseDownTouchTime;
             NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
 
-            if (event.type == "mouseup") {
+            if (evtobj.type == "mouseup") {
                 mUxip.virtualKeyboardSetFocus();
             }
 
@@ -525,7 +525,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         var passedCurrentSN;
         for (var i = 0; i < Object.keys(taskList).length; i++) {
             taskHash = Object.keys(taskList)[i];
-            task = taskList[taskHash];
+            task = taskList[taskHash] || [];
             for (var j = 0; j < task.length; j++) {
                 if (task[j] == sn) {
                     passedCurrentSN = true;

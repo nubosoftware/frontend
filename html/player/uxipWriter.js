@@ -34,7 +34,7 @@ function UXIPWriter(callback) {
         ///////////////////
         offset = 0;
 
-        if (BUFFSIZE > 1024) {
+        if (buffer.byteLength > 1024) {
             BUFFSIZE = 1024;
             buffer = new ArrayBuffer(BUFFSIZE);
             dv = new DataView(buffer, 0);
@@ -42,18 +42,13 @@ function UXIPWriter(callback) {
     };
 
     this.checkBufferSpace = function(numBytes) {
-        if ((offset + numBytes) > BUFFSIZE) { // resize buffer
-            BUFFSIZE *= 2;
-            var newBuffer = new ArrayBuffer(BUFFSIZE);
-            var newDv = new DataView(newBuffer, 0);
-
-            for (var i=0; i<offset ; i++) {
-                newDv.setInt8(i, dv.getInt8(i));
-            }
+        if ((offset + numBytes) > buffer.byteLength) { // resize buffer
+            var newBuffer = new ArrayBuffer(offset + numBytes);
+            var newArr = new Uint8Array(newBuffer);
+            newArr.set(new Uint8Array(buffer), 0);
 
             buffer = newBuffer;
-            dv = newDv;
-            console.log("Resize buffer to " + BUFFSIZE + " bytes.");
+            dv = new DataView(newBuffer, 0);
         }
     };
 
@@ -148,6 +143,14 @@ function UXIPWriter(callback) {
         } else {
             this.writeBoolean(true);
         }
+    };
+
+    this.writeArrayBuffer = function(buf) {
+        var len = buf.byteLength;
+        this.checkBufferSpace(len);
+        var dst = new Uint8Array(buffer);
+        dst.set(new Uint8Array(buf), offset);
+        offset += len;
     };
 
     this.notifyClearProcessCache = function(processId) {

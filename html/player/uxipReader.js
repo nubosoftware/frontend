@@ -186,6 +186,25 @@ function UXIPReader(nubocache) {
         return ret;
     };
 
+    this.readNBytes = function(numBytes) {
+        //console.log("offset="+offset);
+        var result = {
+            canRead : false,
+            data : null,
+            dataLen: 0
+        };
+        if (this.canReadBytes(numBytes)) {
+            result.canRead = true;
+            result.data = new ArrayBuffer(numBytes);
+            var tmparr = new Uint8Array(result.data);
+            var currBuff = buffArr[bufIdx];
+            tmparr.set(new Uint8Array(currBuff).subarray(offset, offset + numBytes), 0);
+            this.incrementOffsetAfterRead(numBytes);
+            result.dataLen = numBytes;
+        }
+        return result;
+    };
+
     this.readByteArr = function() {
         var result = {
             canRead : false,

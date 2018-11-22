@@ -54,7 +54,7 @@ var NuboOutputStreamMgr = (function(window, undefined) {
             }
 
             //write sessionId
-            if (Common.withService || cmdCode != PlayerCmd.playerLogin) {
+            if (Common.withService || cmdCodeNum != PlayerCmd.playerLogin) {
                 if (typeof mSessionId === 'string') {
                     writer.writeString(mSessionId);
                 } else {
@@ -89,6 +89,8 @@ var NuboOutputStreamMgr = (function(window, undefined) {
                         writer.writeByte(arg.val);
                     } else if (arg.name === 'MouseWheel') {
                         mUxip.mousewheel(arg);
+                    } else if (arg.name === 'ArrayBuffer') {
+                        writer.writeArrayBuffer(arg.data);
                     }
                 }
 

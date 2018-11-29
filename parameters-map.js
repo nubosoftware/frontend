@@ -236,7 +236,7 @@ var filter = {
             },
             "serverAuthKey": {
                 "presence": true,
-                "format": "^[0-9a-zA-Z_\\-+=/]+$",
+                "format":  "^[0-9a-zA-Z_\\-+=/\$\@\!\&]+$",
                 "length": {
                     "minimum": 1,
                     "maximum": 256

@@ -104,9 +104,20 @@ var loggerName = Common.path.basename(process.argv[1], '.js') + ".log";
 var exceptionLoggerName = Common.path.basename(process.argv[1], '.js') + "_exceptions.log";
 console.log("log file: " + loggerName);
 
-const  createLogger = require('winston').createLogger;
-const  transports = require('winston').transports;
+const  { createLogger , format, transports  } = require('winston');
+const { combine, timestamp, label, printf } = format;
+
+const myFormat = printf(info => {
+    return `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`;
+  });
+
+
 Common.logger = createLogger({
+    format: combine(
+        label({ label:  Common.path.basename(process.argv[1], '.js') }),
+        timestamp(),
+        myFormat
+    ),
     transports : [new (transports.Console)({
         json : false,
         timestamp: true,

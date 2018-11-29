@@ -33,7 +33,11 @@ function NuboCache(callback) {
 
     this.removeCacheItems = function(processId, noOfItemsToRemove) {
         var cacheItemHolder = nuboCache[processId.toString()];
-        cacheItemHolder.splice(0, noOfItemsToRemove);
+        if (cacheItemHolder) {
+            cacheItemHolder.splice(0, noOfItemsToRemove);
+        } else {
+            console.error("removeCacheItems. cacheItemHolder not found for process: "+processId);
+        }
     };
 
     this.getCacheItem = function(processId, cacheItemHashCodeStr) {
@@ -51,6 +55,7 @@ function NuboCache(callback) {
 
     this.clearAckedProcessCache = function(processId) {
         // received from platform delete permission
+        console.error("Remove cache for process: "+processId);
         delete nuboCache[processId.toString()];
     };
 

@@ -117,7 +117,7 @@ var filter = {
         "path": "/resetPasscode",
         "constraints": {
             "sessionid": constraints.sessionIdConstrOptional,
-            "loginToken": constraints.requestedLoginTokenOptional,
+            "loginToken": constraints.loginTokenConstrOptional,
             "activationKey":  constraints.tokenConstrOptional,
             "action": {
                 "numericality": {

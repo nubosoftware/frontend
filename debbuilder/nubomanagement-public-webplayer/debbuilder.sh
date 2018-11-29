@@ -17,7 +17,7 @@ for file in ${FILES}; do
 done
 install -D -m 644 $NUBO_PROJ_PATH/nubomanagement-public/html/player/compiler.jar $BUILD_ROOT/opt/nubomanagement-public/html/player
 cd $BUILD_ROOT/opt/nubomanagement-public/html/player
-make
+make || exit 1
 rm login.js
 rm wm.js
 rm zlibReader.js

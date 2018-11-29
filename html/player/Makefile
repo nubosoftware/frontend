@@ -7,5 +7,5 @@ compiler.jar:
 	wget http://dl.google.com/closure-compiler/compiler-latest.tar.gz -O - | tar -xzf - compiler.jar
 
 out.js: compiler.jar $(INPUT)
-	java -jar compiler.jar -O SIMPLE --language_in ECMASCRIPT5 --js_output_file=$@ $(INPUT)
+	java -jar compiler.jar -O SIMPLE --language_in ECMASCRIPT6 --js_output_file=$@ $(INPUT)
 

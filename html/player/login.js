@@ -202,6 +202,7 @@ var passcodeType = 0; // 0-passcode; 1-password
 var passcodeMinChars = 6;
 var oldPassword = "";
 var pendingValidation = false;
+var pendingResetPassword = false;
 var isSplashTemplate = false;
 var getJSON, jsonError;
 
@@ -245,6 +246,16 @@ function getSessionId() {
     } else {
         browserType = "ie";
     }
+}
+
+function guid() {
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+        s4() + '-' + s4() + s4() + s4();
 }
 
 function get_browser_version() {
@@ -583,15 +594,7 @@ $(function() {
         },
         activatePlayer: function() {
 
-            function guid() {
-                function s4() {
-                    return Math.floor((1 + Math.random()) * 0x10000)
-                        .toString(16)
-                        .substring(1);
-                }
-                return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-                    s4() + '-' + s4() + s4() + s4();
-            }
+
 
 
             var mHideNuboAppDomain = "@" + autoAppView.domainName;
@@ -858,6 +861,11 @@ $(function() {
                 template = _.template($("#validation_template").html(), {
                     activationEmail: settings.get("workEmail")
                 });
+            } else if (pendingResetPassword) {
+                isSplashTemplate = false;
+                template = _.template($("#reset_passcode_wait_template").html(), {
+                    activationEmail: settings.get("workEmail")
+                });
             } else {
                 isSplashTemplate = true;
                 var vars = settings.attributes;
@@ -873,12 +881,21 @@ $(function() {
         clickChange: function(event) {
             // Button clicked, you can access the element that was clicked with event.currentTarget
             //alert( "clickCreate" );
-            settings.set({
-                workEmail: "",
-                activationKey: ""
-            });
-            settings.save();
-            window.location.hash = "createPlayer";
+            if (!pendingResetPassword) {
+                settings.set({
+                    workEmail: "",
+                    activationKey: ""
+                });
+                settings.save();
+                window.location.hash = "createPlayer";
+            } else {
+                //alert("cancel...");
+                var url = mgmtURL + "resetPasscode?action=2&activationKey=" + encodeURIComponent(settings.get("activationKey"));
+                getJSON(url, function(data) {
+                    window.location.hash = "validation";
+                    return;
+                });
+            }
         },
         checkValidation: function() {
             if (settings.get("activationKey") == "") {
@@ -945,22 +962,27 @@ $(function() {
                     } else {
                         window.location.hash = "passcode";
                     }
-                } else if (data.status == 0) { //Pending
+                } else if (data.status == 0 || data.status == 100) { //Pending
                     var isValidationError = false;
                     var message = data.message;
-                    if (message != undefined || message != "") {
+                    if (data.status == 0  && (message != undefined || message != "")) {
                         message = message.toLowerCase();
                         var isUserPending = message.indexOf("activation pending");
                         if (isUserPending == -1) {
                             isValidationError = true;
                         }
                     }
-
                     if (isValidationError == false) {
                         if (DEBUG) {
                             console.log("pending...");
                         }
-                        pendingValidation = true;
+                        if (data.status == 100) {
+                            pendingResetPassword = true;
+                            pendingValidation = false;
+                        } else {
+                            pendingValidation = true;
+                            pendingResetPassword = false;
+                        }
                         if (validationView == null)
                             return;
 
@@ -977,6 +999,7 @@ $(function() {
                         console.log("checkValidation. error " + data.status + ", " + data.message);
                         this.timeoutId = 0;
                         pendingValidation = false;
+                        pendingResetPassword = false;
                         // settings.set({
                         //     activationKey: ""
                         // });
@@ -1000,6 +1023,7 @@ $(function() {
                 } else if (data.status == 2) { //Activation was denied
                     this.timeoutId = 0;
                     pendingValidation = false;
+                    pendingResetPassword = false;
                     settings.set({
                         activationKey: ""
                     });
@@ -1008,6 +1032,7 @@ $(function() {
                 } else if (data.status == 3) { //Invalid player version
                     this.timeoutId = 0;
                     pendingValidation = false;
+                    pendingResetPassword = false;
                     settings.set({
                         activationKey: ""
                     });
@@ -1016,11 +1041,13 @@ $(function() {
                 } else if (data.status == 4) {
                     this.timeoutId = 0;
                     pendingValidation = false;
+                    pendingResetPassword = false;
                     window.location.hash = "passcodelock";
 
                 } else if (data.status == 5) {
                     this.timeoutId = 0;
                     pendingValidation = false;
+                    pendingResetPassword = false;
                     settings.set({
                         'errorType': data.status,
                         'adminName': data.adminName,
@@ -1033,6 +1060,7 @@ $(function() {
                 } else if (data.status == 6) {
                     this.timeoutId = 0;
                     pendingValidation = false;
+                    pendingResetPassword = false;
 
                     settings.set({
                         'errorType': data.status,
@@ -1048,6 +1076,7 @@ $(function() {
                     console.log("checkValidation. error status: " + data.status);
                     this.timeoutId = 0;
                     pendingValidation = false;
+                    pendingResetPassword = false;
                     settings.set({
                         activationKey: ""
                     });
@@ -1183,6 +1212,7 @@ $(function() {
         resetDeviceType: "",
         render: function() {
             var template;
+            console.log("ResetPasscodeLinkView: render...");
             if (!this.afterValidation) {
                 this.$el.html("");
                 this.checkResetLink();
@@ -1215,8 +1245,8 @@ $(function() {
 
         },
         checkResetLink: function() {
-            var cloneActivationParam = this.cloneActivation ? "&cloneActivation=" + encodeURIComponent(this.cloneActivation) : "";
-            var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token) + cloneActivationParam;
+            //var cloneActivationParam = this.cloneActivation ? "&cloneActivation=" + encodeURIComponent(this.cloneActivation) : "";
+            var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token); //+ cloneActivationParam;
 
             if (DEBUG) {
                 console.log("checkResetLink. " + url);
@@ -1443,7 +1473,12 @@ $(function() {
             jobTitle = jobTitle.substr(0, 1).toUpperCase() + jobTitle.substr(1);
 
             var workEmail = ($('#edWorkEmail').val() == l("workEmail").trim() ? "" : $('#edWorkEmail').val());
-            var deviceID = 'web_default_' + browserType + '_' + workEmail;
+
+            var deviceID = settings.get("deviceID");
+            if (!deviceID || deviceID.length > 3) {
+                deviceID = 'web_default_' + browserType + '_' +guid(); // + workEmail;
+            }
+            console.log("deviceID: "+deviceID);
 
             settings.set({
                 'firstName': firstName,
@@ -1604,7 +1639,12 @@ $(function() {
             $('#workEmailSend').removeClass("error");
 
             var workEmail = $('#workEmailSend').val();
-            var deviceID = 'web_default_' + browserType + '_' + workEmail;
+            var deviceID = settings.get("deviceID");
+            if (!deviceID || deviceID.length > 3) {
+                deviceID = 'web_default_' + browserType + '_' +guid(); // + workEmail;
+            }
+            console.log("deviceID: "+deviceID);
+            //var deviceID = 'web_default_' + browserType + '_' + workEmail;
 
             settings.set({
                 'workEmail': workEmail,
@@ -2892,7 +2932,8 @@ $(function() {
                     return;
 
                 } else if (data.status == 1 || data.status == 2) { // success / expired login token
-                    pendingValidation = true;
+                    //pendingValidation = true;
+                    pendingResetPassword = true;
                     window.location.hash = "validation";
                     return;
                 }
@@ -3642,7 +3683,7 @@ $(function() {
                 "wallpaperColor": wallpaperColor,
                 "uploadExternalWallpaper": true,
                 "firstGatewayConnection": true,
-                "deviceID": "",
+                //"deviceID": "",
                 "mHideNuboAppPackageName": "",
                 "domainName": ""
             });

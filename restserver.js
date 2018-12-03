@@ -413,10 +413,17 @@ function buildServerObject(server) {
 
     server.use(accesslogger);
     server.use(nocache);
-    // server.use(Common.restify.gzipResponse());
-    /*server.use(Common.restify.CORS({
-        origins: Common.allowedOrigns, // defaults to ['*']
-    }));*/
+    if (Common.allowedOrigns && Common.allowedOrigns.length > 0) {
+        const corsMiddleware = require('restify-cors-middleware');
+        const cors = corsMiddleware({
+            origins: Common.allowedOrigns,
+          });
+
+          server.pre(cors.preflight);
+          server.use(cors.actual);
+          //logger.info("Added CORS with allowedOrigns: "+Common.allowedOrigns);
+    }
+
 
     // --------------------------------------------------------------------------------------------
 

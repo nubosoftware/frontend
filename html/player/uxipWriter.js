@@ -4,6 +4,7 @@ var COMPRESSION_HEADER_SIZE = 5;
 function UXIPWriter(callback) {
     "use strict";
     var sendfunc = callback;
+    var isPlayerLoginCmd = false;
 
     var buffer = new ArrayBuffer(BUFFSIZE);
     var dv = new DataView(buffer, 0);
@@ -19,7 +20,7 @@ function UXIPWriter(callback) {
             Log.d(DEBUG_PROTOCOL_NETWORK_STR, "uxipwriter:: Flush " + offset + " bytes");
         }
         /////////////////////
-        if (Common.withService || !NuboOutputStreamMgr.getInstance().getIsPlayerLogin()) {
+        if (Common.withService || !isPlayerLoginCmd) {
             var zLibBuffer = new ArrayBuffer(offset+COMPRESSION_HEADER_SIZE);
             var zLibDv = new DataView(zLibBuffer, 0);
             zLibDv.setInt8(0, 0);
@@ -153,30 +154,279 @@ function UXIPWriter(callback) {
         offset += len;
     };
 
-    this.notifyClearProcessCache = function(processId) {
-        var processIdInt;
+    this.writeMouseEvent = function(uxip, eventt) {
+        var lastMouseDownTouchTime = eventt.lastMouseDownTouchTime;
 
-        if (typeof processId === 'string') {
-            processIdInt = parseInt(processId);
-        } else {
-            processIdInt = processId;
+        var src = eventt.src;
+        var rect = src.getBoundingClientRect();
+
+        var left = eventt.clientX - rect.left - src.clientLeft + src.scrollLeft;
+        var top = eventt.clientY - rect.top - src.clientTop + src.scrollTop;
+
+        this.writeBoolean(false);
+        //not null
+
+        var timevar = {
+            hi: 0,
+            lo: 0
+        };
+
+        this.writeLong(timevar);
+        this.writeLong(timevar);
+        this.writeInt(1);
+        var action;
+
+        if (eventt.type == "mouseup") {
+            uxip.setLastTouch(null, null);
+            action = 1;
+        } else if (eventt.type == "mousedown") {
+            uxip.setLastTouch(left, top);
+            action = 0;
+        } else if (eventt.type == "mousemove") {
+            action = 2;
         }
-        var nuboByte = getNuboByte(PlayerCmd.clearProcessCache);
-        NuboOutputStreamMgr.getInstance().sendCmd(nuboByte, processIdInt);
+        this.writeInt(action);
+
+        this.writeInt(0);
+        //properties.id
+        this.writeInt(1);
+        //properties.toolType
+
+        if (action != 2) {
+            this.writeFloat(0);
+            // coords.orientation
+            this.writeFloat(90);
+            // coords.toolMajor);
+            this.writeFloat(90);
+            // coords.toolMinor);
+            this.writeFloat(90);
+            // coords.touchMajor);
+            this.writeFloat(90);
+            // coords.touchMinor);
+        }
+
+        this.writeFloat(0.73);
+        //coords.pressure);
+        this.writeFloat(0.26);
+        //coords.size);
+        this.writeFloat(left);
+        //coords.x
+        this.writeFloat(top);
+        //coords.y
+        this.writeFloat(2);
+        //e.getXPrecision());
+        this.writeFloat(2);
+        //e.getYPrecision());
+
+        if (action != 2) {
+            this.writeInt(0);
+            // e.getMetaState());
+            this.writeInt(0);
+            // e.getButtonState());
+            this.writeInt(0);
+            // e.getEdgeFlags());
+            this.writeInt(4098);
+            // touchscreen... //e.getSource());
+            this.writeInt(0);
+            // e.getFlags());
+        } else {
+            var now = new Date().getTime();
+            var interval = now - lastMouseDownTouchTime;
+            var lastTouch = uxip.getLastTouch();
+            var velocityX = (left - lastTouch.left) / interval;
+            var velocityY = (top - lastTouch.top) / interval;
+            this.writeFloat(velocityX);
+            this.writeFloat(velocityY);
+        }
+        uxip.updateInputIgnoreSelection(false);
     };
+
+    this.writeTouchEvent = function(uxip, eventt) {
+        var lastMouseDownTouchTime = eventt.lastMouseDownTouchTime;
+
+        var src = eventt.src;
+        var rect = src.getBoundingClientRect();
+
+        this.writeBoolean(false);
+        var timevar = {
+            hi: 0,
+            lo: 0
+        };
+        this.writeLong(timevar);
+        this.writeLong(timevar);
+
+        this.writeInt(eventt.changedTouches.length); // number of touches
+        var action;
+
+        if (eventt.type == "touchend" || eventt.type == "touchcancel") {
+            lastTouchX = null;
+            lastTouchY = null;
+            uxip.setLastTouch(null, null);
+            action = 1;
+        } else if (eventt.type == "touchstart") {
+            action = 0;
+        } else if (eventt.type == "touchmove") {
+            action = 2;
+        }
+
+        this.writeInt(action);
+
+        for (var i = 0; i < eventt.changedTouches.length; i++) {
+            var touch = eventt.changedTouches[i];
+            this.writeInt(i); // id
+            this.writeInt(1); // toolType
+        }
+
+        for (var i = 0; i < eventt.changedTouches.length; i++) {
+            var touch = eventt.changedTouches[i];
+            var left = touch.clientX - rect.left - src.clientLeft + src.scrollLeft;
+            var top = touch.clientY - rect.top - src.clientTop + src.scrollTop;
+            if (eventt.type == "touchstart" && i == 0) {
+                // get last X and Y for velocity calculation later
+                uxip.setLastTouch(left, top);
+            }
+
+            if (action != 2) {
+                this.writeFloat(0); // orientation
+                this.writeFloat(90); // toolMajor
+                this.writeFloat(90); // toolMinor
+                this.writeFloat(90); // touchMajor
+                this.writeFloat(90); // touchMinor
+            }
+
+            this.writeFloat(touch.force ? touch.force : 0.73); // pressure;
+            this.writeFloat(0.26); // size
+            this.writeFloat(left); // coords.x
+            this.writeFloat(top); // coords.y
+        }
+
+        this.writeFloat(2); // XPrecision
+        this.writeFloat(2); // YPrecision
+
+        if (action != 2) {
+            this.writeInt(0); // MetaState
+            this.writeInt(0); // ButtonState
+            this.writeInt(0); // EdgeFlags
+            this.writeInt(4098); // touchscreen
+            this.writeInt(0); // Flags
+        }
+
+        if (action == 2) { // move event
+            var now = new Date().getTime();
+            var interval = now - lastMouseDownTouchTime;
+            lastMouseDownTouchTime = now;
+            var lastTouch = uxip.getLastTouch();
+            var velocityX = (left - lastTouch.left) / interval;
+            var velocityY = (top - lastTouch.top) / interval;
+
+            this.writeFloat(velocityX);
+            this.writeFloat(velocityY);
+        }
+        uxip.updateInputIgnoreSelection(false);
+    };
+
+    this.writeMousewheel = function(uxip, eventt) {
+        //      up: delta > 0, down: delta < 0
+        //      Log.e(TAG, "mousewheel. eventt.type: " + eventt.type + ", eventt.action: " + eventt.action + ", eventt.delta: " + eventt.delta);
+
+        if (eventt.type != "mousewheel" && eventt.type != "DOMMouseScroll" && eventt.type != "wheel") {
+            this.writeBoolean(true);
+            return true;
+        }
+
+        var src = eventt.src;
+        var rect = src.getBoundingClientRect();
+
+        var action = eventt.action; // 0-ACTION_DWON; 1-ACTION_UP; 2-ACTION_MOVE
+        if (action == 0) {
+            uxip.setWheeldelta(eventt.clientX - rect.left, eventt.clientY - rect.top);
+
+            uxip.setLastTouch(0, 0);
+            uxip.setLastMouseDownTouchTime(0);
+        } else if (action == 2) {
+            if (eventt.delta < 0) {
+                uxip.scrollWheeldelta(-15);
+            } else {
+                uxip.scrollWheeldelta(15);
+            }
+        }
+
+        this.writeBoolean(false); // 1
+        var timevar = {
+            hi: 0,
+            lo: 0
+        };
+
+        this.writeLong(timevar); // 2 down time
+        this.writeLong(timevar); // 3 event time
+        this.writeInt(1); // 4 number of touches
+        this.writeInt(action); // 5 action
+        this.writeInt(0); // 6 id
+        this.writeInt(1); // 7 tool type
+
+        if (action != 2) {
+            this.writeFloat(0); // orientation
+            this.writeFloat(90); // toolMajor
+            this.writeFloat(90); // toolMinor
+            this.writeFloat(90); // touchMajor
+            this.writeFloat(90); // touchMinor
+        }
+
+        this.writeFloat(0.73); // pressure
+        this.writeFloat(0.26); // size
+
+        var wheeldelta = uxip.getWheeldelta();
+        var left = wheeldelta.x; // + rect.left;
+        var top = wheeldelta.y; // + rect.top;
+
+        this.writeFloat(left); // coords.x
+        this.writeFloat(top); // coords.y
+        this.writeFloat(2); // XPrecision
+        this.writeFloat(2); // YPrecision
+
+        if (action != 2) {
+            this.writeInt(0); // MetaState
+            this.writeInt(0); // ButtonState
+            this.writeInt(0); // EdgeFlags
+            this.writeInt(4098); // touchscreen
+            this.writeInt(0); // flags
+        }
+
+        if (action == 2) {
+            var lastTouch = uxip.getLastTouch();
+            var interval = eventt.timeStamp - uxip.getLastMouseDownTouchTime();
+            var velocityX = (left - lastTouch.left) / interval;
+            var velocityY = (top - lastTouch.top) / interval;
+
+            this.writeFloat(velocityX);
+            this.writeFloat(velocityY);
+        }
+
+        // save data
+        uxip.setLastMouseDownTouchTime(eventt.timeStamp);
+        uxip.setLastTouch(left, top);
+    }
 
     this.startNuboCmd = function() {
         offset = 0;
-        if (Common.withService || !NuboOutputStreamMgr.getInstance().getIsPlayerLogin()) {
+        if (Common.withService || !isPlayerLoginCmd) {
             this.writeInt(0); //save place for command size
         }
     };
 
     this.endNuboCmd = function() {
-        if (Common.withService || !NuboOutputStreamMgr.getInstance().getIsPlayerLogin()) {
+        if (Common.withService || !isPlayerLoginCmd) {
             dv.setInt32(0, offset);
         }
     };
+
+    this.getIsPlayerLogin = function() {
+        return isPlayerLoginCmd;
+    }
+
+    this.setIsPlayerLogin = function(isPlayerLogin) {
+        isPlayerLoginCmd = isPlayerLogin;
+    }
 }
 
 function getNuboByte(nuboByte) {

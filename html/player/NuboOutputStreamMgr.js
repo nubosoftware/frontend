@@ -1,10 +1,9 @@
-var NuboOutputStreamMgr = (function(window, undefined) {
+function NuboOutputStreamMgrModule() {
 
     // this are consts values copied from uxip.js file..
     var psConnected = 2, psInit = 1;
     var instance = null;
     var mUxip = null;
-    var isPlayerLoginCmd = false;
     var mSessionId;
 
     var lastMouseDownTouchTime;
@@ -14,7 +13,7 @@ var NuboOutputStreamMgr = (function(window, undefined) {
     // revealing module pattern that handles initialization of our new module
     function initialize() {
 
-        function createSocket(parentNode, width, height, uxip, writer_) {
+        function createSocket(uxip, writer_) {
             mUxip = uxip;
             writer = writer_;
         }
@@ -31,10 +30,11 @@ var NuboOutputStreamMgr = (function(window, undefined) {
                 return;
             }
 
+            var cmdCode = arguments[0];
+            if(cmdCode === PlayerCmd.playerLogin) writer.setIsPlayerLogin(true);
             writer.startNuboCmd();
 
             //write cmdCode
-            var cmdCode = arguments[0];
             var cmdCodeNum = 0;
             if ( typeof cmdCode === 'number') {
                 writer.writeInt(cmdCode);
@@ -63,6 +63,7 @@ var NuboOutputStreamMgr = (function(window, undefined) {
                     return;
                 }
             }
+            //console.log('NuboOutStreamMgr command: '+cmdCodeNum);
 
             for (var i = 1; i < arguments.length; i++) {
 
@@ -78,9 +79,9 @@ var NuboOutputStreamMgr = (function(window, undefined) {
                     if (arg.name === 'KeyEvent') {
                         writer.writeKeyEvent(arg);
                     } else if (arg.name === 'MouseEvent') {
-                        mUxip.mouseEvent(arg);
+                        writer.writeMouseEvent(mUxip, arg);
                     } else if (arg.name === 'TouchEvent') {
-                        mUxip.touchEvent(arg);
+                        writer.writeTouchEvent(mUxip, arg);
                     } else if (arg.name === 'nuboFloat') {
                         writer.writeFloat(arg.val);
                     } else if (arg.name === 'nuboLongAsFloat') {
@@ -88,7 +89,7 @@ var NuboOutputStreamMgr = (function(window, undefined) {
                     } else if (arg.name === 'nuboByte') {
                         writer.writeByte(arg.val);
                     } else if (arg.name === 'MouseWheel') {
-                        mUxip.mousewheel(arg);
+                        writer.writeMousewheel(mUxip, arg);
                     } else if (arg.name === 'ArrayBuffer') {
                         writer.writeArrayBuffer(arg.data);
                     }
@@ -97,14 +98,7 @@ var NuboOutputStreamMgr = (function(window, undefined) {
             }
             writer.endNuboCmd();
             writer.flush();
-        }
-
-        function getIsPlayerLogin() {
-            return isPlayerLoginCmd;
-        }
-
-        function setIsPlayerLogin(isPlayerLogin) {
-            isPlayerLoginCmd = isPlayerLogin;
+            if(cmdCode === PlayerCmd.playerLogin) writer.setIsPlayerLogin(false);
         }
 
         function setSessionId(sessionId) {
@@ -114,8 +108,6 @@ var NuboOutputStreamMgr = (function(window, undefined) {
         return {
             sendCmd : sendCmd,
             createSocket : createSocket,
-            getIsPlayerLogin : getIsPlayerLogin,
-            setIsPlayerLogin : setIsPlayerLogin,
             setSessionId : setSessionId
         };
     }
@@ -132,5 +124,8 @@ var NuboOutputStreamMgr = (function(window, undefined) {
         getInstance : getInstance
     };
 
-})();
+}
 
+if ( typeof module !== 'undefined') {
+    module.exports = NuboOutputStreamMgrModule;
+}

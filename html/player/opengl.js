@@ -463,3 +463,9 @@ function createIntResponse(n) {
     }
     return res;
 }
+
+if ( typeof module !== 'undefined') {
+    module.exports = {
+        OpenGlModule : OpenGlModule
+    };
+}

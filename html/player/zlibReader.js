@@ -2,10 +2,9 @@
  * @author
  */
 
-var zlibnode;
-
 function ZlibReader() {
 	"use strict";
+	var zlibnode;
 	var buffArr = [], bufIdx = 0, offset = 0, currentDataView = null, MINOFFSETCOMPACT = 1024;
 
 	var reader = this;

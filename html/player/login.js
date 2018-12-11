@@ -3202,7 +3202,7 @@ $(function() {
                 console.log("PlayerView. specialLanguage: " +  specialLanguage);
             }
 
-            uxip = new UXIP(datadiv, width, height, passcodeTimeout, specialLanguage);
+            uxip = new UXIP(width, height, passcodeTimeout, specialLanguage);
             uxip.PlayerView = this;
 
             var firstLogin = settings.get("firstGatewayConnection");
@@ -3242,7 +3242,7 @@ $(function() {
                     //console.log(JSON.stringify(window.location, null, 4 ));
                     var wsURL = protocol + host + port + "/gatewayProxy?gateway=" + encodeURIComponent(data.gateway) + "&port=" + data.port + "&isSSL=" + data.isSSL;
                     window.loginToken = loginToken;
-                    uxip.connect(wsURL, data.sessionid);
+                    uxip.connect(datadiv, wsURL, data.sessionid);
                     var ed = $("#edVirtualKeyboard");
                     $(document).off("keypress");
                     ed.off("keypress keydown keyup");
@@ -3507,7 +3507,7 @@ $(function() {
             $("div#recordingTimeLbl").css("width", 300 / playbackScale + "px");
             $("div#recordingTimeLbl").css("top", playbackHeight - Math.round(30 / playbackScale));
             // console.log("width: " + width + ", height: " + height);
-            uxip = new UXIP(datadiv, width, height, passcodeTimeout, false, true);
+            uxip = new UXIP(width, height, passcodeTimeout, false, true);
             uxip.PlayerView = this;
 
             var parser = document.createElement('a');
@@ -3528,7 +3528,7 @@ $(function() {
             //console.log(JSON.stringify(window.location, null, 4 ));
             var wsURL = protocol + host + port + "/gatewayProxy?playbackMode=Y&fileName=" + encodeURIComponent(playbackFile) +
                 "&loginToken=" + encodeURIComponent(loginToken);
-            uxip.connect(wsURL, "NA");
+            uxip.connect(datadiv, wsURL, "NA");
         },
         events: {
             // "click #linkvolcano" : "clickHome"

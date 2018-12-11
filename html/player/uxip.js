@@ -7,13 +7,6 @@ var psDisconnect = 0,
     psConnected = 2,
     psDisconnecting = 3,
     psError = 4;
-var keyboardProcessID = 0;
-var showKeyboard = false;
-
-var inputCursorPositionStart = 0;
-var inputCursorPositionEnd = 0;
-var inputIgnoreSelection = false;
-
 
 // used by roundTrip
 var START_ROUND_TRIP_CHECK = true;
@@ -33,22 +26,26 @@ var PRINT_DRAW_COMMANDS = false;
 var PRINT_NETWORK_COMMANDS = false;
 var writeToDrawCmdLog = false;
 
-var resCache = {};
-var fontCache = {};
 
-
-function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, playbackMode, playbackFile) {
+function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, playbackFile) {
     "use strict";
+    var resCache = {};
+    var fontCache = {};
+    var keyboardProcessID = 0;
+    var showKeyboard = false;
+
+    var inputCursorPositionStart = 0;
+    var inputCursorPositionEnd = 0;
+    var inputIgnoreSelection = false;
     var UXIPself = this;
     var protocolState = psDisconnect;
     var msgTimer = null;
     // queued handle_message timer
-    var publicinterface = {};
+    var publicinterface = {uxip: this};
     var ws = null;
     var currentProcessId = null;
     var zlibReader = new ZlibReader();
-
-    var handle_message, moreData, errorAndClose, getInitResponse, getDrawCommand, initProtocol, prepKeyboardLayout,
+    var handle_message, moreData, errorAndClose, getInitResponse, getDrawCommand, prepKeyboardLayout,
         popWindow, PushWindow, setWndId, ShowWindow, HideWindow, setWallpaperByID, toggleSearch, toggleMenu, drawBitmapIntoCanvas,
         prepareCanvasForPaint, setDirtyRect, writeTransaction, drawColor1, saveLayer, restoreLayer, drawText, drawText1,
         drawRect, drawBitmap, saveLayerAlpha, drawLine, drawLines, drawRect1, drawRoundRect, drawBitmap1, setDensity,
@@ -70,15 +67,23 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
         ws.send(buffer);
     });
     var nuboCache = new NuboCache(function(processId) {
-        writer.notifyClearProcessCache(processId);
+        var processIdInt;
+
+        if (typeof processId === 'string') {
+            processIdInt = parseInt(processId);
+        } else {
+            processIdInt = processId;
+        }
+        var nuboByte = getNuboByte(PlayerCmd.clearProcessCache);
+        NuboOutputStreamMgr.sendCmd(nuboByte, processIdInt);
     });
     var reader = new UXIPReader(nuboCache);
-    var openGlModule = new OpenGlModule(reader, NuboOutputStreamMgr.getInstance());
+    var openGlModule;
     var sessID;
     var canvasCtx;
     var domObj;
     var lastProcessID, lastWndID;
-    var mWidth, mHeight, mParentNode;
+    var mWidth, mHeight;
     var mOrgPasscodeTimeout = WRITE_TRANSACTION_TIMEOUT;
     var wm;
     var waitForDraw = false;
@@ -102,7 +107,6 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
     var firstLoginReconnectCounter = 0;
 
     //function constructor(ctx, canvasObj,width,height) {
-    mParentNode = parentNode;
     mWidth = width;
     mHeight = height;
 
@@ -116,14 +120,20 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
     // keyboard input action
     var mImeOptions = 1;
 
-    //parentNode.onmouseup = this.mouseEvent;
-    //parentNode.onmousedown = this.mouseEvent;
-
     //}
 
     var mPackageNameList = [];
+    var NuboOutputStreamMgr = null;
+    this.getNuboOutputStreamMgr = function() {
+        if(NuboOutputStreamMgr) return NuboOutputStreamMgr;
 
-    publicinterface.connect = function(url, sessionID) {
+        var NuboOutputStreamMgrClass = new NuboOutputStreamMgrModule();
+        NuboOutputStreamMgr = NuboOutputStreamMgrClass.getInstance();
+        uxipObj.NuboOutputStreamMgr = NuboOutputStreamMgr;
+        return NuboOutputStreamMgr;
+    }
+
+    publicinterface.connect = function(parentNode, url, sessionID) {
 
         /*if (playbackMode) {
             mZlibData = false;
@@ -137,19 +147,19 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
         var protocol = parser.protocol;
         var port = parser.port;
 
-        if (protocol == "ws:") {
+        if (protocol === "ws:") {
             protocol = "http://";
         } else {
             protocol = "https://";
         }
-        if (port != "") {
+        if (port !== "") {
             port = ":" + port;
         }
 
         var mgmtURL = protocol + host + port;
         resourceURL = mgmtURL + "/html/player/";
 
-        wm = new WindowManager(mParentNode, mWidth, mHeight - 45, uxipObj, sessionID, mgmtURL);
+        wm = new WindowManager(parentNode, mWidth, mHeight - 45, uxipObj, sessionID, mgmtURL);
 
         zlibReader.ondata = function(data) {
             reader.addBuffer(data);
@@ -161,7 +171,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             }
         };
 
-        NuboOutputStreamMgr.getInstance().createSocket(parentNode, width, height, uxipObj, writer);
+        uxipObj.getNuboOutputStreamMgr();
+        NuboOutputStreamMgr.createSocket(uxipObj, writer);
+        openGlModule = new OpenGlModule(reader, NuboOutputStreamMgr);
 
         createWebSocket(url);
         // domObj.onclick=mouseEvent;
@@ -201,7 +213,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             if (protocolState == psDisconnect) {
                 connectTime = new Date().getTime();
                 if (!mPlaybackMode) {
-                    initProtocol();
+                    UXIPself.initProtocol(sessID, getDeviceId());
                 } else {
                     protocolState = psConnected;
                 }
@@ -260,7 +272,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                 duration: 3500
             });
         };
-    }
+    };
 
     function checkTimeOut() {
         var d = new Date();
@@ -275,13 +287,13 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             errorAndClose();
             window.location.reload();
         }
-    };
+    }
 
     function clearTimer(id) {
         if (id != null) {
             clearInterval(id);
         }
-    };
+    }
 
     // event.type must be keypress
     function getChar(event) {
@@ -299,18 +311,33 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
 
     this.getSpecialLanguage = function() {
         return specialLanguage;
-    }
+    };
 
     this.getkeyboardProcessId = function() {
         return keyboardProcessID;
-    }
+    };
 
     this.virtualKeyboardSetFocus = function() {
         if (specialLanguage) {
             $("#edVirtualKeyboard").css({ top: lastTouchY, left: lastTouchX, position: 'fixed' });
             document.getElementById("edVirtualKeyboard").focus();
         }
-    }
+    };
+
+    this.getLastTouch = function() {
+        return {
+            left: lastTouchX,
+            top: lastTouchY
+        };
+    };
+    this.setLastTouch = function(left, top) {
+        lastTouchX = left;
+        lastTouchY = top;
+    };
+
+    this.updateInputIgnoreSelection = function(val) {
+        inputIgnoreSelection = val;
+    };
 
     this.keyEvent = function(eventt, processId, wndId, src) {
 
@@ -418,7 +445,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                 if (key != 37 && key != 39) {
                     eventt.preventDefault();
                 }
-                var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
+                var eventaction = (eventt.type === "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
                 handleKeyEvent(currentProcessId, wndId, {
                     name: "KeyEvent",
                     action: eventaction,
@@ -431,7 +458,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             if (!showKeyboard) {
                 return true;
             }
-            var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
+            var eventaction = (eventt.type === "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
 
             var val = $("#edVirtualKeyboard").val();
             var text = val.replace("#", "");
@@ -441,7 +468,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
 
             switch (key) {
                 case 8:  //DELETE
-                    if (eventt.type == "keyup") {
+                    if (eventt.type === "keyup") {
                         var overrideDel = false;
                         if (isTextComposed) {
                             var lenDiff = text.length - startComposeTextLen;
@@ -478,7 +505,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                 case 13:  //ENTER
                     // console.log("uxip.keyEvent. ENTER ");
 
-                    if (eventt.type == "keydown") {
+                    if (eventt.type === "keydown") {
                         sendFinishComposing(keyboardProcessID);
                         resetComposing();
                     }
@@ -505,7 +532,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                     break;
 
                 default:
-                    if (eventt.type == "keyup") {
+                    if (eventt.type === "keyup") {
                         if (!isTextComposed) {
                             var newCharPos = getSelectionStart() - 2;
                             if (newCharPos<0) {
@@ -523,7 +550,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                     break;
             }
 
-            if (text.length == 0) {
+            if (text.length === 0) {
                 $("#edVirtualKeyboard").val("#");
                 oldInputText = "";
             } else {
@@ -534,7 +561,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
 
         } else {
 
-            if (eventt.type == "keypress") {
+            if (eventt.type === "keypress") {
                 if (eventt.keyCode == 0) {  // slash->"quick find" in firefox
                     eventt.preventDefault();
                 }
@@ -660,7 +687,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
                 }
                 if (specialKey > 0) {
                     eventt.preventDefault();
-                    var eventaction = (eventt.type == "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
+                    var eventaction = (eventt.type === "keydown" ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP);
                     handleKeyEvent(currentProcessId, wndId, {
                         name: "KeyEvent",
                         action: eventaction,
@@ -674,290 +701,34 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
 
     this.resetLastInteraction = function() {
         lastInteraction = new Date().getTime();
-    }
+    };
 
     this.protocolState = function() {
         return protocolState;
-    };
-
-    var lastTouchX;
-    var lastTouchY;
-
-    this.mouseEvent = function(eventt) {
-        var lastMouseDownTouchTime = eventt.lastMouseDownTouchTime;
-        // Log.d(TAG, "mouseEvent. event.type = " + eventt.type + " lastMouseDownTouchTime=" + lastMouseDownTouchTime);
-
-        var src = eventt.src;
-        var rect = src.getBoundingClientRect();
-
-        var left = eventt.clientX - rect.left - src.clientLeft + src.scrollLeft;
-        var top = eventt.clientY - rect.top - src.clientTop + src.scrollTop;
-        // Log.v(TAG, "mouseEvent.  type=" + eventt.type + ", timeStamp=" + eventt.timeStamp + ", left=" + left + ", top=" + top);
-
-        writer.writeBoolean(false);
-        //not null
-
-        var timevar = {
-            hi: 0,
-            lo: 0
-        };
-
-        writer.writeLong(timevar);
-        writer.writeLong(timevar);
-        writer.writeInt(1);
-        var action;
-
-        if (eventt.type == "mouseup") {
-            lastTouchX = null;
-            lastTouchY = null;
-            action = 1;
-        } else if (eventt.type == "mousedown") {
-            lastTouchX = left;
-            lastTouchY = top;
-            action = 0;
-        } else if (eventt.type == "mousemove") {
-            action = 2;
-        }
-        writer.writeInt(action);
-
-        writer.writeInt(0);
-        //properties.id
-        writer.writeInt(1);
-        //properties.toolType
-
-        if (action != 2) {
-
-            writer.writeFloat(0);
-            // coords.orientation
-            writer.writeFloat(90);
-            // coords.toolMajor);
-            writer.writeFloat(90);
-            // coords.toolMinor);
-            writer.writeFloat(90);
-            // coords.touchMajor);
-            writer.writeFloat(90);
-            // coords.touchMinor);
-        }
-
-        writer.writeFloat(0.73);
-        //coords.pressure);
-        writer.writeFloat(0.26);
-        //coords.size);
-        writer.writeFloat(left);
-        //coords.x
-        writer.writeFloat(top);
-        //coords.y
-        writer.writeFloat(2);
-        //e.getXPrecision());
-        writer.writeFloat(2);
-        //e.getYPrecision());
-
-        if (action != 2) {
-            writer.writeInt(0);
-            // e.getMetaState());
-            writer.writeInt(0);
-            // e.getButtonState());
-            writer.writeInt(0);
-            // e.getEdgeFlags());
-            writer.writeInt(4098);
-            // touchscreen... //e.getSource());
-            writer.writeInt(0);
-            // e.getFlags());
-
-        } else {
-            var now = new Date().getTime();
-            var interval = now - lastMouseDownTouchTime;
-            var velocityX = (left - lastTouchX) / interval;
-            var velocityY = (top - lastTouchY) / interval;
-            writer.writeFloat(velocityX);
-            writer.writeFloat(velocityY);
-        }
-
-        inputIgnoreSelection = false;
-        return true;
-    };
-
-    this.touchEvent = function(eventt) {
-//        Log.e(TAG, "touchEvent. eventt.type: " + eventt.type);
-        var lastMouseDownTouchTime = eventt.lastMouseDownTouchTime;
-
-        var src = eventt.src;
-        var rect = src.getBoundingClientRect();
-
-        writer.writeBoolean(false);
-        var timevar = {
-            hi: 0,
-            lo: 0
-        };
-        writer.writeLong(timevar);
-        writer.writeLong(timevar);
-
-        writer.writeInt(eventt.changedTouches.length); // number of touches
-        var action;
-
-        if (eventt.type == "touchend" || eventt.type == "touchcancel") {
-            lastTouchX = null;
-            lastTouchY = null;
-            action = 1;
-        } else if (eventt.type == "touchstart") {
-            action = 0;
-        } else if (eventt.type == "touchmove") {
-            action = 2;
-        }
-
-        writer.writeInt(action);
-
-        for (var i = 0; i < eventt.changedTouches.length; i++) {
-            var touch = eventt.changedTouches[i];
-            writer.writeInt(i); // id
-            writer.writeInt(1); // toolType
-        }
-
-        for (var i = 0; i < eventt.changedTouches.length; i++) {
-            var touch = eventt.changedTouches[i];
-            var left = touch.clientX - rect.left - src.clientLeft + src.scrollLeft;
-            var top = touch.clientY - rect.top - src.clientTop + src.scrollTop;
-            if (eventt.type == "touchstart" && i == 0) {
-                // get last X and Y for velocity calculation later
-                lastTouchX = left;
-                lastTouchY = top;
-            }
-            //            Log.v(TAG, "touchPoint.  type: " + eventt.type + ", timeStamp: " + eventt.timeStamp +
-            //                  ", left: " + left + ", top: " + top + ", force: " +touch.force);
-
-            if (action != 2) {
-                writer.writeFloat(0); // orientation
-                writer.writeFloat(90); // toolMajor
-                writer.writeFloat(90); // toolMinor
-                writer.writeFloat(90); // touchMajor
-                writer.writeFloat(90); // touchMinor
-            }
-
-            writer.writeFloat(touch.force ? touch.force : 0.73); // pressure;
-            writer.writeFloat(0.26); // size
-            writer.writeFloat(left); // coords.x
-            writer.writeFloat(top); // coords.y
-        }
-
-        writer.writeFloat(2); // XPrecision
-        writer.writeFloat(2); // YPrecision
-
-        if (action != 2) {
-            writer.writeInt(0); // MetaState
-            writer.writeInt(0); // ButtonState
-            writer.writeInt(0); // EdgeFlags
-            writer.writeInt(4098); // touchscreen
-            writer.writeInt(0); // Flags
-        }
-
-        if (action == 2) { // move event
-            var now = new Date().getTime();
-            var interval = now - lastMouseDownTouchTime;
-            lastMouseDownTouchTime = now;
-            var velocityX = (left - lastTouchX) / interval;
-            var velocityY = (top - lastTouchY) / interval;
-
-            writer.writeFloat(velocityX);
-            writer.writeFloat(velocityY);
-        }
-
-        inputIgnoreSelection = false;
-        return true;
     };
 
     var wheeldelta = {
         x: 0,
         y: 0
     };
+    this.getWheeldelta = function() {
+        return wheeldelta;
+    };
+    this.setWheeldelta = function(x, y) {
+        wheeldelta.x = x;
+        wheeldelta.y = y;
+    };
+    this.scrollWheeldelta = function(diff) {
+        wheeldelta.y += diff;
+    };
     var lastMouseDownTouchTime = 0;
-    var lastTouchX = 0,
-        lastTouchY = 0;
-
-    this.mousewheel = function(eventt) {
-        //      up: delta > 0, down: delta < 0
-        //      Log.e(TAG, "mousewheel. eventt.type: " + eventt.type + ", eventt.action: " + eventt.action + ", eventt.delta: " + eventt.delta);
-
-        if (eventt.type != "mousewheel" && eventt.type != "DOMMouseScroll" && eventt.type != "wheel") {
-            writer.writeBoolean(true);
-            return true;
-        }
-
-        var src = eventt.src;
-        var rect = src.getBoundingClientRect();
-
-        var action = eventt.action; // 0-ACTION_DWON; 1-ACTION_UP; 2-ACTION_MOVE
-        if (action == 0) {
-            wheeldelta.x = eventt.clientX - rect.left;
-            wheeldelta.y = eventt.clientY - rect.top;
-
-            lastTouchX = 0;
-            lastTouchY = 0;
-            lastMouseDownTouchTime = 0;
-        } else if (action == 2) {
-            if (eventt.delta < 0) {
-                wheeldelta.y -= 15;
-            } else {
-                wheeldelta.y += 15;
-            }
-        }
-
-        writer.writeBoolean(false); // 1
-        var timevar = {
-            hi: 0,
-            lo: 0
-        };
-
-        writer.writeLong(timevar); // 2 down time
-        writer.writeLong(timevar); // 3 event time
-        writer.writeInt(1); // 4 number of touches
-        writer.writeInt(action); // 5 action
-        writer.writeInt(0); // 6 id
-        writer.writeInt(1); // 7 tool type
-
-        if (action != 2) {
-            writer.writeFloat(0); // orientation
-            writer.writeFloat(90); // toolMajor
-            writer.writeFloat(90); // toolMinor
-            writer.writeFloat(90); // touchMajor
-            writer.writeFloat(90); // touchMinor
-        }
-
-        writer.writeFloat(0.73); // pressure
-        writer.writeFloat(0.26); // size
-
-        var left = wheeldelta.x; // + rect.left;
-        var top = wheeldelta.y; // + rect.top;
-
-        writer.writeFloat(left); // coords.x
-        writer.writeFloat(top); // coords.y
-        writer.writeFloat(2); // XPrecision
-        writer.writeFloat(2); // YPrecision
-
-        if (action != 2) {
-            writer.writeInt(0); // MetaState
-            writer.writeInt(0); // ButtonState
-            writer.writeInt(0); // EdgeFlags
-            writer.writeInt(4098); // touchscreen
-            writer.writeInt(0); // flags
-        }
-
-        if (action == 2) {
-            var now = new Date().getTime();
-            var interval = eventt.timeStamp - lastMouseDownTouchTime;
-            var velocityX = (left - lastTouchX) / interval;
-            var velocityY = (top - lastTouchY) / interval;
-
-            writer.writeFloat(velocityX);
-            writer.writeFloat(velocityY);
-        }
-
-        // save data
-        lastMouseDownTouchTime = eventt.timeStamp;
-        lastTouchX = left;
-        lastTouchY = top;
-
-        return true;
-    }
+    var lastTouchX = 0, lastTouchY = 0;
+    this.getLastMouseDownTouchTime = function() {
+        return lastMouseDownTouchTime;
+    };
+    this.setLastMouseDownTouchTime = function(val) {
+        lastMouseDownTouchTime = val;
+    };
 
     errorAndClose = function() {
         protocolState = psError;
@@ -985,9 +756,9 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
         (function(a, b) { if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true; })(navigator.userAgent || navigator.vendor || window.opera);
         return check;
     };
-    var isMobile = mobilecheck();
+    var isMobile = (typeof navigator !== "undefined") && mobilecheck();
 
-    initProtocol = function() {
+    this.initProtocol = function(sessID, deviceid) {
         protocolState = psInit;
         // Log.d("sessid=" + sessID);
 
@@ -1007,7 +778,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
         var mNavBarWidth = 0;
 
         var romClientType = RomClientType.WEB;
-        if (Modernizr.webp) {
+        if (Modernizr && Modernizr.webp) {
             romClientType = romClientType | RomClientType.ROM_IMAGES_WEBP;
         } else {
             romClientType = romClientType | RomClientType.ROM_IMAGES_PNG;
@@ -1032,9 +803,8 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
         }
         Log.d(TAG, "hideNuboAppPackgeName: " + hideNuboAppPackgeName + ", nuboFlags: " + nuboFlags);
 
-        NuboOutputStreamMgr.getInstance().setIsPlayerLogin(true);
-        NuboOutputStreamMgr.getInstance().setSessionId(sessID);
-        NuboOutputStreamMgr.getInstance().sendCmd(playerLogin, 123456, sessID, // write int int string
+        NuboOutputStreamMgr.setSessionId(sessID);
+        NuboOutputStreamMgr.sendCmd(playerLogin, 123456, sessID, // write int int string
             mWidth, mHeight, mDensityDpi, // write all int
             mXDpi, mYDpi, mScaledDensity, // write all float
             mRotation, mNavBarHeightPortrait, mNavBarHeightLandscape, mNavBarWidth, romClientType, 17, // write all int
@@ -1044,11 +814,10 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             "", // data intent
             //0, //camera array
             //3, //HIGH NETWORK QUALITY
-            getDeviceId(),
+            deviceid,
             nuboFlags, // flags
             hideNuboAppPackgeName //"com.salesforce.chatter"
         ); // write int, int, int , dataIntent withservice
-        NuboOutputStreamMgr.getInstance().setIsPlayerLogin(false);
 
         //ws.send(buffer2);
         //ws.send(strBuff);
@@ -1546,12 +1315,12 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
         var openglChunkSize = reader.readInt();
         if(!reader.canReadBytes(4 + openglChunkSize)) return false;
         var chunkIdx = reader.readInt();
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.gl_Feedback), processId, wndId, 1, chunkIdx);
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.gl_Feedback), processId, wndId, 1, chunkIdx);
         var res = reader.readNBytes(openglChunkSize);
         openGlModule.handleData(res.data, function(err, res) {
             setTimeout(function() {
                 if(res && res.name) {
-                    NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.gl_Return), processId, wndId, chunkIdx, res.data.byteLength, res);
+                    NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.gl_Return), processId, wndId, chunkIdx, res.data.byteLength, res);
                 }
             }, 0);
         });
@@ -2490,7 +2259,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             // 9patch is always in png format
             if (drawBitmapType == DrawBitmapType.ninePatch) {
                 img.setAttribute("src", 'data:image/png;base64,' + bitmap.b64encoded);
-            } else if (Modernizr.webp) { // supports webp format
+            } else if (Modernizr && Modernizr.webp) { // supports webp format
                 img.setAttribute("src", 'data:image/webp;base64,' + bitmap.b64encoded);
             } else {
                 img.setAttribute("src", 'data:image/png;base64,' + bitmap.b64encoded);
@@ -3656,7 +3425,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
 
         // notify platform on keyboard state
         // check if need to pass currentProcessId instead
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.setKeyboardState), processId, show);
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.setKeyboardState), processId, show);
         keyboardProcessID = processId;
 
         if (show) {
@@ -3686,7 +3455,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             //document.getElementById("edVirtualKeyboard").focus();
             // check if need to pass currentProcessId instead
 
-            // NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.setKeyboardHeight), processId, mHeight / 2);
+            // NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.setKeyboardHeight), processId, mHeight / 2);
         } else {
             if (DEBUG_PROTOCOL_NETWORK) {
                 Log.d("Hide soft keyboard");
@@ -4033,7 +3802,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
         if (keyEvent == null) {
             return;
         }
-        NuboOutputStreamMgr.getInstance().sendCmd(keyEvent, processId);
+        NuboOutputStreamMgr.sendCmd(keyEvent, processId);
     };
 
     publicinterface.close = function() {
@@ -4147,56 +3916,56 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
     handleKeyEvent = function(processId, wndId, event) {
         if (protocolState != psConnected)
             return;
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.keyEvent), processId, wndId, event);
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.keyEvent), processId, wndId, event);
     };
 
     sendFinishComposing = function(processId) {
         if (protocolState != psConnected)
             return;
         // console.log("sendFinishComposing. processId: " + processId);
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtFinishComposing), processId);
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.TxtFinishComposing), processId);
     };
 
     sendCommitText = function(processId, text) {
         if (protocolState != psConnected)
             return;
         // console.log("sendCommitText. processId: " + processId + ", text: " + text);
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtCommit), processId, text, 1);
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.TxtCommit), processId, text, 1);
     };
 
     sendComposingText = function(processId, text) {
         if (protocolState != psConnected)
             return;
         // console.log("sendComposingText. processId: " + processId + ", text: " + text);
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtCompose), processId, text, 1);
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.TxtCompose), processId, text, 1);
     };
 
     sendDeleteText = function(processId, beforeLength, afterLength) {
         if (protocolState != psConnected)
             return;
         // console.log("sendDeleteText. processId: " + processId + ", beforeLength: " + beforeLength + ", afterLength: " + afterLength);
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtDeleteText), processId, beforeLength, afterLength);
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.TxtDeleteText), processId, beforeLength, afterLength);
     };
 
     sendSetTextRegion = function(processId, start, end) {
         if (protocolState != psConnected)
             return;
         // console.log("sendSetTextRegion. processId: " + processId + ", start: " + start + ", end: " + end);
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtSetRegion), processId, start, end);
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.TxtSetRegion), processId, start, end);
     };
 
     sendSetSelection = function(processId, start, end) {
         if (protocolState != psConnected)
             return;
         // console.log("sendSetSelection. processId: " + processId + ", start: " + start + ", end: " + end);
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtSetSelection), processId, start, end);
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.TxtSetSelection), processId, start, end);
     };
 
     sendEditorAction = function(processId, action) {
         if (protocolState != psConnected)
             return;
         // console.log("sendEditorAction. processId: " + processId + ", action: " + action);
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.TxtEditorAction), processId, action);
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.TxtEditorAction), processId, action);
     };
 
     if (START_ROUND_TRIP_CHECK && !mPlaybackMode) {
@@ -4217,7 +3986,7 @@ function UXIP(parentNode, width, height, passcodeTimeout, isSpecialLanguage, pla
             errorAndClose();
             return;
         }
-        NuboOutputStreamMgr.getInstance().sendCmd(UXIPself.nuboByte(PlayerCmd.roundTripData), processId || -1, wndId || -1, getNuboLongAsFloat(time));
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.roundTripData), processId || -1, wndId || -1, getNuboLongAsFloat(time));
     };
 
     function getNuboLongAsFloat(nuboLongAsFloat) {
@@ -4511,49 +4280,6 @@ ContainerType.POPUPWINDOW = 0x04;
 ContainerType.DEFAULT = 0x08;
 //Default is for all else
 
-function PlayerCmd() {}
-
-PlayerCmd.sync = -1;
-PlayerCmd.touchEvent = 1;
-PlayerCmd.keyEvent = 2;
-PlayerCmd.playerLogin = 3;
-PlayerCmd.playerDisconnected = 4;
-PlayerCmd.switchUser = 5;
-PlayerCmd.setKeyboardHeight = 6;
-PlayerCmd.platformProcessConnected = 7;
-PlayerCmd.setKeyboardState = 8;
-PlayerCmd.clearProcessCache = 14;
-PlayerCmd.roundTripData = 17;
-//igor commands
-PlayerCmd.homeKeyEvent = 20;
-PlayerCmd.notificationCancel = 21;
-PlayerCmd.searchKeyEvent = 22;
-PlayerCmd.notificationOpen = 23;
-PlayerCmd.requestState = 24;
-
-// Video commands
-PlayerCmd.VideoErrorEvent = 25;
-PlayerCmd.VideoCompleteEvent = 26;
-PlayerCmd.VideoBufferEvent = 27;
-PlayerCmd.VideoInfoEvent = 28;
-PlayerCmd.VideoSeekEvent = 29;
-PlayerCmd.VideoProgress = 30;
-PlayerCmd.OnVideoSizeChanged = 31;
-PlayerCmd.VideoDuration = 37;
-
-// Keyboard commands
-PlayerCmd.TxtCompose = 50;
-PlayerCmd.TxtCommit = 51;
-PlayerCmd.TxtDeleteText = 52;
-PlayerCmd.TxtSetRegion = 53;
-PlayerCmd.TxtFinishComposing = 54;
-PlayerCmd.TxtSetSelection = 55;
-PlayerCmd.TxtKeyEvent = 56;
-PlayerCmd.TxtEditorAction = 57;
-
-PlayerCmd.gl_Return = 90;
-PlayerCmd.gl_Feedback = 91;
-
 
 
 function drawCmdCodeToText(code) {
@@ -4565,98 +4291,6 @@ function drawCmdCodeToText(code) {
     return code;
 }
 
-function DrawCmd() {}
-
-DrawCmd.glRenderCmd = 128;
-DrawCmd.glAttachToWindow = 129;
-DrawCmd.audioCmd = -126;
-DrawCmd.setDirtyRect = 1;
-DrawCmd.drawColor1 = 2;
-DrawCmd.saveLayer = 3;
-DrawCmd.restoreLayer = 4;
-DrawCmd.drawText = 5;
-DrawCmd.drawText1 = 6;
-DrawCmd.drawRect = 7;
-DrawCmd.drawBitmap = 8;
-DrawCmd.saveLayerAlpha = 9;
-DrawCmd.drawColor2 = 10;
-DrawCmd.drawLine = 11;
-DrawCmd.drawLines = 12;
-DrawCmd.drawRect1 = 13;
-DrawCmd.drawRoundRect = 14;
-DrawCmd.drawBitmap1 = 15;
-DrawCmd.setDensity = 16;
-DrawCmd.drawTextRun = 17;
-DrawCmd.ninePatchDraw = 18;
-DrawCmd.drawBitmap6 = 19;
-DrawCmd.drawPosText1 = 20;
-DrawCmd.drawPosText2 = 21;
-DrawCmd.drawBitmap8 = 22;
-DrawCmd.drawPlayerLoginAck = 23;
-DrawCmd.oldToast = 24;
-DrawCmd.drawBitmapMatrix = 25;
-DrawCmd.drawPath = 26;
-
-DrawCmd.drawPoints = 27;
-DrawCmd.countLocationUpdates = 28;
-DrawCmd.setPackageName = 29;
-DrawCmd.drawOval = 30;
-DrawCmd.drawArc = 31;
-DrawCmd.drawCircle = 32;
-DrawCmd.drawPath2 = 33;
-
-DrawCmd.MediaObject_stop = 71;
-DrawCmd.Video_createNewSurfaceView = 72;
-DrawCmd.MediaObject_release = 73;
-DrawCmd.MediaObject_reset = 74;
-DrawCmd.Video_pauseVideo = 75;
-DrawCmd.Video_seekTo = 76;
-DrawCmd.UpdateCursor = 77;
-DrawCmd.MediaObject_play = 78;
-DrawCmd.MediaObject_newObject = 79;
-DrawCmd.MediaObject_prepare = 80;
-DrawCmd.Video_attachToSurface = 81;
-DrawCmd.Video_setVolume = 82;
-
-DrawCmd.toast = 83;
-DrawCmd.nuboTestSocketAck = 84;
-DrawCmd.authenticateNuboApp = 85;
-DrawCmd.closeClientApp = 89;
-
-
-//immediate draw commands
-DrawCmd.IMMEDIATE_COMMAND = 100;
-//dummy command
-DrawCmd.writeTransaction = 101;
-DrawCmd.pushWindow = 102;
-DrawCmd.popWindow = 103;
-DrawCmd.showWindow = 104;
-DrawCmd.hideWindow = 105;
-DrawCmd.drawWebView = 106;
-DrawCmd.showSoftKeyboard = 107;
-DrawCmd.prepKeyboardLayout = 108;
-DrawCmd.removeProcess = 109;
-DrawCmd.setWndId = 110;
-DrawCmd.initPopupContentView = 111;
-DrawCmd.updatePopWindow = 112;
-
-// igor commands
-DrawCmd.wallpaperOffset = 113;
-DrawCmd.toggleMenu = 114;
-DrawCmd.toggleSearch = 115;
-DrawCmd.wallpaperID = 116;
-DrawCmd.incomingNotification = 117;
-
-//NON-igor command
-DrawCmd.resizeWindow = 118;
-DrawCmd.sendKeyboardExtractedText = 119;
-DrawCmd.updateScreenOrientation = 120;
-DrawCmd.clearProcessCacheAck = 121;
-DrawCmd.prepareViewCache = 122;
-DrawCmd.roundTripDataAck = 123;
-DrawCmd.outgoingCall = 124;
-DrawCmd.setTopTask = 125;
-DrawCmd.setWindowPos = 126;
 
 //drawBitmapType
 function DrawBitmapType() {}
@@ -4869,9 +4503,7 @@ UXIPExport = {
     Join: Join,
     Align: Align,
     Typeface: Typeface,
-    DrawCmd: DrawCmd,
     KeyEvent: KeyEvent,
-    PlayerCmd: PlayerCmd,
     FloatArrSendRcvType: FloatArrSendRcvType
 };
 
@@ -4879,6 +4511,16 @@ if (typeof module != 'undefined') {
     module.exports = UXIPExport;
     UTF8 = require('./utf8.js').UTF8;
     NuboCache = require('./nubocache.js').NuboCache;
+    ZlibReader = require('./zlibReader.js').ZlibReader;
+    UXIPReader = require('./uxipReader.js').UXIPReader;
+    UXIPWriter = require('./uxipWriter.js').UXIPWriter;
+    OpenGlModule = require('./opengl.js').OpenGlModule;
+    DrawCmd = require('./ops.js').DrawCmd;
+    PlayerCmd = require('./ops.js').PlayerCmd;
+    Modernizr = undefined;
+    Common = {};
+    getHideNuboAppPackgeName = function() {return "";};
+    NuboOutputStreamMgrModule = require('./NuboOutputStreamMgr.js');
 }
 
 function setPosition(pos) {

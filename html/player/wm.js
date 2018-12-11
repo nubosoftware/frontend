@@ -396,7 +396,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             }
 
             evtobj.lastMouseDownTouchTime = lastMouseDownTouchTime;
-            NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
+            mUxip.NuboOutputStreamMgr.sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
 
             if (evtobj.type == "mouseup") {
                 mUxip.virtualKeyboardSetFocus();
@@ -413,7 +413,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
 
             if (lastMouseDownTouchTime) {
                 evtobj.lastMouseDownTouchTime = lastMouseDownTouchTime;
-                NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
+                mUxip.NuboOutputStreamMgr.sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
             }
         };
 
@@ -446,11 +446,11 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                 wheeling = setTimeout(function() { // stop wheeling
                     wheeling = undefined;
                     evtobj.action = 2;
-                    NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
+                    mUxip.NuboOutputStreamMgr.sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
 
                     lastEvtobj.name = "MouseWheel";
                     lastEvtobj.action = 1;
-                    NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, lastEvtobj);
+                    mUxip.NuboOutputStreamMgr.sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, lastEvtobj);
                     lastEvtobj = null;
                 }, 250);
 
@@ -458,7 +458,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                 evtobj.src = this;
                 evtobj.preventDefault();
                 evtobj.delta = delta;
-                NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
+                mUxip.NuboOutputStreamMgr.sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
                 return;
             }
         }
@@ -480,7 +480,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
                 }
             }
             evtobj.lastMouseDownTouchTime = lastMouseDownTouchTime;
-            NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
+            mUxip.NuboOutputStreamMgr.sendCmd(mUxip.nuboByte(PlayerCmd.touchEvent), sn.processId, sn.wndId, evtobj);
         };
 
         sn.canvas.onmouseup = sn.mouseEvent;
@@ -733,7 +733,7 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
         Log.d("prepareMediaPlayer. send videoDuration... mediaPlayer.objectHashInt: " + mediaPlayer.objectHashInt +
             ", videoDuration: " + totalDuration);
         mediaPlayer.totalDuration = totalDuration;
-        NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.VideoDuration),
+        mUxip.NuboOutputStreamMgr.sendCmd(mUxip.nuboByte(PlayerCmd.VideoDuration),
             mediaPlayer.processId, mediaPlayer.objectHashInt, totalDuration);
 
         var isLive = "true";
@@ -769,13 +769,13 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             Log.d(TAG, "onprogress. Current Time: " + mediaPlayer.videoObj.currentTime +
                 ", duration: " + mediaPlayer.videoObj.duration);
             var progressInt = Math.floor(mediaPlayer.videoObj.currentTime * 1000);
-            NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.VideoProgress),
+            mUxip.NuboOutputStreamMgr.sendCmd(mUxip.nuboByte(PlayerCmd.VideoProgress),
                 mediaPlayer.processId, mediaPlayer.objectHashInt, progressInt);
         };
 
         mediaPlayer.videoObj.onended = function() {
             Log.e(TAG, "Video ended!");
-            NuboOutputStreamMgr.getInstance().sendCmd(mUxip.nuboByte(PlayerCmd.VideoCompleteEvent), mediaPlayer.processId, mediaPlayer.objectHashInt);
+            mUxip.NuboOutputStreamMgr.sendCmd(mUxip.nuboByte(PlayerCmd.VideoCompleteEvent), mediaPlayer.processId, mediaPlayer.objectHashInt);
         };
 
         sn.panel.insertBefore(mediaPlayer.videoObj, sn.canvas);

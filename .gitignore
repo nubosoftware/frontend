@@ -20,4 +20,5 @@ html/player/out.js
 rpmbuild/RPMS/
 rpmbuild/SRPMS/
 debbuild/
+package-lock.json
 

@@ -182,7 +182,7 @@ var mainFunction = function(err, firstTimeLoad) {
                     var myserver = restify.createServer(server_options);
                     buildServerObject(myserver);
                     myserver.listen(port, host, function() {
-                        logger.info('%s listening at %s', myserver.name, myserver.url);
+                        logger.info(myserver.name + ' listening at ' + myserver.url);
                         callback(null);
                     });
                     var closeListener = function(callback) {

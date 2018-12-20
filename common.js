@@ -104,13 +104,12 @@ var loggerName = Common.path.basename(process.argv[1], '.js') + ".log";
 var exceptionLoggerName = Common.path.basename(process.argv[1], '.js') + "_exceptions.log";
 console.log("log file: " + loggerName);
 
-const  { createLogger , format, transports  } = require('winston');
+const { createLogger , format, transports  } = require('winston');
 const { combine, timestamp, label, printf } = format;
-
+require('winston-syslog').Syslog;
 const myFormat = printf(info => {
     return `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`;
-  });
-
+});
 
 Common.logger = createLogger({
     format: combine(
@@ -118,41 +117,41 @@ Common.logger = createLogger({
         timestamp(),
         myFormat
     ),
-    transports : [new (transports.Console)({
-        json : false,
-        timestamp: true,
-        colorize: true
-    }), new transports.File({
-        filename : __dirname + '/log/' + loggerName,
-        handleExceptions : true,
-        maxsize: 100*1024*1024, //100MB
-        maxFiles: 4,
-        json : false
-    })],
-    exceptionHandlers : [new (transports.Console)({
-        json : false,
-        timestamp : true
-    }), new transports.File({
-        filename : __dirname + '/log/' + exceptionLoggerName,
-        json : false
-    })],
+    transports : [
+        new (transports.Console)({
+            json : false,
+            timestamp: true,
+            colorize: true
+        }),
+        new transports.File({
+            filename : __dirname + '/log/' + loggerName,
+            handleExceptions : true,
+            maxsize: 100*1024*1024, //100MB
+            maxFiles: 4,
+            json : false
+        }),
+        new transports.Syslog({
+            app_name : "nubomanagement-public",
+            handleExceptions : true,
+            localhost: null,
+            protocol: "unix",
+            path: "/dev/log",
+            json : true
+        })
+    ],
+    exceptionHandlers : [
+        new (transports.Console)({
+            json : false,
+            timestamp : true
+        }), new transports.File({
+            filename : __dirname + '/log/' + exceptionLoggerName,
+            json : false
+        })
+    ],
     exitOnError : false
 });
 
 var logger = Common.logger;
-try {
-    require('winston-syslog').Syslog;
-    logger.add(winston.transports.Syslog, {
-        app_name : "nubomanagement-public",
-        handleExceptions : true,
-        localhost: null,
-        protocol: "unix",
-        path: "/dev/log",
-        json : true
-    });
-} catch(e) {
-    logger.warn("syslog module is not installed");
-}
 
 Common.specialBuffers = {};
 

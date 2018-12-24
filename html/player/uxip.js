@@ -801,7 +801,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
         if (hideNuboAppPackgeName && hideNuboAppPackgeName != undefined) {
             nuboFlags = 1;
         }
-        Log.d(TAG, "hideNuboAppPackgeName: " + hideNuboAppPackgeName + ", nuboFlags: " + nuboFlags);
+        Log.d(TAG, "playerLogin. w: " + mWidth + ", h: " + mHeight);
 
         NuboOutputStreamMgr.setSessionId(sessID);
         NuboOutputStreamMgr.sendCmd(playerLogin, 123456, sessID, // write int int string
@@ -1230,6 +1230,9 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
                     break;
                 case DrawCmd.Video_seekTo:
                     func = seekToVideo;
+                    break;
+                case DrawCmd.audioCmd:
+                    func = audioParams;
                     break;
                 default:
                     Log.e(TAG, "processId=" + processId + ", cmdcode=" + cmdcode + ", wndId=" + wndId);
@@ -3808,6 +3811,12 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
     publicinterface.close = function() {
         ws.close();
     };
+
+    publicinterface.resizeEvent = function(w,h) {
+        if (protocolState != psConnected)
+            return;
+        //NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.orientationChange), w, h, 0);
+    }
     publicinterface.clickHome = function() {
         // Log.d("clickHome.");
         if (protocolState != psConnected)
@@ -3825,6 +3834,10 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
             }
         }
     };
+
+    publicinterface.clickTasks = function() {
+        NuboOutputStreamMgr.sendCmd(UXIPself.nuboByte(PlayerCmd.recentApps));
+    }
 
     publicinterface.clickSearch = function() {
         if (PRINT_NETWORK_COMMANDS) {
@@ -4111,7 +4124,28 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
         return true;
     };
 
-    //new Video functions 
+
+    var audioOutStarted = false;
+    var audioInStarted = false;
+    var audioParams = function(processId,wndId) {
+        let playbackStarted = reader.readBoolean();
+        let playbackStreamType = reader.readInt();
+        let recordStarted = reader.readBoolean();
+        let recordInputSource = reader.readInt();
+        Log.e(TAG,"audioParams. playbackStarted: "+playbackStarted+", playbackStreamType: "+playbackStreamType+", recordStarted: "+recordStarted+", recordInputSource: "+recordInputSource);
+        if (playbackStarted && !audioOutStarted && publicinterface.onStartAudioOut)  {
+            audioOutStarted = true;
+            publicinterface.onStartAudioOut();
+        }
+        if (recordStarted && !audioInStarted && publicinterface.onStartAudioIn)  {
+            audioInStarted = true;
+            publicinterface.onStartAudioIn();
+        }
+        return true;
+
+    };
+
+    //new Video functions
     var createNewSurfaceView = function(processId, surfaceHash) {
         var data = {
                 x: reader.readInt(),
@@ -4290,7 +4324,6 @@ function drawCmdCodeToText(code) {
     }
     return code;
 }
-
 
 //drawBitmapType
 function DrawBitmapType() {}

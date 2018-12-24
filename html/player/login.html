@@ -37,6 +37,7 @@
     <script type="text/javascript" src="videojs-contrib-hls.min.js"></script>
     <script type="text/javascript" src="adapter.js"></script>
     <script type="text/javascript" src="janus.js"></script>
+    <script type="text/javascript" src="js/bowser.min.js"></script>
 
     <script language="javascript" type="text/javascript">
         var production = true;
@@ -91,6 +92,26 @@
             <input id="edWorkEmail" class="alignText" type="email" autocomplete="on" placeholder="Work Email" value="<%- workEmail %>" />
             <span id="WorkEmailErr" class="errText"></span>
 
+        </div>
+    </script>
+
+    <script type="text/template" id="about_template">
+        <div class="subdiv">
+            <img id="nubologo" src="images/logo.png" />
+            <div class="aboutLabel" localize-text="nuboWebClientVer" ></div>
+            <div class="aboutValue" id="aboutClientVer"  ></div>
+            <div class="aboutLabel" localize-text="clientUID" ></div>
+            <div class="aboutValue" id="aboutClientUID" ></div>
+            <div class="aboutLabel" localize-text="browserVer" ></div>
+            <div class="aboutValue" id="browserVersion" ></div>
+            <div class="aboutLabel" localize-text="aboutOS" ></div>
+            <div class="aboutValue" id="osVersion" ></div>
+            <div class="aboutLabel" localize-text="userName" ></div>
+            <div class="aboutValue" id="aboutUser" ></div>
+            <div class="aboutValue" id="logoutDiv" ><div class="aboutBtn" id="logoutBtn" localize-text="logoutUser"></div></div>
+            <div class="aboutLabel" localize-text="privacy" ></div>
+            <div class="aboutValue" id="aboutprivacy" ><a class="aboutLink" target="_blank" localize-text="privacyView" href="https://nubosoftware.com/privacy-terms" ></a></div>
+            <div class="aboutValue"><div class="aboutBtn" id="resetBtn" localize-text="resetActivation"></div></div>
         </div>
     </script>
 
@@ -480,62 +501,7 @@
     <script type="text/template" id="player_template">
 
         <textarea id="edVirtualKeyboard"></textarea>
-
-        <div id="nuboToolBar">
-            <div id="toolbardiv">
-                <span id="toolbarleftmargin" class="toolbarmargin"></span>
-                <a id="linkvolcano" hreaf="javascript:;">
-                    <span id="homebtn" class="toolbarbtn">
-                            <img id="iconvolcano" src="<%= imgURL %>images/volcano.png" />
-                        </span>
-                </a>
-                <span id="toolbarpad1" class="toolbarpad"></span>
-                <a id="linksettings" href="javascript:;">
-                    <span id="searchbtn" class="toolbarbtn">
-                            <img id="iconsettings" src="<%= imgURL %>images/settings.png"/>
-                        </span>
-                </a>
-
-                <span id="toolbarpad1" class="toolbarpad"></span>
-                <span id="recordingsbtn" class="toolbarbtn">
-                        <img id="iconRecordings" src="<%= imgURL %>images/video_recording.png" />
-                    </span>
-
-                <span id="toolbarpadr1" class="toolbarpad"></span>
-                <span id="settingsbtn" class="toolbarbtn">
-                        <img id="iconsearch" src="<%= imgURL %>images/search.png"/>
-                    </span>
-                <span id="toolbarrightmargin" class="toolbarmargin"></span>
-            </div>
-
-            <div class="mobiletoolbardiv">
-                <span id="toolbarleftmargin" class="toolbarmargin"></span>
-                <span id="backbtn" class="toolbarbtn">
-                        <img id="iconback" src="<%= imgURL %>images/back.png"/>
-                    </span>
-                <span id="toolbarpad1" class="toolbarpad"></span>
-                <a id="linksettings" href="javascript:;">
-                    <span id="searchbtn" class="toolbarbtn">
-                            <img id="iconsettings" src="<%= imgURL %>images/settings.png"/>
-                        </span>
-                </a>
-                <span id="toolbarpadr1" class="toolbarpad"></span>
-                <span class="mobileToolbarRight">
-                        <span class="toolbarbtn">
-                            <img id="iconsearch" src="<%= imgURL %>images/search.png"/>
-                        </span>
-                <span id="toolbarpad1" class="toolbarpad"></span>
-                <a id="linkvolcano" href="javascript:;">
-                    <span id="homebtn" class="toolbarbtn">
-                                <img id="iconvolcano" src="<%= imgURL %>images/volcano.png" />
-                            </span>
-                </a>
-                </span>
-            </div>
-        </div>
-
         <div id="datadiv"></div>
-
         <div class="firstLoginPopup">
             <div class="firstLoginSpinner">
                 <img id="img-spinner" src="images/ajax-loader.gif" alt="Loading" />
@@ -545,8 +511,14 @@
     </script>
 
     <div id="maindiv"></div>
-    <audio class="rounded centered" id="audioout" width="1" height="1" autoplay/>
-    <audio class="rounded centered" id="audioin" width="1" height="1" autoplay/>
+    <audio class="rounded centered" id="audioout" width="1" height="1" autoplay></audio>
+    <audio class="rounded centered" id="audioin" width="1" height="1" autoplay></audio>
+    <div id="menuBtn"><div id="menuCircle"></div><div id="menuImg"></div></div>
+    <div id="menuBar">
+        <div class="menuIcon" id="menuHome"></div>
+        <div class="menuIcon" id="menuTasks"></div>
+        <div class="menuIcon" id="menuInfo"></div>
+    </div>
     <div id="uploadFiles" style="left:100;top:100;">
         <div id="uploadTitle">
             Uploads

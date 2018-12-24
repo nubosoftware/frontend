@@ -119,5 +119,15 @@
     "disableDeviceMsg": "This device has been deactivated. \n Please contact adminName at adminMail \n for more information",
     "disableUserMsg": "In order to enter the compName environment. \n Please contact adminName at adminMail \n for more information",
     "versionErrTitle": "You can run Nubo on:",
-    "firstLoginText" : "Building your workspace"
+    "firstLoginText" : "Building your workspace",
+    "nuboWebClientVer": "Nubo Web Client Version",
+    "clientUID": "UID",
+    "browserVer": "Browser Version",
+    "aboutOS": "Operation System",
+    "privacy": "Privacy & Terms",
+    "privacyView": "View Privacy & Terms",
+    "logoutUser": "Logout User",
+    "logoutSent": "Logout command has been sent",
+    "resetActivation": "Delete all user data",
+    "resetWarning": "Warning - this will reset all activation information. Are you sure?"
 }

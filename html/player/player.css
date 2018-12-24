@@ -31,6 +31,114 @@ div {
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
+div#menuBtn {
+    position: absolute;
+    z-index: 200;
+
+    border: none;
+    text-align: center;
+    cursor: move;
+    width: 50px;
+    height: 50px;
+    top: 20px;
+    left: 100px;
+
+
+}
+
+div#menuCircle{
+    background-color: #444444;
+    border-radius: 50%;
+    opacity: 0.5;
+    width: 50px;
+    height: 50px;
+}
+
+div#menuImg{
+    position: relative;
+    top: -50px;
+    width: 50px;
+    height: 50px;
+    background-image: url('images/menubtn.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    /*transform: rotate(180deg);*/
+}
+
+div#menuBar{
+    position: absolute;
+    z-index: 200;
+    background-color: #444444;
+    border: 2px solid #FFFFFF;
+    border-radius: 5px;
+    /*width: 150px;*/
+    height: 50px;
+    top: 100px;
+    left: 100px;
+    visibility: hidden;
+    display: inline-block
+}
+div.menuIcon {
+    float: left;
+    width: 50px;
+    height: 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+}
+div#menuHome{
+    background-image: url('images/vulcanoweb.png');
+}
+div#menuTasks{
+    background-image: url('images/tasksweb.png');
+}
+div#menuInfo{
+    background-image: url('images/infoweb.png');
+}
+
+div.aboutLabel {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    width: 400px;
+    margin-top: 20px;
+    font-family: NuboRobotoBold;
+    font-size: 18px;
+    text-align: left;
+}
+
+div.aboutValue {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 2px;
+    padding-bottom: 5px;
+    width: 400px;
+    font-family: NuboRoboto;
+    font-size: 18px;
+    text-align: right;
+    border-bottom: 1px dotted white;
+}
+div.aboutBtn {
+    background-color: rgba(255, 255,255, 0.3);
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 9px;
+    padding-bottom: 6px;
+    width: 200px;
+    height: 20px;
+    font-family: NuboRoboto;
+    font-size: 18px;
+    text-align: center;
+    cursor: pointer;
+}
+a.aboutLink {
+    color: #32F932;
+    text-decoration: none;
+}
+
 div#maindiv {
     position: relative;
     margin: auto;
@@ -41,7 +149,7 @@ div.subdiv {
     margin-left: auto;
     margin-right: auto;
     width: 500px;
-}    
+}
 
 div#toolbardiv {
     position: static;
@@ -130,7 +238,7 @@ span#nameTitle {
     margin-left: auto;
     margin-right: auto;
     margin-top: 50px;
-     
+
     width: 100%;
     height: 80px;
     font-family: NuboRobotoLight;
@@ -142,7 +250,7 @@ span#greetings {
     margin-left: auto;
     margin-right: auto;
     margin-top: 30px;
-   
+
     font-family: FreebooterScript;
     font-size: 80px;
     text-align: center;
@@ -152,8 +260,8 @@ span#lorem {
     margin-left: auto;
     margin-right: auto;
     margin-top: 50px;
-           
-    width: 388px;       
+
+    width: 388px;
     font-family: NuboRobotoLight;
     font-size: 21px;
     text-align: center;
@@ -214,8 +322,8 @@ span#signin {
     margin-left: auto;
     margin-right: auto;
     margin-top: 20px;
-        
-    width: 309px;    
+
+    width: 309px;
     height: 42px;
     padding-top: 4px;
 }
@@ -224,8 +332,8 @@ span#demo {
     margin-left: auto;
     margin-right: auto;
     margin-top: 20px;
-    
-    width: 309px;    
+
+    width: 309px;
     height: 42px;
     padding-top: 4px;
 }
@@ -234,7 +342,7 @@ span#create_create {
     margin-left: auto;
     margin-right: auto;
     margin-top: 100px;
-   
+
     width: 309px;
     height: 46px;
     padding-top: 6px;
@@ -268,14 +376,14 @@ input.error {
 .recordingBar {
     text-align: left;
     margin-top: 10px;
-    display: inline-block; 
+    display: inline-block;
     white-space: nowrap;
     width: 500px;
     overflow: hidden;
     text-overflow:ellipsis;
 }
 .recordingBarRow {
-	display: inline-block; 
+	display: inline-block;
     text-align: left;
     margin-top: 30px;
     white-space: nowrap;
@@ -284,7 +392,7 @@ input.error {
     text-overflow:ellipsis;
 }
 .recordingDateField {
-    display: inline-block; 
+    display: inline-block;
     text-align: left;
     margin-right: 30px;
     white-space: nowrap;
@@ -333,7 +441,7 @@ input#edFirstName {
     margin-left: auto;
     margin-right: auto;
     margin-top: 30px;
-    
+
     width: 309px;
     height: 42px;
     text-transform: capitalize;
@@ -345,7 +453,7 @@ span#FirstNameErr {
     margin-right: auto;
     margin-top: 10px;
     padding-left: 20px;
-    
+
     width: 309px;
     height: 26px;
 }
@@ -353,8 +461,8 @@ input#edLastName {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 10px; 
-   
+    margin-top: 10px;
+
     width: 309px;
     height: 42px;
     text-transform: capitalize;
@@ -366,7 +474,7 @@ span#LastNameErr {
     margin-right: auto;
     margin-top: 10px;
     padding-left: 20px;
-    
+
     width: 309px;
     height: 26px;
 }
@@ -374,8 +482,8 @@ input#edJobTitle {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 10px; 
-    
+    margin-top: 10px;
+
     width: 309px;
     height: 42px;
     z-index: 10;
@@ -387,11 +495,11 @@ div.dropdiv {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: -3px;   
-    width: 309px;  
-    position: relative; 
+    margin-top: -3px;
+    width: 309px;
+    position: relative;
 }
-    
+
 span#drop1 {
     background-color: #C2C1C3;
     position: absolute;
@@ -419,7 +527,7 @@ span#drop3 {
     background-color: #C2C1C3;
     position: absolute;
     top: 96px;
-    width: 309px;    
+    width: 309px;
     height: 50px;
     visibility: hidden;
     z-index: 7;
@@ -469,16 +577,16 @@ span#JobTitleErr {
     margin-right: auto;
     margin-top: 10px;
     padding-left: 20px;
-       
+
     width: 309px;
-    height: 26px;    
+    height: 26px;
 }
 input#edWorkEmail {
     display: block;
     margin-left: auto;
     margin-right: auto;
     margin-top: 10px;
-   
+
     width: 309px;
     height: 42px;
     font-size: 19px;
@@ -489,7 +597,7 @@ span#WorkEmailErr {
     margin-right: auto;
     margin-top: 10px;
     padding-left: 20px;
-       
+
     width: 309px;
     height: 26px;
 }
@@ -498,11 +606,11 @@ span#activationSent {
     margin-left: auto;
     margin-right: auto;
     margin-top: 100px;
-    
+
     width: 429px;
     height: 28px;
     font-family: NuboRobotoLight;
-    font-size: 26px; 
+    font-size: 26px;
     text-align: center;
 }
 span#activationEmail {
@@ -510,7 +618,7 @@ span#activationEmail {
     margin-left: auto;
     margin-right: auto;
     margin-top: 20px;
-    
+
     width: 349px;
     height: 28px;
     font-family: NuboRobotoLight;
@@ -522,11 +630,11 @@ span#checkInbox {
     margin-left: auto;
     margin-right: auto;
     margin-top: 20px;
-    
+
     width: 349px;
     height: 48px;
     font-family: NuboRobotoLight;
-    font-size: 32px; 
+    font-size: 32px;
     text-align: center;
 }
 span#changeBtn {
@@ -534,7 +642,7 @@ span#changeBtn {
     margin-left: auto;
     margin-right: auto;
     margin-top: 50px;
-   
+
     width: 309px;
     height: 52px;
 }
@@ -551,7 +659,7 @@ span#authMsg {
     margin-right: auto;
     margin-top: 100px;
     width: 100%;
-   
+
     height: 61px;
     font-family: NuboRobotoLight;
     font-size: 20px;
@@ -583,7 +691,7 @@ span#signInBtn {
     margin-left: auto;
     margin-right: auto;
     margin-top: 50px;
-    
+
     width: 309px;
     height: 52px;
 }
@@ -601,7 +709,7 @@ input#authUserName {
     margin-left: auto;
     margin-right: auto;
     margin-top: 30px;
-    
+
     width: 309px;
     height: 47px;
     font-size: 20px;
@@ -621,7 +729,7 @@ input#authPassword {
     margin-left: auto;
     margin-right: auto;
     margin-top: 10px;
-    
+
     width: 309px;
     height: 47px;
     font-size: 20px;
@@ -632,7 +740,7 @@ span#authPasswordErr {
     margin-right: auto;
     margin-top: 10px;
     padding-left: 20px;
-    
+
     width: 309px;
     height: 26px;
 }
@@ -656,13 +764,13 @@ span#passcodeErrMsg {
 input#enterPasscode {
     display: block;
     margin-left: auto;
-    margin-right: auto; 
-    margin-top: 20px; 
-    
+    margin-right: auto;
+    margin-top: 20px;
+
     font: small-caption;
     font-size: 30px;
     letter-spacing: 10px;
-   
+
     width: 309px;
     height: 49px;
 }
@@ -697,17 +805,17 @@ div#loginContent {
 img#passcodeImg {
     display: block;
     margin-left: auto;
-    margin-right: auto; 
-    margin-top: 20px; 
-   
+    margin-right: auto;
+    margin-top: 20px;
+
     width: 309px;
     height: 49px;
 }
 span#forgotBtn {
     display: block;
     margin-left: auto;
-    margin-right: auto; 
-    text-align: right;       
+    margin-right: auto;
+    text-align: right;
 
     width: 309px;
     height: 32px;
@@ -770,14 +878,14 @@ div.passcodediv {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 20px;    
-    width: 309px;  
-    position: relative;    
+    margin-top: 20px;
+    width: 309px;
+    position: relative;
 }
 
 span#btn1, span#key1 {
     /*left: 360px;
-    top: 350px;*/   
+    top: 350px;*/
 }
 /*span#key1 {
     left: 360px;
@@ -788,7 +896,7 @@ span#btn2, span#key2 {
     /*left: 465px;
     top: 350px;*/
 }
-/*span#key2 {    
+/*span#key2 {
     left: 465px;
     top: 350px;
 }*/
@@ -831,8 +939,8 @@ span#btn6, span#key6 {
     top: 408px;
 }*/
 span#btn7, span#key7 {
-    top: 120px;    
-    
+    top: 120px;
+
     /*left: 360px;
     top: 466px;*/
 }
@@ -843,7 +951,7 @@ span#btn7, span#key7 {
 span#btn8, span#key8 {
     top: 120px;
     left: 105px;
-    
+
     /*left: 465px;
     top: 466px;*/
 }
@@ -854,7 +962,7 @@ span#btn8, span#key8 {
 span#btn9,span#key9 {
     top: 120px;
     left: 210px;
-    
+
     /*left: 571px;
     top: 466px;*/
 }
@@ -866,7 +974,7 @@ span#btnok {
     top: 180px;
     /*left: 360px;
     top: 523px;*/
-      
+
     background-color: #555555;
     opacity: 0.75;
     filter: alpha(opacity=75); /* For IE8 and earlier */
@@ -876,7 +984,7 @@ span#keyok {
     /*left: 360px;
     top: 523px;*/
     color: #FFFFFF;
-    font-size: 22px; 
+    font-size: 22px;
 }
 span#keyok:active {
     color: gray;
@@ -893,14 +1001,14 @@ span#btn0, span#key0 {
 }*/
 span#btndel {
     top: 180px;
-    left: 210px;    
+    left: 210px;
     cursor: pointer;
-     
+
     background-image: url('images/del.png');
     background-repeat: no-repeat;
-    background-position: center; 
+    background-position: center;
 }
-    
+
     /*left: 571px;
     top: 523px;*/
 }
@@ -911,13 +1019,13 @@ span#btndel {
 img#keydel {
     /*position: absolute;
     left: 604px;
-    top: 537px; 
+    top: 537px;
     cursor: pointer;  */
     margin-top: 15px;
-    margin-left: 32px;   
-   
+    margin-left: 32px;
+
     width: 33px;
-    height: 22px;   
+    height: 22px;
 }
 #selectPasscodeTitle {
     /*position: absolute;
@@ -927,7 +1035,7 @@ img#keydel {
     margin-left: auto;
     margin-right: auto;
     margin-top: 10px;
-    
+
     width: 309px;
     height: 50px;
     font-family: NuboRobotoBold;
@@ -942,8 +1050,8 @@ img#setPasscodeImg {
     top: 283px;*/
     display: block;
     margin-left: auto;
-    margin-right: auto;    
-    
+    margin-right: auto;
+
     width: 309px;
     height: 49px;
 }
@@ -955,11 +1063,11 @@ input#selectPasscode {
     margin-left: auto;
     margin-right: auto;
     margin-top: 10px;
-    
+
     font: small-caption;
     font-size: 30px;
     letter-spacing: 10px;
-   
+
     width: 309px;
     height: 49px;
     /*font-family: NuboRobotoBold;
@@ -976,7 +1084,7 @@ span#resetPasscodeTitle {
     margin-left: auto;
     margin-right: auto;
     margin-top: 100px;
-    
+
     font-family: NuboRoboto;
     font-size: 30px;
     font-style: normal;
@@ -996,7 +1104,7 @@ span#resetOKBtn {
     left: 415px;
     top: 297px;*/
     display: inline-block;
-        
+
     width: 97px;
     height: 54px;
     font-family: NuboRobotoBold;
@@ -1007,9 +1115,9 @@ span#resetOKBtn {
 span#resetCancelBtn {
     /*position: absolute;
     left: 529px;
-    top: 297px;*/    
+    top: 297px;*/
     margin-left: 30px;
-   
+
     width: 97px;
     height: 54px;
     font-family: NuboRobotoBold;
@@ -1029,7 +1137,7 @@ img#connerr {
     display: block;
     margin-left: auto;
     margin-right: auto;
-   
+
     width: 91px;
     height: 169px;
     padding-top: 20px;
@@ -1042,7 +1150,7 @@ span#conerrMsg {
     margin-left: auto;
     margin-right: auto;
     margin-top: 70px;
-   
+
     width: 309px;
     height: 35px;
     font-family: NuboRobotoBold;
@@ -1058,7 +1166,7 @@ span#tryAgainBtn {
     margin-left: auto;
     margin-right: auto;
     margin-top: 100px;
-    
+
     width: 309px;
     height: 42px;
     padding-top: 5px;
@@ -1073,7 +1181,7 @@ span#expiredMsg {
     margin-right: auto;
     margin-top: 100px;
     width: 100%;
-   
+
     height: 59px;
     font-family: NuboRoboto;
     font-style: normal;
@@ -1087,8 +1195,8 @@ span#expiredCreateBtn {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 100px;  
-   
+    margin-top: 100px;
+
     width: 309px;
     height: 52px;
 }
@@ -1099,8 +1207,8 @@ span#sendMeActivationBtn {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 100px; 
-   
+    margin-top: 100px;
+
     width: 309px;
     height: 46px;
     padding-top: 5px;
@@ -1113,7 +1221,7 @@ input#workEmailSend {
     margin-left: auto;
     margin-right: auto;
     margin-top: 30px;
-    
+
     width: 309px;
     font-size: 19px;
 }
@@ -1126,7 +1234,7 @@ span#workEmailSendErr {
     margin-right: auto;
     margin-top: 10px;
     padding-left: 20px;
-       
+
     width: 309px;
     height: 26px;
 }
@@ -1138,7 +1246,7 @@ span#sendMeActivationCreateBtn {
     margin-left: auto;
     margin-right: auto;
     margin-top: 50px;
-       
+
     width: 309px;
     height: 46px;
     visibility: hidden;
@@ -1166,7 +1274,7 @@ img#expiredClock {
     margin-left: auto;
     margin-right: auto;
     margin-top: 100px;
-    
+
     width: 59px;
     height: 62px;
 }
@@ -1178,7 +1286,7 @@ img#welcomeTitle {
     margin-left: auto;
     margin-right: auto;
     margin-top: 100px;
-    
+
     width: 214px;
     height: 63px;
 }
@@ -1191,7 +1299,7 @@ span#startDeviceText {
     margin-left: auto;
     margin-right: auto;
     margin-top: 30px;
-       
+
     width: 100%;
     height: 48px;
 }
@@ -1257,8 +1365,8 @@ span#downloadLink {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 100px;    
-   
+    margin-top: 100px;
+
     height: 48px;
     cursor: pointer;
 }
@@ -1273,7 +1381,7 @@ span#downloadTwoSteps {
     margin-left: auto;
     margin-right: auto;
     margin-top: 30px;
-   
+
     width: 668px;
     height: 48px;
     text-align: left;
@@ -1286,7 +1394,7 @@ span#downloadStep1 {
     margin-left: auto;
     margin-right: auto;
     margin-top: 20px;
-   
+
     width: 668px;
     height: 48px;
     text-align: left;
@@ -1303,7 +1411,7 @@ span#downloadStep2 {
     margin-left: auto;
     margin-right: auto;
     margin-top: 20px;
-   
+
     width: 668px;
     height: 48px;
     text-align: left;
@@ -1318,9 +1426,9 @@ span#downloadMessage {
     top: 611px; */
     display: block;
     margin-left: auto;
-    margin-right: auto;    
-    
-    width: 667px;  
+    margin-right: auto;
+
+    width: 667px;
     height: 79px;
     font-family: NuboRobotoLight;
     font-size: 19px;
@@ -1331,9 +1439,9 @@ span#iosMessage {
     top: 317px;*/
     display: block;
     margin-left: auto;
-    margin-right: auto; 
+    margin-right: auto;
     margin-top: -300px;
-    
+
     width: 630px;
     height: 150px;
     font-family: NuboRobotoLight;
@@ -1351,9 +1459,9 @@ span#lockMsg {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 100px; 
-    
-    width: 480px;    
+    margin-top: 100px;
+
+    width: 480px;
     text-align: center;
     font-size: 21px;
     font-family: NuboRobotoLight;
@@ -1367,7 +1475,7 @@ span#unlockMsg {
     margin-left: auto;
     margin-right: auto;
     margin-top: 20px;
-    
+
     width: 480px;
     text-align: center;
     font-size: 21px;
@@ -1414,8 +1522,8 @@ span#resendMailBtn {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 50px;   
-   
+    margin-top: 50px;
+
     width: 309px;
     height: 46px;
     text-align: center;
@@ -1430,7 +1538,7 @@ img#medal {
     margin-left: auto;
     margin-right: auto;
     margin-top: 100px;
-   
+
     width: 66px;
     height: 92px;
 }
@@ -1444,7 +1552,7 @@ span#expiredTxt {
     margin-right: auto;
     margin-top: 50px;
     width: 100%;
-    
+
     font-family: NuboRoboto;
     text-align: center;
 }
@@ -1456,7 +1564,7 @@ span#resetPasscodeTxt {
     margin-left: auto;
     margin-right: auto;
     margin-top: 30px;
-       
+
     /*width: 430px;    */
     font-family: NuboRoboto;
     text-align: center;
@@ -1466,7 +1574,7 @@ span#unlockPasscodeTxt {
     margin-left: auto;
     margin-right: auto;
     margin-top: 30px;
-       
+
     width: 500px;
     font-family: NuboRoboto;
     text-align: center;
@@ -1477,7 +1585,7 @@ span#versionErrTitle {
     margin-left: auto;
     margin-right: auto;
     margin-top: 60px;
-   
+
     width: 480px;
     height: 46px;
     text-align: center;
@@ -1490,8 +1598,8 @@ img#chrome {
 }
 span#chromeTxt {
     margin-left: 20px;
-    width: 200px;    
-        
+    width: 200px;
+
     text-align: left;
     font-size: 20px;
     font-family: NuboRobotoLight;
@@ -1506,11 +1614,11 @@ span#firefoxTxt {
     width: 200px;
     text-align: left;
     font-size: 20px;
-    font-family: NuboRobotoLight;    
+    font-family: NuboRobotoLight;
 }
 img#ie {
     margin-left: 140px;
-    margin-top: 50px;   
+    margin-top: 50px;
 }
 span#ieTxt {
     margin-left: 20px;
@@ -1754,22 +1862,22 @@ div.spinner {
 * {
     outline: none;
 }
-   
+
 
 /* Smartphones (portrait and landscape) ----------- */
 @media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
-        
+
     div#uploadErrorMsg, div#uploadTitle,  div#txtErrorMsg, div#txtErrorMsg p, div#btnErrorMsg, div#uploadContent, div#uploadFiles {
         width: 0;
         height: 0;
         display: none;
-    }       
-            
+    }
+
     div#maindiv {
        width: 100%;
        height: 100%;
     }
-    
+
     div.mobiletoolbardiv {
         display: inline-block;
         position: static;
@@ -1779,14 +1887,14 @@ div.spinner {
     span.mobileToolbarRight {
         float: right;
     }
-        
+
     div#toolbardiv {
         display: none;
         /*position: static;
         width: 100%;
         height: 90px;*/
     }
-        
+
     div#datadiv {
         position: absolute;
         left: 0;
@@ -1798,8 +1906,8 @@ div.spinner {
         height: 90px;
     }
     span#backbtn {
-        
-    }   
+
+    }
     img#iconback {
         position: relative;
         top: 25px;
@@ -1824,7 +1932,7 @@ div.spinner {
         height: 54px;
     }
     img#nubologo {
-       position: static;       
+       position: static;
        width: 280px;
        height: 100px;
     }
@@ -1834,7 +1942,7 @@ div.spinner {
         width: 214px;
         height: 63px;
     }
-     
+
     span#orText {
         left: 10px;
         top: 230px;
@@ -1865,13 +1973,13 @@ div.spinner {
         top: 0;
         left: 100px;
         opacity: 0;
-    }   
-    
+    }
+
     div.subdiv, span#passcodeErrMsg {
-        width: 100%;   
+        width: 100%;
         height: 100%;
     }
-        
+
     span#create, span#signin, span#demo, span#lorem, span#create_create, input#edFirstName, span#FirstNameErr,
     input#edLastName, span#LastNameErr, input#edJobTitle, span#JobTitleErr, input#edWorkEmail, span#WorkEmailErr,
     div.dropdiv, span#drop1, span#drop2, span#drop3, span#drop4, span#sendMeActivationBtn, input#workEmailSend, span#workEmailSendErr,
@@ -1880,144 +1988,144 @@ div.spinner {
     input#authPassword, span#authPasswordErr, span#unlockPasscodeTxt, span#resetPasscodeTxt,  input#enterPasswordcode,
     span#lockMsg, span#unlockMsg, span#resendMailBtn, img#passcodeImg, img#setPasscodeImg, span#enterPasswordOKBtn,
     span#selectPasscodeTitle, input#enterPasscode, input#selectPasscode, input#enterPassword, span#passwordTitle {
-        width: 450px; 
-    }      
-    
+        width: 450px;
+    }
+
     div.passcodediv {
         width: 500px;
     }
     span#nameTitle {
-        font-size: 50px; 
+        font-size: 50px;
     }
-    
+
     span#greetings {
         font-size: 100px;
     }
-    
+
     span#lorem, span#activationSent, span#activationEmail, span#authMsg, span#expiredMsg,
     span#lockMsg, span#unlockMsg, span#forgotBtn, span#passcodeErrMsg,
     span#unlockPasscodeTxt, span#resetPasscodeTxt, span#downloadMessage, span#iosMessage {
         font-size: 30px;
     }
-        
+
     span#selectPasscodeTitle, span#versionErrTitle, span#chromeTxt, span#firefoxTxt, span#ieTxt, span#resetPasscodeTitle,
     span#expiredTxt, span.titleText, input#enterPasscode, input#selectPasscode {
         font-size: 36px;
-    }        
-        
+    }
+
     span#create, span#signin, span#demo, span#create_create, input#edFirstName, input#edLastName, input#edJobTitle,
     input#edWorkEmail, span#sendMeActivationBtn, input#workEmailSend, span#changeBtn, span#signInBtn, span#enterPasswordOKBtn,
-    input#authUserName, input#authPassword, span#expiredCreateBtn, span#resendMailBtn, span#tryAgainBtn, 
+    input#authUserName, input#authPassword, span#expiredCreateBtn, span#resendMailBtn, span#tryAgainBtn,
     span#resetOKBtn, span#resetCancelBtn, input#enterPasswordcode, input#enterPassword, span#passwordTitle {
         height: 60px;
         font-size: 30px;
         padding-top: 10px;
     }
-    
-    span#drop1, span#drop2, span#drop3, span#drop4 { 
+
+    span#drop1, span#drop2, span#drop3, span#drop4 {
         height: 60px;
         padding-top: 20px;
     }
-     
+
     span#FirstNameErr, span#LastNameErr, span#JobTitleErr, span#WorkEmailErr, span#workEmailSendErr,
     span#authUserNameErr, span#authPasswordErr, input#enterPasswordcode {
         font-size: 22px;
-    }    
-    
+    }
+
     span#passcodeErrMsg {
         height: 50px;
     }
-    img#passcodeImg, img#setPasscodeImg, input#enterPasscode, input#selectPasscode {      
+    img#passcodeImg, img#setPasscodeImg, input#enterPasscode, input#selectPasscode {
         height: 70px;
     }
     span#forgotBtn {
-        width: 400px;   
-        height: 55px;    
+        width: 400px;
+        height: 55px;
     }
-    
+
     div.resetBtn {
         width: 250px;
     }
-    
+
     span.numbutton, span.numKey {
         width: 161px;
         height: 93px;
         font-size: 45px;
         line-height: 93px;
     }
-         
+
     span#btn2, span#key2 {
-        left: 170px;    
+        left: 170px;
     }
     span#btn3, span#key3 {
-        left: 340px;    
+        left: 340px;
     }
     span#btn4, span#key4 {
-        top: 104px;    
+        top: 104px;
     }
     span#btn5, span#key5 {
-        left: 170px;  
-        top: 104px;    
+        left: 170px;
+        top: 104px;
     }
     span#btn6, span#key6 {
         left: 340px;
-        top: 104px;      
+        top: 104px;
     }
     span#btn7, span#key7 {
-        top: 208px;    
+        top: 208px;
     }
     span#btn8, span#key8 {
-        top: 208px; 
-        left: 170px;    
+        top: 208px;
+        left: 170px;
     }
     span#btn9, span#key9 {
-        top: 208px; 
-        left: 340px;    
+        top: 208px;
+        left: 340px;
     }
     span#btn0, span#key0 {
         top: 312px;
-        left: 170px;    
+        left: 170px;
     }
     span#btnok, span#keyok {
         top: 312px;
-        font-size: 40px; 
+        font-size: 40px;
     }
     span#btndel, span#keydel {
         top: 312px;
         left: 340px;
-    }  
+    }
     img#keydel {
         margin-top: 10px;
         margin-left: 45px;
         width: 50px;
-        height: 27px; 
-    }  
+        height: 27px;
+    }
     img#medal, img#expiredClock {
         width: 90px;
         height: 120px;
     }
-    
+
     span#downloadTwoSteps, span#downloadStep1, span#downloadStep2, span#downloadLink, span#downloadMessage, span#iosMessage {
         margin-left: 60px;
     }
     span#downloadMessage {
         width: 550px;
-        margin-top: 80px;        
+        margin-top: 80px;
     }
     span#iosMessage {
         width: 550px;
     }
-    
+
     input#enterPasscode::-webkit-input-placeholder, input#selectPasscode::-webkit-input-placeholder {
         font-size: 30px;
         padding-top: 4px;
     }
-    
+
     input#enterPasscode::-moz-placeholder, input#selectPasscode::-moz-placeholder {
         font-size: 30px;
         padding-top: 4px;
     }
-    
+
     input#enterPasscode:-ms-input-placeholder, input#selectPasscode:-ms-input-placeholder {
         font-size: 30px;
         padding-top: 4px;

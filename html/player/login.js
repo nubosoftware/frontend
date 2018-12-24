@@ -26,19 +26,21 @@ if (!String.prototype.startsWith) {
     };
 }
 
+var currentView = null;
+var nuboClientVersion = "2.2.17"
 
 function AppController() {
-    this.currentView = null;
+    //this.currentView = null;
 
     this.showView = function(view) {
-        if (this.currentView != null) {
+        if (currentView != null) {
             //this.currentView.close();
             //this.currentView.remove();
             //this.currentView.unbind();
-            this.currentView.undelegateEvents();
+            currentView.undelegateEvents();
         }
-        this.currentView = view;
-        this.currentView.render();
+        currentView = view;
+        currentView.render();
         //$("#maindiv").html(this.currentView.el);
     };
 }
@@ -185,7 +187,7 @@ var WebmailList = ["gmail", "hotmail", "yahoo", "zoho", "icloud", "aim", "window
     "gawab", "inbox.com", "lavabit", "zapak", "hotpop", "myway", "are2"
 ];
 
-var DEBUG = true;
+var DEBUG = false;
 var mgmtURL;
 var clickbgColor = '#828282';
 var bgColor = '#5B5B5B';
@@ -245,6 +247,22 @@ function getSessionId() {
         browserType = "safari";
     } else {
         browserType = "ie";
+    }
+}
+
+function setLoggedIn(val) {
+    loggedIn = val;
+    if (loggedIn) {
+        globalSettings.set({
+            'loggedIn': true,
+            'lastLoginToken': loginToken,
+            'loginTime': new Date(),
+        });
+    } else {
+        globalSettings.set({
+            'loggedIn': false,
+            'lastLoginToken': ''
+        });
     }
 }
 
@@ -332,7 +350,6 @@ function formatPage() {
             displayFullScreen = Common.displayFullScreen;
         }
         if (displayFullScreen) {
-            $("#nuboToolBar").css('visibility', 'hidden');
             $("#maindiv").css('width', '100%');
             $("#maindiv").css('height', '100%');
 
@@ -341,17 +358,11 @@ function formatPage() {
             $("#datadiv").css('height', '100%');
             $("#datadiv").css('top', '0');
         } else {
-            $("#nuboToolBar").css('visibility', 'visible');
-            $("#toolbardiv").css('width', '1024px');
-            $("#toolbardiv").css('height', '45px');
-
             $("#maindiv").css('width', '1024px');
             $("#maindiv").css('height', '768px');
-
             $("#datadiv").css('position', 'absolute');
             $("#datadiv").css('width', '100%');
             $("#datadiv").css('height', '100%');
-            $("#datadiv").css('top', '45px');
         }
     }
 
@@ -717,8 +728,7 @@ $(function() {
                     if (passcodeActivationRequired == false && passcodetypeChange == 1) {
                         pType = passcodeType == 0 ? 1 : 0;
                     }
-
-                    loggedIn = true;
+                    setLoggedIn(true);
                     window.location.hash = "player";
                 } else if (data.status == 0) { //Pending
                     var isValidationError = false;
@@ -2101,7 +2111,7 @@ $(function() {
                     }
 
                 } else if (data.status == 1) { // success
-                    loggedIn = true;
+                    setLoggedIn(true);
                     window.location.hash = "player";
 
                 } else if (data.status == 2) { // expired login token
@@ -2407,7 +2417,7 @@ $(function() {
                     return;
 
                 } else if (data.status == 1) { // success
-                    loggedIn = true;
+                    setLoggedIn(true);
                     window.location.hash = "player";
                     return;
                 }
@@ -2647,7 +2657,7 @@ $(function() {
                     }
 
                 } else if (data.status == 1) { // success
-                    loggedIn = true;
+                    setLoggedIn(true);
                     window.location.hash = "player";
 
                 } else if (data.status == 2) { // expired login token
@@ -2726,7 +2736,7 @@ $(function() {
                     return;
 
                 } else if (data.status == 1) { // success
-                    loggedIn = true;
+                    setLoggedIn(true);
                     window.location.hash = "player";
                     return;
                 }
@@ -2855,7 +2865,7 @@ $(function() {
                     return;
 
                 } else if (results.status == 1) { // success
-                    loggedIn = true;
+                    setLoggedIn(true);
 
                     for (i = 0; i < results.records.length; i++) {
 
@@ -3178,6 +3188,7 @@ $(function() {
     var uxip = null;
 
     var PlayerView = Backbone.View.extend({
+        viewName: "PlayerView",
         el: $("#maindiv"),
 
         initialize: function() {
@@ -3193,7 +3204,7 @@ $(function() {
             var datadiv = document.getElementById('datadiv');
             var width = datadiv.offsetWidth;
             var height = datadiv.offsetHeight + (mobilecheck() ? 90 : 45);
-
+            console.log("render. w: "+width+", height: "+height);
             var specialLanguage = false;
             if (Common.specialLanguage != undefined && typeof Common.specialLanguage === 'boolean') {
                 specialLanguage = Common.specialLanguage;
@@ -3254,10 +3265,20 @@ $(function() {
                         document.getElementById("edVirtualKeyboard").style.display = "none";
                     }
 
+                    // ISRAEL
+                    window.onresize = function(event) {
+                        width = datadiv.offsetWidth;
+                        height = datadiv.offsetHeight;
+                        console.log("onresize. w: "+width+", height: "+height);
+                        uxip.resizeEvent(width,height);
+                    };
                     // connect audio
                     if (data.webRTCToken) {
+
+
                         Janus.init({debug: "all", callback: function() {
                             console.log("janus init");
+                            uxip.onStartAudioOut = function() {
                             let janusOut = new Janus( {
                                 server: "https://"+data.webRTCHost+":8089/janus",
                                 token: data.webRTCToken,
@@ -3321,7 +3342,8 @@ $(function() {
                                     console.log("janus destroyed!");
                                 }
                             });
-
+                            };
+                            uxip.onStartAudioIn = function() {
                             let janusIn = new Janus( {
                                 server: "https://"+data.webRTCHost+":8089/janus",
                                 token: data.webRTCToken,
@@ -3398,6 +3420,7 @@ $(function() {
                                     console.log("in janus destroyed!");
                                 }
                             });
+                        };
 
                         }});
                     }
@@ -3416,11 +3439,11 @@ $(function() {
 
         },
         events: {
-            "click #linkvolcano": "clickHome",
+            /*"click #menuHome": "clickHome",
             "click #linksettings": "clickSettings",
             "click #settingsbtn": "clickSearch",
             "click #backbtn": "clickMobileBack",
-            "click #recordingsbtn": "openRecordings"
+            "click #recordingsbtn": "openRecordings"*/
         },
         openRecordings: function(event) {
             window.location.hash = "recordings";
@@ -3469,6 +3492,8 @@ $(function() {
 
             document.getElementById("maindiv").style.backgroundColor = newWallpaperColor;
             document.getElementById("maindiv").style.backgroundImage = "url(" + mgmtURL + "html/player/" + newWallpaperImage + ")";
+
+
         },
 
         setFirstGatewayConnection: function(firstLogin) {
@@ -3531,8 +3556,71 @@ $(function() {
             uxip.connect(datadiv, wsURL, "NA");
         },
         events: {
-            // "click #linkvolcano" : "clickHome"
+             //"click #linkvolcano" : "clickHome"
         }
+
+    });
+
+    var AboutView = Backbone.View.extend({
+        viewName: "AboutView",
+        el: $("#maindiv"),
+        initialize: function() {
+            //this.render();
+        },
+        render: function() {
+            var vars = settings.attributes;
+            var template = _.template($("#about_template").html(), vars);
+            this.$el.html(template);
+            formatPage();
+            //const browser = window.bowser.getParser(window.navigator.userAgent);
+            $("#aboutClientVer").text(nuboClientVersion);
+            $("#aboutClientUID").text(getDeviceId());
+            $("#browserVersion").text(bowser.name+" "+bowser.version);
+            $("#osVersion").text(bowser.osname+" "+(bowser.osversion ? bowser.osversion : ""));
+            $("#aboutUser").text(globalSettings.get("workEmail"));
+            if (!loginToken  || loginToken == "") {
+                $("#logoutDiv").hide();
+            }
+            window.onhashchange = function() {
+                let hash = window.location.hash;
+                console.log("onhashchange: "+hash);
+                if (hash.startsWith("#about"))
+                    return;
+                if (loggedIn && hash.startsWith("#ppage")) {
+                    window.location.hash = 'player'
+                } else {
+                    window.location.hash = 'validate';
+                }
+                positionMenuBtnFunc();
+                window.onhashchange  = null;
+                window.history.forward();
+            };
+            document.getElementById("menuBtn").style.transform = 'rotate(270deg)';
+        },
+        events: {
+            "click #logoutBtn": "logoutClick",
+            "click #resetBtn": "resetClick"
+        },
+        logoutClick: function() {
+            var url = mgmtURL + "logoutUser?loginToken=" + encodeURIComponent(loginToken);
+            getJSON(url, function(data) {
+                if (DEBUG || true) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
+                new Android_Toast({
+                    content: '<em>'+l('logoutSent')+'</em>',
+                    duration: 3500
+                });
+                window.location.hash = "validate";
+            });
+        },
+        resetClick: function() {
+            var r = confirm(l("resetWarning"));
+            if (r == true) {
+                window.location.hash = "resetActivation";
+            }
+        }
+
 
     });
 
@@ -3584,15 +3672,35 @@ $(function() {
             "*actions": "defaultRoute"
         }
     });
+
+    // try to load login token
+    let lastLoggedIn = settings.get('loggedIn');
+    if (lastLoggedIn == true) {
+        let loginTime = new Date(settings.get('loginTime'));
+        console.log("loginTime: "+loginTime);
+        let diff = new Date().getTime() -  loginTime.getTime();
+        if (diff < passcodeTimeout ) {
+            loggedIn = true;
+            loginToken = settings.get('lastLoginToken');
+            console.log("loggedIn == true!!");
+            window.location.hash = "player";
+        } else {
+            setLoggedIn(false);
+        }
+    }
+
+
     // Initiate the router
     var app_router = new AppRouter;
 
     var appController = new AppController();
 
+
+
     app_router.on('route:getPlayerPage', function(id) {
-        if (loggedIn)
+        if (loggedIn) {
             console.log("Player page " + id);
-        else
+        } else
             window.location.hash = "validation";
     });
 
@@ -3721,6 +3829,13 @@ $(function() {
             return;
         }
 
+        if (actions == "about") {
+            var about_view = new AboutView();
+            appController.showView(about_view);
+            return;
+
+        }
+
          var haveActivationKey = (activationKey != null && activationKey.length > 10);
 
         if (!haveActivationKey) {
@@ -3738,6 +3853,7 @@ $(function() {
             }
             return;
         }
+
 
         if (actions == "validation") {
             var packageName = globalSettings.get("mHideNuboAppPackageName");
@@ -3819,9 +3935,180 @@ $(function() {
         Backbone.history.start();
     }
 
+
+    dragMenu(document.getElementById("menuBtn"),document.getElementById("menuBar"));
+
+
+    /**
+ * This function handle the dragable menu
+ * @param {Th} elmnt
+ */
+function  dragMenu(elmnt,bar) {
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    var bodyWidth = document.body.clientWidth;
+    var bodyHeight = document.body.clientHeight;
+    var btnLeft =  globalSettings.get("menuBtnLeft");
+    var btnTop =  globalSettings.get("menuBtnTop");
+    positionMenuBtn();
+
+
+
+
+
+    elmnt.onmousedown = dragMouseDown;
+    elmnt.onclick = clickMenuBtn;
+    var preventClick = false;
+    let timeoutID  = 0;
+
+    positionMenuBtnFunc = positionMenuBtn;
+
+    function clickMenuBtn(e) {
+        console.log(window.location.hash);
+        if (window.location.hash.startsWith("#about")) {
+            window.history.back();
+            return;
+        }
+        let clickTime = performance.now();
+        if (!preventClick) {
+
+            if (bar.style.visibility != "visible") {
+                if (currentView!= null && currentView.viewName == "PlayerView" ) {
+                    $("#menuHome").show();
+                    $("#menuTasks").show();
+                    $( "#menuHome" ).click(function() {
+                        uxip.clickHome();
+                        bar.style.visibility = "hidden";
+                        clearTimeout(timeoutID);
+                    });
+                    $( "#menuTasks" ).click(function() {
+                        uxip.clickTasks();
+                        bar.style.visibility = "hidden";
+                        clearTimeout(timeoutID);
+                    });
+
+                } else {
+                    $("#menuHome").hide();
+                    $("#menuTasks").hide();
+                }
+                $( "#menuInfo" ).click(function() {
+                    window.location.hash = "about";
+                    bar.style.visibility = "hidden";
+                    clearTimeout(timeoutID);
+                });
+
+                positionMenuBar(elmnt.offsetLeft,elmnt.offsetTop);
+                bar.style.visibility = "visible";
+                timeoutID = setTimeout(function(){
+                    if (bar.style.visibility === "visible") {
+                        bar.style.visibility = "hidden";
+                    }
+                 }, 7000);
+            } else {
+                bar.style.visibility = "hidden";
+                clearTimeout(timeoutID);
+            }
+        }
+
+    }
+
+    function positionMenuBtn() {
+        let closeDrag = false;
+        if (!btnTop || btnTop < 0) {
+            btnTop = 0;
+            closeDrag = true;
+        }
+        if (btnTop + elmnt.offsetHeight > bodyHeight) {
+            btnTop = bodyHeight - elmnt.offsetHeight;
+          closeDrag = true;
+        }
+
+        if (!btnLeft) {
+            btnLeft = (bodyWidth / 2 ) - (elmnt.offsetWidth/2);
+        }
+        if (btnLeft < 0) {
+            btnLeft = 0;
+          closeDrag = true;
+        }
+        if (btnLeft + elmnt.offsetWidth > bodyWidth) {
+            btnLeft = bodyWidth - elmnt.offsetWidth;
+            closeDrag = true;
+        }
+        elmnt.style.top =  btnTop+ "px";
+        elmnt.style.left = btnLeft + "px";
+        positionMenuBar(btnLeft,btnTop);
+
+
+        globalSettings.set({
+            menuBtnTop: btnTop,
+            menuBtnLeft: btnLeft
+        });
+        globalSettings.save();
+
+        return closeDrag;
+    }
+
+    function dragMouseDown(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // get the mouse cursor position at startup:
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      // call a function whenever the cursor moves:
+      document.onmousemove = elementDrag;
+      preventClick = false;
+    }
+
+    function elementDrag(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // calculate the new cursor position:
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      // set the element's new position:
+
+      btnTop = (elmnt.offsetTop - pos2);
+      btnLeft = (elmnt.offsetLeft - pos1);
+      let closeDrag = positionMenuBtn();
+      if (closeDrag) {
+          closeDragElement();
+      }
+      preventClick = true;
+
+    }
+
+    function positionMenuBar(btnLeft,btnTop) {
+        let left = btnLeft + (elmnt.offsetWidth / 2) - (bar.offsetWidth / 2);
+        if (left < 0) {
+            left = 0;
+        }
+        if (left + bar.offsetWidth > bodyWidth) {
+          left = bodyWidth - bar.offsetWidth;
+        }
+        let top = btnTop - 56;
+        if (top < 0) {
+            top = btnTop + 56;
+            elmnt.style.transform = 'rotate(180deg)';
+        } else {
+            elmnt.style.transform = '';
+        }
+
+        bar.style.top =  top+ "px";
+        bar.style.left = left + "px";
+    }
+
+    function closeDragElement() {
+      // stop moving when mouse button is released:
+      document.onmouseup = null;
+      document.onmousemove = null;
+    }
+  }
 });
 
 var globalSettings;
+var positionMenuBtnFunc;
 var getDeviceId = function() {
     return encodeURIComponent(globalSettings.get("deviceID"));
 }
@@ -3834,3 +4121,4 @@ var getHideNuboAppPackgeName = function() {
         return "";
     }
 }
+

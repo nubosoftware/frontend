@@ -9,8 +9,10 @@ PlayerCmd.switchUser = 5;
 PlayerCmd.setKeyboardHeight = 6;
 PlayerCmd.platformProcessConnected = 7;
 PlayerCmd.setKeyboardState = 8;
+PlayerCmd.orientationChange = 9;
 PlayerCmd.clearProcessCache = 14;
 PlayerCmd.roundTripData = 17;
+PlayerCmd.recentApps = 18;
 //igor commands
 PlayerCmd.homeKeyEvent = 20;
 PlayerCmd.notificationCancel = 21;
@@ -45,7 +47,7 @@ function DrawCmd() {}
 
 DrawCmd.glRenderCmd = 128;
 DrawCmd.glAttachToWindow = 129;
-DrawCmd.audioCmd = -126;
+DrawCmd.audioCmd = 130;
 DrawCmd.setDirtyRect = 1;
 DrawCmd.drawColor1 = 2;
 DrawCmd.saveLayer = 3;

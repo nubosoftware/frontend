@@ -1369,7 +1369,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
             return false;
         }
 
-        var color = reader.readInt();
+        var colorHint = reader.readInt();
         var mode = 1;
         if (cmd != DrawCmd.drawColor2) {
             if (!reader.canReadBytes(1))
@@ -1379,11 +1379,11 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
 
         if (writeToDrawCmdLog) {
             drawCmdLog.bm = bm;
-            drawCmdLog.color = color;
+            drawCmdLog.color = colorHint;
             drawCmdLog.mode = mode;
         }
 
-        //Log.e(TAG, "drawColor1 with color=" + color + " PorterDuffMode=" + mode + " processId=" + processId + " wndId=" + wndId);
+        //Log.e(TAG, "drawColor1 with color=" + colorHint + " PorterDuffMode=" + mode + " processId=" + processId + " wndId=" + wndId);
         var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
         if (ctx == null)
             return true;
@@ -1391,36 +1391,18 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
         if (mode == 0) {
             ctx.clearRect(0, 0, mWidth, mHeight);
         } else {
-            var fcolor = convertToHTMLColor(color.toString(16));
+            var color = (colorHint & 0xFFFFFF);
+            var alpha = colorHint >>> 24;
+
+            let colorStr = color.toString(16);
+            while (colorStr.length < 6) {
+                colorStr = '0' + colorStr;
+            }
+            var fcolor = hexToRgbA(colorStr,alpha);
             ctx.fillStyle = fcolor;
             ctx.fillRect(0, 0, mWidth, mHeight);
         }
         ctx.restore();
-
-        /*
-
-         if (PRINT_LOG)
-         Log.v(TAG, "drawColor1 with color=" + color
-         + " PorterDuffMode=" + mode
-         + " processId="+processId+" wndId="+wndId
-         + " bounds ="+bounds
-         + " matrix="+matrix);
-         if (Settings.disableOutput)
-         return;
-
-         CanvasManager cm = getWndCanvasMgr(processId, wndId);
-         if (cm == null)
-         {
-         return;
-         }
-
-         cm.updateCanvasParams(bounds, matrix);
-
-         Canvas c = cm.getCanvas();
-         PorterDuff.Mode pdMode = dinp.ordinal2PDMode(mode);
-         if (pdMode != null) {
-         c.drawColor(color, pdMode);
-         }							*/
 
         return true;
     };
@@ -1451,6 +1433,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
         return true;
     };
 
+
     setTextAttFromPaint = function(ctx, paint) {
         var fontFamily = "";
 
@@ -1468,6 +1451,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
                 fontFamily = "AndroidClock";
             }
         }
+
 
         var fontStyle = "";
         switch (paint.typefaceStyle) {
@@ -1487,9 +1471,10 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
 
         var textSize = paint.textSize - 0.7;
         var fontStr = fontStyle + textSize + "px " + fontFamily;
+
         ctx.font = fontStr;
 
-        var fcolor = convertToHTMLColor(paint.color.toString(16));
+        var fcolor =  convertToRGBA(paint);
         ctx.fillStyle = fcolor;
         switch (paint.textAlign) {
             case Align.LEFT:
@@ -1703,7 +1688,6 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
         var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
         if (ctx == null)
             return true;
-        //Log.e(TAG, "drawText1. textRes:" + JSON.stringify(textRes));
         if (paint == null) {
             Log.e(TAG, "Null paint!");
             return true;
@@ -1790,7 +1774,6 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
             drawCmdLog.y = y;
             drawCmdLog.paint = paint;
         }
-        //Log.e(TAG, "drawText. txt: "+textRes+", p: " + JSON.stringify(paint));
         //Log.e(TAG,"Draw text. textRes:"+textRes+", x:"+x+", y:"+y+", paint.fontFamilyName:"+paint.fontFamilyName+", paint.typefaceStyle:"+paint.typefaceStyle);
         //result.p.fontFamilyNam
         var ctx = wm.prepareCanvasForPaint(processId, wndId, bm);
@@ -1834,6 +1817,35 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
             }
         }
     };
+
+    function hexToRgbA(hex,alpha){
+        var c;
+        if(/^([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+            c= hex.split('');
+            if(c.length== 3){
+                c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+            }
+            c= '0x'+c.join('');
+            return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')';
+        }
+        return 'rgba(0,0,0,'+alpha+')';
+    }
+
+    var convertToRGBA = function(paint) {
+
+        let colorStr = paint.color.toString(16);
+        if (colorStr.length > 6) {
+            Log.e(TAG, "error. color: " + aColor);
+        } else {
+            while (colorStr.length < 6) {
+                colorStr = '0' + colorStr;
+            }
+        }
+        //Log.e(TAG,"convertToRGBA. paint.color: "+paint.color+", paint.alpha: "+paint.alpha+", colorStr: "+colorStr);
+        let res = hexToRgbA(colorStr,paint.alpha);
+        //Log.e(TAG,"convertToRGBA: "+res);
+        return res;
+    }
 
     convertToHTMLColor = function(aColor) {
         var color = aColor;
@@ -1992,7 +2004,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
         var oldStrokeStyle = ctx.strokeStyle;
         var oldAlpha = ctx.globalAlpha;
 
-        var fcolor = convertToHTMLColor(p.color.toString(16));
+        var fcolor = convertToRGBA(p);
 
         //Log.v(TAG, "fillStyle=" + fcolor);
         if (grd == null) {
@@ -2077,7 +2089,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
 
             ctx2.drawImage(img, 0, 0, width, height);
 
-            ctx2.fillStyle = convertToHTMLColor(paint.color.toString(16));
+            ctx2.fillStyle = convertToRGBA(paint);
             ctx2.globalCompositeOperation = paint.globalCompositeOperation;
             ctx2.fillRect(0, 0, width, height);
             return canvas2;
@@ -2357,7 +2369,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
         if (ctx == null)
             return true;
 
-        var fcolor = convertToHTMLColor(p.color.toString(16));
+        var fcolor = convertToRGBA(p);
 
         //Log.v(TAG, "fillStyle=" + fcolor);
         ctx.fillStyle = fcolor;
@@ -2400,7 +2412,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
         if (ctx == null)
             return true;
 
-        var fcolor = convertToHTMLColor(p.color.toString(16));
+        var fcolor = convertToRGBA(p);
 
         //Log.v(TAG, "fillStyle=" + fcolor);
         ctx.fillStyle = fcolor;
@@ -2675,7 +2687,11 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
             var color = (colorHint & 0xFFFFFF);
             var alpha = colorHint >>> 24;
 
-            var fcolor = convertToHTMLColor(color.toString(16));
+            let colorStr = color.toString(16);
+            while (colorStr.length < 6) {
+                colorStr = '0' + colorStr;
+            }
+            var fcolor = hexToRgbA(colorStr,alpha);
 
             // Log.e(TAG,"Fill Color: "+fcolor+", alpha:"+alpha);
             ctx.fillStyle = fcolor;
@@ -3080,7 +3096,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
         var cx = Math.round((left + right) / 2);
         var cy = Math.round((top + bottom) / 2);
         var radius = Math.min(right - left, bottom - top) / 2;
-        ctx.fillStyle = convertToHTMLColor(paint.color.toString(16));
+        ctx.fillStyle = convertToRGBA(paint);
 
         ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
 
@@ -3172,7 +3188,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
     };
 
     drawEllipse = function(processId, wndId, bm, cx, cy, radius, paint) {
-        var color = convertToHTMLColor(paint.color.toString(16));
+        var color = convertToRGBA(paint);
 
         if (color == '#000000') {
             return;
@@ -3318,7 +3334,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
         var oldStrokeStyle = ctx.strokeStyle;
         var oldAlpha = ctx.globalAlpha;
 
-        var fcolor = convertToHTMLColor(p.color.toString(16));
+        var fcolor =  convertToRGBA(p);
 
         var curPoint = 0;
         var Points = path.points;

@@ -3274,16 +3274,15 @@ $(function() {
                     };
                     // connect audio
                     if (data.webRTCToken) {
-
-
                         Janus.init({debug: "all", callback: function() {
                             console.log("janus init");
+
                             uxip.onStartAudioOut = function() {
                             let janusOut = new Janus( {
                                 server: "https://"+data.webRTCHost+":8089/janus",
                                 token: data.webRTCToken,
                                 success: function() {
-                                    console.log("out janus created!")
+                                    console.log("out janus created");
                                     let streaming;
                                     // handle audio out
 
@@ -3316,7 +3315,7 @@ $(function() {
                                                     {
                                                         jsep: jsep,
                                                         // We want recvonly audio/video and, if negotiated, datachannels
-                                                        media: { audioSend: false, videoSend: false, data: false },
+                                                        media: { audioSend: true, videoSend: false, data: false },
                                                         success: function(jsep) {
                                                             console.log("out Got SDP!");
                                                             console.log(jsep);
@@ -3344,6 +3343,7 @@ $(function() {
                             });
                             };
                             uxip.onStartAudioIn = function() {
+
                             let janusIn = new Janus( {
                                 server: "https://"+data.webRTCHost+":8089/janus",
                                 token: data.webRTCToken,
@@ -3363,7 +3363,7 @@ $(function() {
                                                 var register = {
                                                     "request": "join",
                                                     "room": parseInt(data.webRTCStreamID),
-                                                    "display": data.webRTCStreamID,
+                                                    "display": ""+data.webRTCStreamID,
                                                     "token": data.webRTCToken
                                                     //""
                                                 };

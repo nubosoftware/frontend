@@ -119,7 +119,6 @@ Common.logger = createLogger({
     ),
     transports : [
         new (transports.Console)({
-            json : false,
             timestamp: true,
             colorize: true
         }),
@@ -127,8 +126,7 @@ Common.logger = createLogger({
             filename : __dirname + '/log/' + loggerName,
             handleExceptions : true,
             maxsize: 100*1024*1024, //100MB
-            maxFiles: 4,
-            json : false
+            maxFiles: 4
         }),
         new transports.Syslog({
             app_name : "nubomanagement-public",
@@ -136,16 +134,14 @@ Common.logger = createLogger({
             localhost: null,
             protocol: "unix",
             path: "/dev/log",
-            json : true
+            format: format.json()
         })
     ],
     exceptionHandlers : [
         new (transports.Console)({
-            json : false,
             timestamp : true
         }), new transports.File({
-            filename : __dirname + '/log/' + exceptionLoggerName,
-            json : false
+            filename : __dirname + '/log/' + exceptionLoggerName
         })
     ],
     exitOnError : false

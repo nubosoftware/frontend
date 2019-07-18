@@ -255,9 +255,12 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         message.addData('enableSound', enableSound);
         message.addData('enableVibrate', enableVibrate);
         message.addData('nuboPackageID', packageID);
-        message.collapseKey = 'demo';
-        message.delayWhileIdle = false;
-        message.timeToLive = 3;
+        //message.collapseKey = 'demo';
+        //message.delayWhileIdle = false;
+        message.contentAvailable = true;
+        //message.timeToLive = 3;
+        message.priority = "high";
+        logger.info("FCM message: "+JSON.stringify(message,null,2));
         sender.send(message, [pushRegID], nOfRetries, function(err, result) {
             if (err) {
                 logger.error("Cannot send message to GCM err: " + err + "; res: " + result);
@@ -305,7 +308,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         }
 
         var alert = "";
-        if (type != 0 && type != 6 && type != 7 ) {
+        if (type != 0 && type != 6 && type != 7 && type != 5) {
             // calendar
             if (type == 1) {
                 alert = notifyTitle;
@@ -334,7 +337,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         };
 
 
-        if (type != 6 && type != 7) {
+        if (type != 6 && type != 7 && type != 5) {
             note.alert = alert;
             if (enableSound == 1) {
                 note.sound = "default";
@@ -342,6 +345,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         } else {
             note.contentAvailable = true;
         }
+        logger.info("APN note: "+JSON.stringify(note,null,2));
         apnProvider.send(note, token).then( (result) => {
             logger.info("APN result: "+JSON.stringify(result,null,2));
             apnProvider.shutdown();

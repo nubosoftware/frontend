@@ -462,6 +462,7 @@ function buildServerObject(server) {
     server.post('/file/uploadToLoginToken', internalRequests.upload);
     server.post('/file/uploadDummyFile', internalRequests.upload);
     server.post('/file/uploadFileToLoginToken', internalRequests.upload);
+    server.post('/receiveSMS', internalRequests.forwardPostRequest);
 
     if (Common.isHandlingMediaStreams) {
         server.get('/getStreamsFile', internalRequests.getStreamsFile);

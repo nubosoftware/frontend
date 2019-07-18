@@ -403,6 +403,10 @@ var filter = {
         "constraints": {
             "loginToken": constraints.requestedLoginTokenConstr,
         }
+    },
+    {
+        "path": "/receiveSMS",
+        "constraints": {}
     }
     ]
 };

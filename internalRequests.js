@@ -103,6 +103,34 @@ function getStreamsFile(req, res, next) {
     return;
 }
 
+//pipe upload file to backend server
+function forwardPostRequest(req, res, next) {
+
+    logger.info("forwardPostRequest");
+    req.pause();
+
+    var options = url.parse(req.url);
+    options.method = req.method;
+    options.agent = false;
+    _.extend(options, getOptions());
+    _.extend(options.headers, req.headers);
+
+    var request;
+    if (options.key) request = nodeHttps.request;
+    else request = nodeHttp.request;
+    // TODO move pipe request to http module
+    var connector = request(options, function(serverResponse) {
+
+        serverResponse.pause();
+        res.writeHeader(serverResponse.statusCode, serverResponse.headers);
+        serverResponse.pipe(res);
+        serverResponse.resume();
+    });
+    req.pipe(connector);
+    req.resume();
+    return;
+}
+
 function forwardGetRequest(req, res, next) {
     var options = getOptions();
     options.path = req.url;
@@ -476,7 +504,8 @@ module.exports = {
     checkServerAndForwardGetRequest: checkServerAndForwardGetRequest,
     registerFrontEnd: registerFrontEnd,
     refreshFrontEndTTL: refreshFrontEndTTL,
-    unregisterFrontEnd: unregisterFrontEnd
+    unregisterFrontEnd: unregisterFrontEnd,
+    forwardPostRequest: forwardPostRequest
 
 
 }

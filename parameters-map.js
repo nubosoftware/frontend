@@ -67,9 +67,17 @@ var filter = {
         "path": "/activationLink",
         "constraints": {
             "sessionid": constraints.sessionIdConstrOptional,
-            "token": constraints.tokenConstrRequested,
+            "token": {
+                "presence": true,
+                "format" : "^[a-f0-9]+$",
+                "length" : {
+                    "minimum": 5,
+                    "maximum": 255
+                }
+            },
             "cloneActivation": constraints.activationConstrOptional,
-            "email": constraints.emailConstrOptional
+            "email": constraints.emailConstrOptional,
+            "smsActivation": constraints.boolConstrOptional
         }
     }, {
         "path": "/validate",

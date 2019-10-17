@@ -327,6 +327,13 @@ function forwardActivationLink(req, res, next) {
             return;
         }
 
+        let smsActivation = req.params.smsActivation;
+        if (smsActivation === true || smsActivation === "true") {
+            logger.info("Sending smsActivation response");
+            res.send(resObjData);
+            return;
+        }
+
         logger.info("forwardActivationLink: status: " + resObjData.status + ", message: " + resObjData.message);
         if (resObjData.status == 0) {
             fs.readFile("html/player/activateDevice.html", function(error, page) {

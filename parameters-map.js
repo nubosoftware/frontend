@@ -413,6 +413,12 @@ var filter = {
         }
     },
     {
+        "path": "/declineCall",
+        "constraints": {
+            "loginToken": constraints.requestedLoginTokenConstr,
+        }
+    },
+    {
         "path": "/receiveSMS",
         "constraints": {}
     }

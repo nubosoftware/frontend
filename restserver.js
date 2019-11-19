@@ -452,7 +452,9 @@ function buildServerObject(server) {
     server.get('/resetPasscodeLink', internalRequests.forwardResetPasscodeLink);
     server.get('/unlockPassword', internalRequests.forwardGetRequest);
     server.get('/startsession', internalRequests.forwardGetRequest);
+    server.post('/startsession', internalRequests.forwardPostRequest);
     server.get('/logoutUser', internalRequests.forwardGetRequest);
+    server.get('/declineCall', internalRequests.forwardGetRequest);
     server.get('/getResource', internalRequests.forwardGetRequest);
 
     server.get('/getResourceListByDevice', internalRequests.forwardGetRequest);

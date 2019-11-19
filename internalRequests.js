@@ -114,6 +114,7 @@ function forwardPostRequest(req, res, next) {
     options.agent = false;
     _.extend(options, getOptions());
     _.extend(options.headers, req.headers);
+    options.headers['x-client-ip'] = req.realIP;
 
     var request;
     if (options.key) request = nodeHttps.request;

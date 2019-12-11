@@ -51,7 +51,8 @@ var filter = {
             "playerVersion": constraints.playerVersionConstrOptional,
             "additionalDeviceInfo": constraints.ExcludeSpecialCharactersOptional,
             "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional,
-            "captcha": {}
+            "captcha": {},
+            "phoneNumber": constraints.phoneNumberConstrOptional
         }
     }, {
         "path": "/registerOrg",
@@ -421,7 +422,22 @@ var filter = {
     {
         "path": "/receiveSMS",
         "constraints": {}
+    },
+    {
+        "path": "/getAvailableNumbers",
+        "constraints": {
+            "loginToken": constraints.requestedLoginTokenConstr,
+            "countryIso": constraints.ExcludeSpecialCharactersRequested
+        }
+    },
+    {
+        "path": "/subscribeToNumber",
+        "constraints": {
+            "loginToken": constraints.requestedLoginTokenConstr,
+            "phoneNumber": constraints.ExcludeSpecialCharactersRequested
+        }
     }
+
     ]
 };
 

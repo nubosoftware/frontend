@@ -530,10 +530,51 @@ function buildServerObject(server) {
             return true;
         }
 
+        match = url.match('^.*/fdroid/repo/(.*)');
+        if (match !== null) {
+            return true;
+        }
+
         return false;
     };
     server.use(yescache);
-    //server.get(/^\/.*/, function(req, res, next) {
+    if (Common.appstore && Common.appstore.enable === true) {
+        let appStorePath = Common.appstore.path;
+        if (appStorePath.endsWith("/appstore")) {
+            let pathS = appStorePath.split("/");
+            appStorePath = pathS.slice(0, pathS.length-1).join("/");
+        }
+        var appStoreServer = new nodestatic.Server(appStorePath, {
+            cache: 3600
+        });
+        server.get("/appstore/*/repo/*", function (req, res, next) {
+            appStoreServer.serve(req, res, (err, result) => {
+                if (err) {
+                    logger.error("Error serving appstore url " + req.url + " - " + err.message);
+                    res.writeHead(404, {
+                        "Content-Type": "text/plain"
+                    });
+                    res.end("404 Not Found\n");
+                    return;
+                }
+                logger.info("Served HEAD app store file: " + req.url);
+            });
+        });
+        server.head("/appstore/*/repo/*", function (req, res, next) {
+            logger.info("HEAD request: " + req.url);
+            appStoreServer.serve(req, res, (err, result) => {
+                if (err) {
+                    logger.error("Error serving appstore url " + req.url + " - " + err.message);
+                    res.writeHead(404, {
+                        "Content-Type": "text/plain"
+                    });
+                    res.end("404 Not Found\n");
+                    return;
+                }
+                logger.info("Served app store file: " + req.url);
+            });
+        });
+    }
     server.get("/*", function(req, res, next) {
         if (!isPermittedUrl(req.url)) {
             logger.info("Access to " + req.url + " does not permitted");

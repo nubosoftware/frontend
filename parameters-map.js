@@ -105,7 +105,7 @@ var filter = {
             }
         }
     }, {
-        "path": "^/html/",
+        "path": "^/html/|^/appstore/",
         "regex": true
     }, {
         "path": "/checkPasscode",

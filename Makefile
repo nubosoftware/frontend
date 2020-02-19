@@ -89,6 +89,7 @@ $3 \
 --define "_topdir $(nubo_proj_dir)/nubomanagement-public/rpmbuild" \
 --define "_version $(cur_version)" \
 --define "_release $(cur_buildid)" \
+--define "_build_id_links none" \
 -ba rpmbuild/SPECS/$(pkgname).spec
 echo PACKAGE: $(pkgname)
 cp $(nubo_proj_dir)/nubomanagement-public/rpmbuild/RPMS/$(cur_arch)/$(pkgname)-$(cur_version)-$(cur_buildid).$(cur_arch).rpm $(nubo_proj_dir)/rpms/latest/

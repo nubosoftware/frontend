@@ -391,6 +391,7 @@ function filterObjUseHandlerWrapper(req, res, next) {
     if ((pathname.indexOf("/html/player/extres/") === 0) || (pathname.indexOf("//html/player/extres/") === 0)) {
         next();
     } else {
+        logger.info("pathname: "+pathname);
         filterObj.useHandler(req, res, next);
     }
 }
@@ -434,7 +435,9 @@ function buildServerObject(server) {
     //--------------------------------------------------------------------------------------------
 
     server.get('/checkFidoAuth', internalRequests.forwardGetRequest);
+    server.post('/checkFidoAuth', internalRequests.forwardPostRequest);
     server.get('/reregisterFidoAuth', internalRequests.forwardGetRequest);
+    server.post('/reregisterFidoAuth', internalRequests.forwardPostRequest);
     server.get('/checkOtpAuth', internalRequests.forwardGetRequest);
     server.get('/resendOtpCode', internalRequests.forwardGetRequest);
     server.get('/getClientConf', internalRequests.forwardGetRequest);

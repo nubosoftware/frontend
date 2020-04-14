@@ -120,7 +120,8 @@ var filter = {
             "sessionid": constraints.sessionIdConstrOptional,
             "loginToken": constraints.requestedLoginTokenConstr,
             "passcode": constraints.passcodeConstrRequested,
-            "oldpasscode": constraints.passcodeConstrOptional
+            "oldpasscode": constraints.passcodeConstrOptional,
+            "passcode2": constraints.passcodeConstrOptional
         }
     }, {
         "path": "/resetPasscode",
@@ -375,12 +376,26 @@ var filter = {
     }, {
         "path": "/checkFidoAuth",
         "constraints": {
-            "loginToken": constraints.requestedLoginTokenConstr
+            "loginToken": constraints.requestedLoginTokenConstr,
+            "requestType": {
+                inclusion: {
+                    within: ["onepassReq", "ssenstoneReq","ssenstoneResp"]
+                }
+            },
+            "DEVICEHASH": {},
+            "inputJSON": {}
         }
     }, {
         "path": "/reregisterFidoAuth",
         "constraints": {
-            "loginToken": constraints.requestedLoginTokenConstr
+            "loginToken": constraints.requestedLoginTokenConstr,
+            "requestType": {
+                inclusion: {
+                    within: ["onepassReq", "ssenstoneReq","ssenstoneResp"]
+                }
+            },
+            "DUID": {},
+            "inputJSON": {}
         }
     }, {
         "path": "/checkOtpAuth",

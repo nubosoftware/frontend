@@ -379,7 +379,7 @@ var filter = {
             "loginToken": constraints.requestedLoginTokenConstr,
             "requestType": {
                 inclusion: {
-                    within: ["onepassReq", "ssenstoneReq","ssenstoneResp"]
+                    within: ["onepassReq", "ssenstoneReq","ssenstoneResp","ssenstoneRegResponse"]
                 }
             },
             "DEVICEHASH": {},
@@ -391,7 +391,7 @@ var filter = {
             "loginToken": constraints.requestedLoginTokenConstr,
             "requestType": {
                 inclusion: {
-                    within: ["onepassReq", "ssenstoneReq","ssenstoneResp"]
+                    within: ["onepassReq", "ssenstoneReq","ssenstoneResp","ssenstoneRegResponse"]
                 }
             },
             "DUID": {},

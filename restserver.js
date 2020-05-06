@@ -438,6 +438,7 @@ function buildServerObject(server) {
     server.post('/checkFidoAuth', internalRequests.forwardPostRequest);
     server.get('/reregisterFidoAuth', internalRequests.forwardGetRequest);
     server.post('/reregisterFidoAuth', internalRequests.forwardPostRequest);
+    server.get('/getFidoFacets', internalRequests.forwardGetRequest);
     server.get('/checkOtpAuth', internalRequests.forwardGetRequest);
     server.get('/resendOtpCode', internalRequests.forwardGetRequest);
     server.get('/getClientConf', internalRequests.forwardGetRequest);

@@ -398,6 +398,10 @@ var filter = {
             "inputJSON": {}
         }
     }, {
+        "path": "/getFidoFacets",
+        "constraints": {
+        }
+    }, {
         "path": "/checkOtpAuth",
         "constraints": {
             "loginToken": constraints.requestedLoginTokenConstr,

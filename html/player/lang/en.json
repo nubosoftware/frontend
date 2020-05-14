@@ -129,5 +129,10 @@
     "logoutUser": "Logout User",
     "logoutSent": "Logout command has been sent",
     "resetActivation": "Delete all user data",
-    "resetWarning": "Warning - this will reset all activation information. Are you sure?"
+    "resetWarning": "Warning - this will reset all activation information. Are you sure?",
+
+    "foundActiveSession": "Another session, with your user name, has been opened in a different device. Would you like to close that session and log in with this device?",
+    "closeSessionOption": "Close the Other Session",
+    "sessionClosedByUser": "The session is closed, since you have opened it in another device.",
+    "sessionClosedBySystem": "The session is closed. Please log in again"
 }

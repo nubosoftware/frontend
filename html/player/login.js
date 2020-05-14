@@ -187,7 +187,7 @@ var WebmailList = ["gmail", "hotmail", "yahoo", "zoho", "icloud", "aim", "window
     "gawab", "inbox.com", "lavabit", "zapak", "hotpop", "myway", "are2"
 ];
 
-var DEBUG = false;
+var DEBUG = true;
 var mgmtURL;
 var clickbgColor = '#828282';
 var bgColor = '#5B5B5B';
@@ -3160,6 +3160,48 @@ $(function() {
         }
     });
 
+    var ActiveSessionView = Backbone.View.extend({
+        el: $("#maindiv"),
+        initialize: function() {
+
+        },
+        render: function() {
+
+            var template = _.template($("#activeSession_template").html(), {});
+            this.$el.html(template);
+            formatPage();
+        },
+        events: {
+            "click #killSessionBtn": "killSessionBtnClick",
+            "click #cancelBtn": "cancelBtnClick"
+        },
+        cancelBtnClick: function(event) {
+            loginToken = null;
+            window.location.hash = "validation";
+        },
+        killSessionBtnClick: function(event) {
+            //loginToken = null;
+            //window.location.hash = "validation";
+            var url = mgmtURL + "closeOtherSessions?loginToken=" + encodeURIComponent(loginToken);
+            if (DEBUG) {
+                console.log("ActiveSessionView. " + url);
+            }
+
+            getJSON(url, function(data) {
+                if (DEBUG) {
+                    console.log(JSON.stringify(data, null, 4));
+                }
+                if (data.status == 1) {
+                    window.location.hash = "player";
+                } else {
+                    console.log("Error closeOtherSessions: "+data.status);
+                    loginToken = null;
+                    window.location.hash = "error";
+                }
+            });
+        }
+    });
+
     var ExpiredView = Backbone.View.extend({
         el: $("#maindiv"),
         initialize: function() {
@@ -3428,7 +3470,9 @@ $(function() {
                 } else if (data.status == 2) { // expired login token
                     // console.log("PlayerView. expired login token");
                     window.location.hash = "validation";
-
+                } else if (data.status == -9) {
+                    console.log("Found active session for user");
+                    window.location.hash = "activesess";
                 } else if (data.status == 0) { // failed
                     console.log("PlayerView. error");
                     window.location.hash = "error";
@@ -3811,6 +3855,11 @@ $(function() {
             return;
         }
 
+        if (actions == "activesess") {
+            var error_view = new ActiveSessionView();
+            appController.showView(error_view);
+            return;
+        }
         if (actions == "passcodelock") {
             var passcodelock_view = new PasscodeLockView();
             appController.showView(passcodelock_view);

@@ -455,7 +455,14 @@ var filter = {
             "loginToken": constraints.requestedLoginTokenConstr,
             "phoneNumber": constraints.ExcludeSpecialCharactersRequested
         }
+    },
+    {
+        "path": "/closeOtherSessions",
+        "constraints": {
+            "loginToken": constraints.requestedLoginTokenConstr,
+        }
     }
+    
 
     ]
 };

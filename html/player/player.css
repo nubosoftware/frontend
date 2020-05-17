@@ -646,6 +646,16 @@ span#changeBtn {
     width: 309px;
     height: 52px;
 }
+
+span.blockBtn {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+
+    width: 309px;
+    height: 52px;
+}
 span#changeText {
     position: absolute;
     left: 0px;

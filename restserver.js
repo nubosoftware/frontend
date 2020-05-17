@@ -458,6 +458,7 @@ function buildServerObject(server) {
     server.get('/startsession', internalRequests.forwardGetRequest);
     server.post('/startsession', internalRequests.forwardPostRequest);
     server.get('/logoutUser', internalRequests.forwardGetRequest);
+    server.get('/closeOtherSessions', internalRequests.forwardGetRequest);    
     server.get('/declineCall', internalRequests.forwardGetRequest);
     server.get('/getResource', internalRequests.forwardGetRequest);
 

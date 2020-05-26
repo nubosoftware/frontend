@@ -303,9 +303,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         note.expiry = Math.floor(Date.now() / 1000) + 360000;
         // Expires 100 hour from now.
 
-        if (notifyLocation.length > 0) {
-            notifyLocation = '\n' + notifyLocation;
-        }
+
 
         var alert = "";
         if (type != 0 && type != 6 && type != 7 && type != 5) {
@@ -317,6 +315,9 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
                 }
                 alert += '\n' + notifyTime;
             } else {
+                if (notifyLocation.length > 0) {
+                    notifyLocation = '\n' + notifyLocation;
+                }
                 alert = notifyTitle + notifyLocation;
             }
         } else {
@@ -343,6 +344,9 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
                 note.sound = "default";
             }
         } else {
+            if (enableSound == 1) {
+                note.sound = "default";
+            }
             note.contentAvailable = true;
         }
         logger.info("APN note: "+JSON.stringify(note,null,2));

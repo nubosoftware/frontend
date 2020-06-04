@@ -664,6 +664,7 @@ $(function() {
                     }
                     setTimeout(createplayerView.activatePlayer, 1000);
                 } else {
+                    console.log("activatePlayer. unknown status: "+data.status+", data: "+JSON.stringify(data, null, 2));
                     window.location.hash = "error";
                 }
 
@@ -789,6 +790,7 @@ $(function() {
                     settings.set({
                         activationKey: ""
                     });
+                    console.log("Error on checkValidation. data.status: "+data.status);
                     window.location.hash = "error";
 
                 } else if (data.status == 4) {
@@ -892,6 +894,8 @@ $(function() {
             // Button clicked, you can access the element that was clicked with event.currentTarget
             //alert( "clickCreate" );
             if (!pendingResetPassword) {
+                console.log("clickChange...");
+                resetValidationEvent();
                 settings.set({
                     workEmail: "",
                     activationKey: ""
@@ -909,7 +913,8 @@ $(function() {
         },
         checkValidation: function() {
             if (settings.get("activationKey") == "") {
-                window.location.hash = "error";
+                console.log("Error on checkValidation. activationKey is empty.", new Error());
+                //window.location.hash = "error";
                 return;
             }
             var url = mgmtURL + "validate?username=" + encodeURIComponent(settings.get("workEmail")) +
@@ -1046,6 +1051,7 @@ $(function() {
                     settings.set({
                         activationKey: ""
                     });
+                    console.log("Error on checkValidation. Invalid player version.");
                     window.location.hash = "error";
 
                 } else if (data.status == 4) {
@@ -1595,6 +1601,7 @@ $(function() {
                     // console.log("CreatePlayerView.activatePlayer. status=301, mgmtURL: " + mgmtURL);
                     setTimeout(createplayerView.activatePlayer, 1000);
                 } else {
+                    console.log("Error on activatePlayer. Invalid status: "+data.status);
                     window.location.hash = "error";
                 }
 
@@ -1735,6 +1742,7 @@ $(function() {
                     // console.log("AlreadyUserView.activatePlayer. status=301, mgmtURL: " + mgmtURL);
                     setTimeout(alreadyUserView.activatePlayer, 1000);
                 } else {
+                    console.log("Error on AlreadyUserView.activatePlayer. Invalid status: "+data.status);
                     window.location.hash = "error";
                 }
             });
@@ -2107,6 +2115,7 @@ $(function() {
                         enterPasscode = "";
                         $('#enterPasscode').val("");
                     } else {
+                        console.log("Error on checkPasscode. isError: "+isError);
                         window.location.hash = "error";
                     }
 
@@ -2653,6 +2662,7 @@ $(function() {
                         $('#passcodeErrMsg').css("visibility", "visible");
                         $('#enterPassword').val("");
                     } else {
+                        console.log("Error on checkPassword. isError: "+isError);
                         window.location.hash = "error";
                     }
 
@@ -3006,6 +3016,7 @@ $(function() {
                     this.timeoutId = setTimeout(this.checkUnlock, 2000);
                 } else {
                     this.timeoutId = 0;
+                    console.log("Error on clickResend. data.status: "+data.status);
                     window.location.hash = "error";
                 }
             });
@@ -3077,6 +3088,7 @@ $(function() {
                     settings.set({
                         activationKey: ""
                     });
+                    console.log("Error on checkUnlock. data.status: "+data.status);
                     window.location.hash = "error";
 
                 }

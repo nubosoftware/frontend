@@ -336,6 +336,17 @@ function forwardActivationLink(req, res, next) {
         }
 
         logger.info("forwardActivationLink: status: " + resObjData.status + ", message: " + resObjData.message);
+
+        let deviceType = resObjData.deviceType;
+        if (!deviceType || deviceType == "") {
+            deviceType = "NA";
+        }
+        res.writeHead(302, {
+            'Location': '/html/player/login.html#activationLink/'+resObjData.status+"/"+deviceType
+            //add other headers here...
+        });
+        res.end();
+        /*
         if (resObjData.status == 0) {
             fs.readFile("html/player/activateDevice.html", function(error, page) {
                 if (error) {
@@ -360,7 +371,7 @@ function forwardActivationLink(req, res, next) {
                 }
                 res.end();
             });
-        }
+        }*/
         return;
     });
 }
@@ -392,7 +403,17 @@ function forwardResetPasscodeLink(req, res, next) {
         }
 
         logger.info("forwardResetPasscodeLink: status: " + resObjData.status + ", message: " + resObjData.message);
-        if (resObjData.status == 0) {
+        let deviceType = resObjData.deviceType;
+        if (!deviceType || deviceType == "") {
+            deviceType = "NA";
+        }
+        res.writeHead(302, {
+            'Location': '/html/player/login.html#resetPasscodeLink/'+resObjData.status+"/"+deviceType
+            //add other headers here...
+        });
+        res.end();
+
+        /*if (resObjData.status == 0) {
             fs.readFile("html/player/resetPasscode.html", function(error, page) {
                 if (error) {
                     res.write(resData);
@@ -416,7 +437,7 @@ function forwardResetPasscodeLink(req, res, next) {
                 }
                 res.end();
             });
-        }
+        }*/
         return;
     });
 }

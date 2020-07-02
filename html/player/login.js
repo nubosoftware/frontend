@@ -1103,6 +1103,9 @@ $(function() {
         }
     });
 
+
+
+
     var activationLinkView = null;
 
     var ActivationLinkView = Backbone.View.extend({
@@ -1111,62 +1114,30 @@ $(function() {
             activationLinkView = this;
 
         },
-        token: null,
-        email: null,
-        cloneActivation: null,
         timeoutId: 0,
-        afterValidation: false,
         successActivation: false,
         activationDeviceType: "",
         render: function() {
             var template;
-            if (!this.afterValidation) {
-                this.$el.html("");
-                /*
-                 var activationKey = settings.get("activationKey");
-                 if (activationKey==null || activationKey.length<5) {
-                 var plain = this.email+'_'+settings.get("deviceID");
-                 var signature = CryptoJS.HmacSHA1(plain, "1981abe0d32d93967648319b013b03f05a119c9f619cc98f");
-                 var url = mgmtURL+"activate?deviceid="+encodeURIComponent(settings.get("deviceID"))+
-                 "&email="+encodeURIComponent(this.email)+
-                 "&signature="+encodeURIComponent(signature)+
-                 "&regid=none&alreadyUser=Y&silentActivation=Y";
 
-                 console.log("url="+url);
-
-                 getJSON(url, function(data) {
-                 console.log(JSON.stringify(data, null, 4 ));
-                 if (data.status==0) {
-                 settings.set({'activationKey': data.activationKey });
-                 settings.save();
-                 activationLinkView.cloneActivation = 	data.activationKey;
-                 } else {
-
-                 }
-                 activationLinkView.checkActivationLink();
-                 });
-
-                 } else*/
-                this.checkActivationLink();
-            } else {
                 if (this.successActivation) {
                     template = _.template($("#welcome_template").html(), {
                         "activationDeviceType": this.activationDeviceType
                     });
                     this.$el.html(template);
                     formatPage();
-                    $("#startDeviceText").text(l("startUsingDevice") + " " + this.activationDeviceType);
+                    $("#startDeviceText").text(l("startUsingDevice"));
                 } else {
                     var vars = settings.attributes;
                     template = _.template($("#activation_err_template").html(), vars);
                     this.$el.html(template);
                     formatPage();
                     if (this.activationDeviceType != "Web") {
-                        $("#activationErrorText").text(l("activationExpired") + " " + l("openApp"));
+                        $("#activationErrorText").text(l("activationExpired"));
                     }
                 }
 
-            }
+
             track();
 
         },
@@ -1177,38 +1148,6 @@ $(function() {
             //settings.set({activationKey: "" });
             //settings.save();
             window.location.hash = "createPlayer";
-        },
-        checkActivationLink: function() {
-            var cloneActivationParam = this.cloneActivation ? "&cloneActivation=" + encodeURIComponent(this.cloneActivation) : "";
-            var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token) + cloneActivationParam;
-            if (DEBUG) {
-                console.log("activationLink. " + url);
-            }
-            getJSON(url, function(data) {
-                if (DEBUG) {
-                    console.log(JSON.stringify(data, null, 4));
-                }
-
-                activationLinkView.afterValidation = true;
-                if (data.status == 0) {
-                    activationLinkView.activationDeviceType = data.deviceType;
-                    activationLinkView.successActivation = true;
-                    window.userEmail = data.email;
-                    // if (  data.deviceType=="Web") {
-                    // window.location.hash = "validation";
-                    // } else {
-                    // activationLinkView.render();
-                    // }
-
-                    activationLinkView.render();
-
-                } else {
-                    activationLinkView.successActivation = false;
-                    activationLinkView.activationDeviceType = data.deviceType;
-                    activationLinkView.render();
-                }
-            });
-
         }
     });
 
@@ -1229,10 +1168,7 @@ $(function() {
         render: function() {
             var template;
             console.log("ResetPasscodeLinkView: render...");
-            if (!this.afterValidation) {
-                this.$el.html("");
-                this.checkResetLink();
-            } else {
+
                 if (this.successReset) {
                     template = _.template($("#resetPasscodeLink_template").html(), {
                         "activationDeviceType": this.resetDeviceType
@@ -1243,48 +1179,21 @@ $(function() {
                     if (DEBUG) {
                         console.log("ResetPasscodeLinkView.render passcodeType: " + passcodeType);
                     }
-                    if (passcodeType == 1) {
+                    //if (passcodeType == 1) {
                         $("#resetPasscodeTxt").text(l("resetPasswordText"));
-                    } else {
-                        $("#resetPasscodeTxt").text(l("resetPasscodeText"));
-                    }
+                    //} else {
+                    //    $("#resetPasscodeTxt").text(l("resetPasscodeText"));
+                    //}
                 } else {
                     var vars = settings.attributes;
                     template = _.template($("#activation_err_template").html(), vars);
                     this.$el.html(template);
                     formatPage();
-                    $("#resetPasscodeTxt").text(l("activationExpired") + " " + l("openApp"));
+                    $("#resetPasscodeTxt").text(l("activationExpired"));
                 }
 
-            }
+
             track();
-
-        },
-        checkResetLink: function() {
-            //var cloneActivationParam = this.cloneActivation ? "&cloneActivation=" + encodeURIComponent(this.cloneActivation) : "";
-            var url = mgmtURL + "activationLink?token=" + encodeURIComponent(this.token); //+ cloneActivationParam;
-
-            if (DEBUG) {
-                console.log("checkResetLink. " + url);
-            }
-
-            getJSON(url, function(data) {
-                if (DEBUG) {
-                    console.log(JSON.stringify(data, null, 4));
-                }
-                resetPasscodeLinkView.afterValidation = true;
-                if (data.status == 0) {
-                    resetPasscodeLinkView.resetDeviceType = data.deviceType;
-                    resetPasscodeLinkView.successReset = true;
-                    window.userEmail = data.email;
-                    resetPasscodeLinkView.render();
-
-                } else {
-                    resetPasscodeLinkView.successReset = false;
-                    resetPasscodeLinkView.resetDeviceType = data.deviceType;
-                    resetPasscodeLinkView.render();
-                }
-            });
 
         }
     });
@@ -3719,8 +3628,8 @@ $(function() {
     var AppRouter = Backbone.Router.extend({
         routes: {
             "ppage/:id": "getPlayerPage",
-            "activationLink/:token/:email": "getActivationLink",
-            "resetPasscodeLink/:token/:email": "getResetPasscodeLink",
+            "activationLink/:activationStatus/:activationDeviceType": "getActivationLink",
+            "resetPasscodeLink/:activationStatus/:activationDeviceType": "getResetPasscodeLink",
             "unlockPassword/:token/:email/:mainDomain/:deviceID": "getUnlockPassword",
             "downloadApp": "getDownloadApp",
             "downloadApp/:domain": "getDownloadApp",
@@ -3769,24 +3678,36 @@ $(function() {
 
     });
 
-    app_router.on('route:getActivationLink', function(token, email) {
+    app_router.on('route:getActivationLink', function(activationStatus,activationDeviceType) {
         if (DEBUG) {
-            console.log("route:getActivationLink. token:" + token + ", email:" + email);
+            console.log("route:getActivationLink. activationStatus:" + activationStatus+", activationDeviceType: "+activationDeviceType);
         }
         resetValidationEvent();
         var activation_link_view = new ActivationLinkView();
-        activation_link_view.token = token;
-        activation_link_view.email = email;
+        if (activationStatus == "0") {
+            activation_link_view.successActivation = true;
+        } else {
+            activation_link_view.successActivation = false;
+        }
+        activation_link_view.activationDeviceType = activationDeviceType;
+        //activation_link_view.token = token;
+        //activation_link_view.email = email;
         appController.showView(activation_link_view);
 
     });
 
-    app_router.on('route:getResetPasscodeLink', function(token, email) {
+    app_router.on('route:getResetPasscodeLink', function(activationStatus,activationDeviceType) {
         // console.log("route:getResetPasscodeLink. token:" + token + ", email:" + email);
         resetValidationEvent();
         var resetPasscode_link_view = new ResetPasscodeLinkView();
-        resetPasscode_link_view.token = token;
-        resetPasscode_link_view.email = email;
+        if (activationStatus == "0") {
+            resetPasscode_link_view.successReset = true;
+        } else {
+            resetPasscode_link_view.successReset = false;
+        }
+        resetPasscode_link_view.resetDeviceType = activationDeviceType;
+
+
         appController.showView(resetPasscode_link_view);
 
     });

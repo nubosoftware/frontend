@@ -89,7 +89,8 @@ var filter = {
             "activationKey": constraints.tokenConstrRequested,
             "playerVersion": constraints.playerVersionConstrRequested,
             "timeZone": constraints.timeZoneConstrOptional,
-            "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional
+            "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional,
+            "newProcess": constraints.boolConstrOptional
         }
     }, {
         "path": "/startsession",
@@ -462,7 +463,7 @@ var filter = {
             "loginToken": constraints.requestedLoginTokenConstr,
         }
     }
-    
+
 
     ]
 };

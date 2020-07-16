@@ -268,7 +268,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
                 return;
             }
 
-            logger.info("Notifications.js::sender.send result: ", result);
+            logger.info("Notifications.js::sender.send result: "+JSON.stringify(result,null,2));
             if (result.canonical_ids === 1) {
                 logger.info("Notifications.js::sender.send activation updated with new regid: ", result.results[0].registration_id);
                 callback(null, result.results[0].registration_id);

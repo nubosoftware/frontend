@@ -462,7 +462,18 @@ var filter = {
         "constraints": {
             "loginToken": constraints.requestedLoginTokenConstr,
         }
-    }
+    },
+    {
+        "regex": true,
+        "path": "/api/.*",
+        "constraints": {
+        },
+        "headerConstraints": {
+        },
+        "bodyConstraints": {
+
+        }
+    },
 
 
     ]

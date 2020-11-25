@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My first Vue app</title>
+  <script src="https://unpkg.com/vue"></script>
+</head>
+<body>
+  <div id="app">
+    {{ message }}
+    <button-counter></button-counter>
+  </div>
+
+  <script>
+      // Define a new component called button-counter
+        Vue.component('button-counter', {
+            data: function () {
+                return {
+                    count: 0
+                }
+            },
+            template: '<button v-on:click="btnclick">You clicked btnclick {{ count }} times.</button>',
+            methods: {
+                btnclick: function() {
+                    this.count++;
+                }
+            }
+        })
+
+
+    var app = new Vue({
+      el: '#app',
+      data: {
+        message: 'Hello Vue!'
+      }
+    })
+  </script>
+</body>
+</html>

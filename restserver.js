@@ -458,7 +458,7 @@ function buildServerObject(server) {
     server.get('/startsession', internalRequests.forwardGetRequest);
     server.post('/startsession', internalRequests.forwardPostRequest);
     server.get('/logoutUser', internalRequests.forwardGetRequest);
-    server.get('/closeOtherSessions', internalRequests.forwardGetRequest);    
+    server.get('/closeOtherSessions', internalRequests.forwardGetRequest);
     server.get('/declineCall', internalRequests.forwardGetRequest);
     server.get('/getResource', internalRequests.forwardGetRequest);
 
@@ -472,6 +472,12 @@ function buildServerObject(server) {
     server.post('/receiveSMS', internalRequests.forwardPostRequest);
     server.get('/getAvailableNumbers', internalRequests.forwardGetRequest);
     server.get('/subscribeToNumber', internalRequests.forwardGetRequest);
+    if (Common.allowAPIAccess) {
+        server.get('/api/*', internalRequests.forwardPostRequest);
+        server.post('/api/*', internalRequests.forwardPostRequest);
+        server.put('/api/*', internalRequests.forwardPostRequest);
+        server.del('/api/*', internalRequests.forwardPostRequest);
+    }
 
     if (Common.isHandlingMediaStreams) {
         server.get('/getStreamsFile', internalRequests.getStreamsFile);
@@ -488,8 +494,9 @@ function buildServerObject(server) {
     server.opts('/.*/', optionsHandler);
 
     function optionsHandler(req, res) {
+        logger.info("optionsHandler..");
         if (!isPermittedUrl(req.url)) {
-            logger.info("Access to " + req.url + " does not permitted");
+            logger.info("Access to " + req.url + " does not permitted XX");
             res.send(401, "Access denied", {
                 "Content-Type": "application/json",
                 "Transfer-Encoding": ""
@@ -515,6 +522,12 @@ function buildServerObject(server) {
     }
     var isPermittedUrl = function(url) {
         var match;
+        if (!Common.allowAPIAccess) {
+            match = url.match('^.*/html/admin/(.*)');
+            if (match !== null) {
+                return false;
+            }
+        }
         match = url.match('^.*/html/(.*)');
         if (match !== null) {
             return true;

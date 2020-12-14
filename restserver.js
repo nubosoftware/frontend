@@ -405,7 +405,7 @@ function buildServerObject(server) {
     server.use(Common.restify.plugins.queryParser({ mapParams: true }));
     server.use(filterObjUseHandlerWrapper);
     server.use(function(req, res, next) {
-
+        //logger.info(`url: ${req.url}`);
         req.realIP = (Common.proxyClientIpHeader && req.headers[Common.proxyClientIpHeader]) || req.connection.remoteAddress;
         next();
 
@@ -445,6 +445,7 @@ function buildServerObject(server) {
 
     server.get('/authenticateUser', internalRequests.forwardGetRequest);
     server.get('/checkPasscode', internalRequests.forwardGetRequest);
+    server.get('/checkBiometric', internalRequests.forwardGetRequest);
     server.get('/setPasscode', internalRequests.forwardGetRequest);
     server.get('/resetPasscode', internalRequests.forwardGetRequest);
     server.get('/activate', internalRequests.checkServerAndForwardGetRequest);

@@ -116,6 +116,12 @@ var filter = {
             "passcode": constraints.passcodeConstrRequested
         }
     }, {
+        "path": "/checkBiometric",
+        "constraints": {
+            "loginToken": constraints.requestedLoginTokenConstr,
+            "token": constraints.passcodeConstrRequested
+        }
+    }, {
         "path": "/setPasscode",
         "constraints": {
             "sessionid": constraints.sessionIdConstrOptional,

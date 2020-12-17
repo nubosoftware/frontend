@@ -106,7 +106,7 @@ function getStreamsFile(req, res, next) {
 //pipe upload file to backend server
 function forwardPostRequest(req, res, next) {
 
-    logger.info("forwardPostRequest");
+    //logger.info("forwardPostRequest");
     req.pause();
 
     var options = url.parse(req.url);

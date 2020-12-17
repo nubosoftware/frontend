@@ -480,6 +480,18 @@ var filter = {
 
         }
     },
+    {
+        "regex": true,
+        "path": "/html/.*",
+        "constraints": {
+        },
+        "headerConstraints": {
+        },
+        "bodyConstraints": {
+
+        }
+    },
+
 
 
     ]

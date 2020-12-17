@@ -7,7 +7,7 @@
     "node-gcm": "1.0.2",
     "node-static": "0.7.11",
     "nubo-validateConstraints": "0.0.36",
-    "permission-parser": "0.0.7",
+    "permission-parser": "0.0.11",
     "querystring": "0.2.0",
     "request": "2.88.0",
     "restify": "7.2.3",

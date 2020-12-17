@@ -150,7 +150,18 @@ var mainFunction = function(err, firstTimeLoad) {
 
     };
 
-    var initPortListener = function(listenAddress, callback) {
+    var initPortListener = function(listenOptions, callback) {
+        let listenAddress;
+        if (typeof listenOptions === 'string' || listenOptions instanceof String) {
+            listenAddress = listenOptions;
+            listenOptions = {
+                address: listenAddress,
+                api: false,
+                client: true
+            }
+        } else {
+            listenAddress = listenOptions.address;
+        }
         async.waterfall(
             [
                 function(callback) {
@@ -180,7 +191,7 @@ var mainFunction = function(err, firstTimeLoad) {
                 },
                 function(host, port, server_options, callback) {
                     var myserver = restify.createServer(server_options);
-                    buildServerObject(myserver);
+                    buildServerObject(myserver,listenOptions);
                     myserver.listen(port, host, function() {
                         logger.info(myserver.name + ' listening at ' + myserver.url);
                         callback(null);
@@ -391,12 +402,20 @@ function filterObjUseHandlerWrapper(req, res, next) {
     if ((pathname.indexOf("/html/player/extres/") === 0) || (pathname.indexOf("//html/player/extres/") === 0)) {
         next();
     } else {
-        logger.info("pathname: "+pathname);
+        //logger.info("pathname: "+pathname);
         filterObj.useHandler(req, res, next);
     }
 }
 
-function buildServerObject(server) {
+function buildServerObject(server,listenOptions) {
+    /*
+    listenOptions = {
+                address: listenAddress,
+                api: false,
+                client: true,
+                webclient: true
+            }
+    */
     server.on('uncaughtException', function(request, response, route, error) {
         logger.error("Exception in http server: " + (error && error.stack || error));
         response.send(error);
@@ -428,62 +447,66 @@ function buildServerObject(server) {
 
     // --------------------------------------------------------------------------------------------
 
-    // depreacted
-    if (!Common.withService) {
-        server.get('/sendEmailForUnknownJobTitle', SendEmailForUnknownJobTitle.func);
+    if (listenOptions.client) {
+        // depreacted
+        if (!Common.withService) {
+            server.get('/sendEmailForUnknownJobTitle', SendEmailForUnknownJobTitle.func);
+        }
+        //--------------------------------------------------------------------------------------------
+
+        server.get('/checkFidoAuth', internalRequests.forwardGetRequest);
+        server.post('/checkFidoAuth', internalRequests.forwardPostRequest);
+        server.get('/reregisterFidoAuth', internalRequests.forwardGetRequest);
+        server.post('/reregisterFidoAuth', internalRequests.forwardPostRequest);
+        server.get('/getFidoFacets', internalRequests.forwardGetRequest);
+        server.get('/checkOtpAuth', internalRequests.forwardGetRequest);
+        server.get('/resendOtpCode', internalRequests.forwardGetRequest);
+        server.get('/getClientConf', internalRequests.forwardGetRequest);
+
+        server.get('/authenticateUser', internalRequests.forwardGetRequest);
+        server.get('/checkPasscode', internalRequests.forwardGetRequest);
+        server.get('/checkBiometric', internalRequests.forwardGetRequest);
+        server.get('/setPasscode', internalRequests.forwardGetRequest);
+        server.get('/resetPasscode', internalRequests.forwardGetRequest);
+        server.get('/activate', internalRequests.checkServerAndForwardGetRequest);
+        server.get('/validate', internalRequests.checkServerAndForwardGetRequest);
+        server.get('/notificationPolling', internalRequests.forwardGetRequest);
+        server.get('/resendUnlockPasswordLink', internalRequests.forwardGetRequest);
+        // server.get('/activationLink', internalRequests.forwardGetRequest);
+        server.get('/activationLink', internalRequests.forwardActivationLink);
+        server.get('/resetPasscodeLink', internalRequests.forwardResetPasscodeLink);
+        server.get('/unlockPassword', internalRequests.forwardGetRequest);
+        server.get('/startsession', internalRequests.forwardGetRequest);
+        server.post('/startsession', internalRequests.forwardPostRequest);
+        server.get('/logoutUser', internalRequests.forwardGetRequest);
+        server.get('/closeOtherSessions', internalRequests.forwardGetRequest);
+        server.get('/declineCall', internalRequests.forwardGetRequest);
+        server.get('/getResource', internalRequests.forwardGetRequest);
+
+        server.get('/getResourceListByDevice', internalRequests.forwardGetRequest);
+        server.get('/html/player/common.js', require('./webCommon.js'));
+        server.get('/download', downloadFunc);
+        server.post('/file/uploadToSession', internalRequests.upload);
+        server.post('/file/uploadToLoginToken', internalRequests.upload);
+        server.post('/file/uploadDummyFile', internalRequests.upload);
+        server.post('/file/uploadFileToLoginToken', internalRequests.upload);
+        server.post('/receiveSMS', internalRequests.forwardPostRequest);
+        server.get('/getAvailableNumbers', internalRequests.forwardGetRequest);
+        server.get('/subscribeToNumber', internalRequests.forwardGetRequest);
+
+        if (Common.isHandlingMediaStreams) {
+            server.get('/getStreamsFile', internalRequests.getStreamsFile);
+            server.get('/checkStreamsFile', checkStreamFile.func);
+        }
     }
-    //--------------------------------------------------------------------------------------------
-
-    server.get('/checkFidoAuth', internalRequests.forwardGetRequest);
-    server.post('/checkFidoAuth', internalRequests.forwardPostRequest);
-    server.get('/reregisterFidoAuth', internalRequests.forwardGetRequest);
-    server.post('/reregisterFidoAuth', internalRequests.forwardPostRequest);
-    server.get('/getFidoFacets', internalRequests.forwardGetRequest);
-    server.get('/checkOtpAuth', internalRequests.forwardGetRequest);
-    server.get('/resendOtpCode', internalRequests.forwardGetRequest);
-    server.get('/getClientConf', internalRequests.forwardGetRequest);
-
-    server.get('/authenticateUser', internalRequests.forwardGetRequest);
-    server.get('/checkPasscode', internalRequests.forwardGetRequest);
-    server.get('/checkBiometric', internalRequests.forwardGetRequest);
-    server.get('/setPasscode', internalRequests.forwardGetRequest);
-    server.get('/resetPasscode', internalRequests.forwardGetRequest);
-    server.get('/activate', internalRequests.checkServerAndForwardGetRequest);
-    server.get('/validate', internalRequests.checkServerAndForwardGetRequest);
-    server.get('/notificationPolling', internalRequests.forwardGetRequest);
-    server.get('/resendUnlockPasswordLink', internalRequests.forwardGetRequest);
-    // server.get('/activationLink', internalRequests.forwardGetRequest);
-    server.get('/activationLink', internalRequests.forwardActivationLink);
-    server.get('/resetPasscodeLink', internalRequests.forwardResetPasscodeLink);
-    server.get('/unlockPassword', internalRequests.forwardGetRequest);
-    server.get('/startsession', internalRequests.forwardGetRequest);
-    server.post('/startsession', internalRequests.forwardPostRequest);
-    server.get('/logoutUser', internalRequests.forwardGetRequest);
-    server.get('/closeOtherSessions', internalRequests.forwardGetRequest);
-    server.get('/declineCall', internalRequests.forwardGetRequest);
-    server.get('/getResource', internalRequests.forwardGetRequest);
-
-    server.get('/getResourceListByDevice', internalRequests.forwardGetRequest);
-    server.get('/html/player/common.js', require('./webCommon.js'));
-    server.get('/download', downloadFunc);
-    server.post('/file/uploadToSession', internalRequests.upload);
-    server.post('/file/uploadToLoginToken', internalRequests.upload);
-    server.post('/file/uploadDummyFile', internalRequests.upload);
-    server.post('/file/uploadFileToLoginToken', internalRequests.upload);
-    server.post('/receiveSMS', internalRequests.forwardPostRequest);
-    server.get('/getAvailableNumbers', internalRequests.forwardGetRequest);
-    server.get('/subscribeToNumber', internalRequests.forwardGetRequest);
-    if (Common.allowAPIAccess) {
+    if (listenOptions.api) {
         server.get('/api/*', internalRequests.forwardPostRequest);
         server.post('/api/*', internalRequests.forwardPostRequest);
         server.put('/api/*', internalRequests.forwardPostRequest);
         server.del('/api/*', internalRequests.forwardPostRequest);
     }
 
-    if (Common.isHandlingMediaStreams) {
-        server.get('/getStreamsFile', internalRequests.getStreamsFile);
-        server.get('/checkStreamsFile', checkStreamFile.func);
-    }
+
     // if Exchange is external to organization (like office 365) the notification will come from it
     if (Common.EWSServerURL) {
         server.post('/EWSListener', internalRequests.upload);
@@ -523,12 +546,18 @@ function buildServerObject(server) {
     }
     var isPermittedUrl = function(url) {
         var match;
-        if (!Common.allowAPIAccess) {
+        if (!listenOptions.api) {
             match = url.match('^.*/html/admin/(.*)');
             if (match !== null) {
                 return false;
             }
         }
+        //if (!listenOptions.webclient) {
+        //    match = url.match('^.*/html/player/(.*)');
+        //    if (match !== null) {
+        //        return false;
+        //    }
+        //}
         match = url.match('^.*/html/(.*)');
         if (match !== null) {
             return true;

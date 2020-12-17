@@ -50,7 +50,23 @@ var Common = {
     encAlgorithm : 'aes-128-ecb',
     encKey : '', // this should be the same key as in JDCBAuthProvider.AES_KEY in openfire
     geoipLicense : '',
-    listenAddresses : ["https://", "http://"],
+    listenAddresses : [
+        {
+            "address": "http://0.0.0.0",
+            "api": false,
+            "client": true
+        },
+        {
+            "address": "https://0.0.0.0",
+            "api": false,
+            "client": true
+        },
+        {
+            "address": "https://0.0.0.0:6443",
+            "api": true,
+            "client": false
+        }
+    ],
     activationTimeoutPeriod : 48,
     nuboMask : '24',
     logLevel: "info",

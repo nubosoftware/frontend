@@ -74,6 +74,14 @@ function upload(req, res, next) {
     });
     req.pipe(connector);
     req.resume();
+    connector.on('error', function(err) {
+        logger.error("upload error: "+err);
+        res.writeHead(503, {
+            "Content-Type": "text/plain"
+        });
+        res.end("503 Service Unavailable\n");
+        return;
+    });
     return;
 }
 
@@ -100,13 +108,21 @@ function getStreamsFile(req, res, next) {
     });
     req.pipe(connector);
     req.resume();
+    connector.on('error', function(err) {
+        logger.error("getStreamsFile error: "+err);
+        res.writeHead(503, {
+            "Content-Type": "text/plain"
+        });
+        res.end("503 Service Unavailable\n");
+        return;
+    });
     return;
 }
 
 //pipe upload file to backend server
-function forwardPostRequest(req, res, next) {
+function forwardRequest(req, res, next) {
 
-    //logger.info("forwardPostRequest");
+    //logger.info("forwardRequest. method: "+req.method+", url: "+req.url);
     req.pause();
 
     var options = url.parse(req.url);
@@ -129,6 +145,14 @@ function forwardPostRequest(req, res, next) {
     });
     req.pipe(connector);
     req.resume();
+    connector.on('error', function(err) {
+        logger.error("forwardRequest error: "+err);
+        res.writeHead(503, {
+            "Content-Type": "text/plain"
+        });
+        res.end("503 Service Unavailable\n");
+        return;
+    });
     return;
 }
 
@@ -169,13 +193,14 @@ function checkServerAndForwardGetRequest(req, res, next) {
 
     var options = getOptions();
     options.path = '/checkStatus';
-
+    //logger.info("checkServerAndForwardGetRequest. method: "+req.method+", url: "+req.url);
     var response = {
         status: Common.STATUS_DATA_CENTER_UNAVALIBLE,
         msg: "data center isn't avalible"
     };
 
     http.doGetRequest(options, function(err, resData) {
+
         if (err) {
             logger.error("checkServerAndForwardGetRequest: " + err);
             res.send(response);
@@ -195,7 +220,7 @@ function checkServerAndForwardGetRequest(req, res, next) {
             res.send(response);
             return;
         } else if (resObjData.status === Common.STATUS_OK) {
-            forwardGetRequest(req, res, next);
+            forwardRequest(req, res, next);
             return;
         } else {
             logger.error("checkServerAndForwardGetRequest: unknown status " + resObjData.status);
@@ -522,7 +547,7 @@ function unregisterFrontEnd(index, callback) {
 }
 
 module.exports = {
-    forwardGetRequest: forwardGetRequest,
+    forwardGetRequest: forwardRequest,
     forwardCheckStreamFile: forwardCheckStreamFile,
     getStreamsFile: getStreamsFile,
     addMissingResource: addMissingResource,
@@ -534,7 +559,7 @@ module.exports = {
     registerFrontEnd: registerFrontEnd,
     refreshFrontEndTTL: refreshFrontEndTTL,
     unregisterFrontEnd: unregisterFrontEnd,
-    forwardPostRequest: forwardPostRequest
+    forwardPostRequest: forwardRequest
 
 
 }

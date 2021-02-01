@@ -12,7 +12,7 @@ RestartSec=5s
 KillSignal=SIGINT
 
 WorkingDirectory=/opt/nubomanagement-public
-ExecStart=/usr/bin/node multithreadserver.js
+ExecStart=/usr/bin/node multithreadserver-public.js
 
 [Install]
 WantedBy=multi-user.target

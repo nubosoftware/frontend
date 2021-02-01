@@ -1,6 +1,7 @@
 #!/bin/sh
 
 if [ "$1" = remove ]; then
-  invoke-rc.d nubomanagement-public stop
+  systemctl disable nubomanagement-public
 fi
+systemctl stop nubomanagement-public
 

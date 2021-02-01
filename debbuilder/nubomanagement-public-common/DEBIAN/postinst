@@ -2,14 +2,6 @@
 
 service rsyslog reload > /dev/null 2>&1 ||:
 
-if [ -x "/etc/init.d/nubomanagement-public" ]; then
-	update-rc.d nubomanagement-public defaults >/dev/null
-	chown 1000.1000 -R /opt/nubomanagement-public
-
-	if [ -n "$2" ]; then
-		_dh_action=restart
-	else
-		_dh_action=start
-	fi
-	invoke-rc.d nubomanagement-public $_dh_action || exit $?
-fi
+chown 1000.1000 -R /opt/nubomanagement-public
+systemctl enable nubomanagement-public.service
+systemctl restart nubomanagement-public.service

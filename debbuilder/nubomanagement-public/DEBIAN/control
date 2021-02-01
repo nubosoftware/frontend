@@ -1,7 +1,7 @@
 Package: nubomanagement-public
 Version: %Version%
 Architecture: all
-Depends: nodejs(>=8.11.2), node-forever, rsyslog (>= 7.4.4), nubo-common, nubomanagement-public-common(= %Version%)
+Depends: nodejs(>=8.11.2), rsyslog (>= 7.4.4), nubo-common, nubomanagement-public-common(= %Version%)
 Recommends:
 Maintainer: NuboSoftware <alexander@nubosoftware.com>
 Section: main

@@ -5,10 +5,10 @@ echo "NUBO_PROJ_PATH $NUBO_PROJ_PATH"
 echo "BUILD_ROOT $BUILD_ROOT"
 
 rm -rf $BUILD_ROOT
-mkdir -p $BUILD_ROOT/etc/init.d
+mkdir -p $BUILD_ROOT/etc/systemd/system
 mkdir -p $BUILD_ROOT/etc/rsyslog.d
 
-install -m 744 $NUBO_PROJ_PATH/scripts/rootfs/etc/init.d/nubomanagement-public $BUILD_ROOT/etc/init.d/nubomanagement-public
+install -m 644 $NUBO_PROJ_PATH/nubomanagement-public/nubomanagement-public.service $BUILD_ROOT/etc/systemd/system/nubomanagement-public.service
 install -m 644 $NUBO_PROJ_PATH/nubomanagement-public/rsyslog-nubomanagement-public.conf $BUILD_ROOT/etc/rsyslog.d/18-nubomanagement-public.conf
 
 

@@ -416,7 +416,7 @@ var filter = {
                 "format": "^[a-zA-Z0-9]*$",
                 "presence": true,
                 "length": {
-                    "minimum": 6,
+                    "minimum": 1,
                     "maximum": 255
                 }
             }

@@ -424,7 +424,17 @@ function buildServerObject(server,listenOptions) {
     server.use(Common.restify.plugins.queryParser({ mapParams: true }));
     server.use(filterObjUseHandlerWrapper);
     server.use(function(req, res, next) {
-        //logger.info(`url: ${req.url}`);
+        //logger.info(`url: ${req.url}, host: ${req.headers.host}`);
+        if (Common.permittedHosts) {
+            if (!Common.permittedHosts.includes(req.headers.host)) {
+                logger.info(`Access for not permitted host: ${req.headers.host}`);
+                res.writeHead(401, {
+                    "Content-Type": "text/plain"
+                });
+                res.end("401 Access Denied\n");
+                return;
+            }
+        }
         req.realIP = (Common.proxyClientIpHeader && req.headers[Common.proxyClientIpHeader]) || req.connection.remoteAddress;
         next();
 

@@ -157,7 +157,8 @@ var mainFunction = function(err, firstTimeLoad) {
             listenOptions = {
                 address: listenAddress,
                 api: false,
-                client: true
+                client: true,
+                requestCert: false
             }
         } else {
             listenAddress = listenOptions.address;
@@ -181,7 +182,10 @@ var mainFunction = function(err, firstTimeLoad) {
                                 callback(err);
                                 return;
                             } else {
-                                //opts.requestCert = true;
+                                if (listenOptions.requestCert) {
+                                    opts.requestCert = true;
+                                    //opts.rejectUnauthorized= false;
+                                }
                                 callback(null, host, port, opts);
                             }
                         });
@@ -221,7 +225,7 @@ var mainFunction = function(err, firstTimeLoad) {
             Common.sslCerts = {
                 key: "../cert/server.key",
                 certificate: "../cert/server.cert",
-                ca: "../cert/root.crt"
+                ca: "../cert/root.crt" // "./clientCerts/ca_cert.pem"
             };
         }
         console.log("Common.sslCerts: " + JSON.stringify(Common.sslCerts));
@@ -236,7 +240,7 @@ var mainFunction = function(err, firstTimeLoad) {
                     } else {
                         sslCerts[key] = data;
                     }
-                    callback(err);
+                    callback();
                 });
             },
             function(err) {

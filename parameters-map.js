@@ -140,7 +140,7 @@ var filter = {
                 "numericality": {
                     "onlyInteger": true,
                     "greaterThan": 0,
-                    "lessThan": 5
+                    "lessThan": 20
                 }
             },
         }

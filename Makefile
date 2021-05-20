@@ -7,7 +7,7 @@ full_files_list := $(shell git ls-tree --full-tree -r HEAD | sed 's/^.*\t//')
 webplayer_files_list := $(filter html/%,$(full_files_list))
 js_files_list := $(filter-out $(webplayer_files_list),$(full_files_list))
 js_files_list := $(filter-out debbuilder/% rpmbuild/%,$(js_files_list))
-js_files_list := $(filter-out .gitignore Makefile rsyslog-nubomanagement-public.conf,$(js_files_list))
+js_files_list := $(filter-out .gitignore Makefile rsyslog-nubomanagement-public.conf nubomanagement-public.service,$(js_files_list))
 node_modules_files_list := package.json
 
 default: usage

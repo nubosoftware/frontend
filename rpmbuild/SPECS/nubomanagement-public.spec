@@ -5,7 +5,7 @@ Release: %{_release}
 Group: System Environment/Daemons
 BuildArch: x86_64
 License: none
-Requires: nodejs >= 4.4.5, node-forever, nubomanagement-public-common = %{_version}-%{_release}
+Requires: nubomanagement-public-common = %{_version}-%{_release}
 
 %description
 nubo management web service that run in public network

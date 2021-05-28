@@ -81,7 +81,7 @@ var mainFunction = function(err, firstTimeLoad) {
 
         if (target_isSSL == "true") {
             logger.info("Try connection with SSL to " + target_host + ":" + target_port);
-            target = tls.connect(target_port, target_host, function() {
+            target = tls.connect({port: target_port, host: target_host, servername: target_host}, function() {
                 log('connected to ssl target');
             });
         } else {
@@ -245,6 +245,17 @@ var mainFunction = function(err, firstTimeLoad) {
             },
             function(err) {
                 callback(err, sslCerts);
+                /*secureCtx = tls.createSecureContext(sslCerts);
+                logger.info("secureCtx loaded");
+                if (callback) {
+                    let opts = {
+                        SNICallback: (servername, cb) => {
+                            logger.info(`SNICallback. servername: ${servername}`)
+                            cb(null, secureCtx);
+                        }
+                    };
+                    callback(err, opts);
+                }*/
             }
         );
     };

@@ -413,7 +413,7 @@ var filter = {
         "constraints": {
             "loginToken": constraints.requestedLoginTokenConstr,
             "OTPCode": {
-                "format": "^[a-zA-Z0-9]*$",
+                "format": "^[a-zA-Z0-9\=]*$",
                 "presence": true,
                 "length": {
                     "minimum": 1,

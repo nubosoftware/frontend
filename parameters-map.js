@@ -430,7 +430,15 @@ var filter = {
         "path": "/getClientConf",
         "constraints": {
             "loginToken": constraints.requestedLoginTokenConstr,
-            "supportedConf": constraints.NaturalNumberConstrRequested
+            "supportedConf": constraints.NaturalNumberConstrRequested,
+            "regid": {
+                "presence": false,
+                "format": "^[.a-zA-Z0-9_\\-():]+$",
+                "length": {
+                    "minimum": 1,
+                    "maximum": 255
+                }
+            }
         }
     },
     {

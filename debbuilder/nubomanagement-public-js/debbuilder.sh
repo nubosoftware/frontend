@@ -7,14 +7,21 @@ echo "BUILD_ROOT $BUILD_ROOT"
 rm -rf $BUILD_ROOT
 mkdir -p $BUILD_ROOT/opt/nubomanagement-public
 
-#Copy js files from git project
-FILES=`git ls-tree --full-tree -r HEAD | awk '
-($4 ~ /.+\.js$/) || ($4 ~ /^unittests\/.+/) {print $4}
-'`
+echo "Run webpack..."
+cd $NUBO_PROJ_PATH/nubomanagement-public
+npm run-script build
+cp -a dist/ $BUILD_ROOT/opt/nubomanagement-public/dist/
+cd -
 
-for file in ${FILES}; do
-    install -D -m 644 $NUBO_PROJ_PATH/nubomanagement-public/$file $BUILD_ROOT/opt/nubomanagement-public/$file
-done
+#Copy js files from git project
+#FILES=`git ls-tree --full-tree -r HEAD | awk '
+#($4 ~ /.+\.js$/) || ($4 ~ /^unittests\/.+/) {print $4}
+#'`
+
+#for file in ${FILES}; do
+#    install -D -m 644 $NUBO_PROJ_PATH/nubomanagement-public/$file $BUILD_ROOT/opt/nubomanagement-public/$file
+#done
+
 install -m 644 $NUBO_PROJ_PATH/nubomanagement-public/Settings.json.init $BUILD_ROOT/opt/nubomanagement-public/Settings.json
 rm -rf $BUILD_ROOT/opt/nubomanagement-public/html
 

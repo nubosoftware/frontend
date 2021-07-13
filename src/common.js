@@ -109,7 +109,8 @@ var Common = {
         user: "",
         password : ""
     },
-    geoRedundancy: false
+    geoRedundancy: false,
+    rootDir: process.cwd(),
 };
 
 try {
@@ -139,7 +140,7 @@ Common.logger = createLogger({
             colorize: true
         }),
         new transports.File({
-            filename : __dirname + '/log/' + loggerName,
+            filename : Common.rootDir + '/log/' + loggerName,
             handleExceptions : true,
             maxsize: 100*1024*1024, //100MB
             maxFiles: 4
@@ -157,7 +158,7 @@ Common.logger = createLogger({
         new (transports.Console)({
             timestamp : true
         }), new transports.File({
-            filename : __dirname + '/log/' + exceptionLoggerName
+            filename : Common.rootDir + '/log/' + exceptionLoggerName
         })
     ],
     exitOnError : false

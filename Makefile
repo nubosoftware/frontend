@@ -8,6 +8,8 @@ webplayer_files_list := $(filter html/%,$(full_files_list))
 js_files_list := $(filter-out $(webplayer_files_list),$(full_files_list))
 js_files_list := $(filter-out debbuilder/% rpmbuild/%,$(js_files_list))
 js_files_list := $(filter-out .gitignore Makefile rsyslog-nubomanagement-public.conf nubomanagement-public.service,$(js_files_list))
+js_files_list := $(filter-out src/% webpack.config.js,$(js_files_list))
+src_files_list := $(filter src/%,$(full_files_list))
 node_modules_files_list := package.json
 
 default: usage
@@ -140,7 +142,7 @@ $(nubo_proj_dir)/debs/latest/nubomanagement-public-common-%.deb:
 $(nubo_proj_dir)/debs/latest/nubomanagement-public-node-modules-%.deb: $(node_modules_files_list)
 	$(call make_deb,$@,$*)
 
-$(nubo_proj_dir)/debs/latest/nubomanagement-public-js-%.deb: $(js_files_list)
+$(nubo_proj_dir)/debs/latest/nubomanagement-public-js-%.deb: $(src_files_list)
 	$(call make_deb,$@,$*)
 
 $(nubo_proj_dir)/debs/latest/nubomanagement-public-webplayer-%.deb: $(webplayer_files_list)

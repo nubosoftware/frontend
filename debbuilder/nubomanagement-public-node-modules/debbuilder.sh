@@ -10,7 +10,7 @@ mkdir -p $BUILD_ROOT/opt/nubomanagement-public
 install -m 644 $NUBO_PROJ_PATH/nubomanagement-public/package.json $BUILD_ROOT/opt/nubomanagement-public/package.json
 
 cd $BUILD_ROOT/opt/nubomanagement-public/
-npm install || exit 1
+npm install --only=prod || exit 1
 rm package.json
 cd -
 

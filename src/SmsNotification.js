@@ -139,7 +139,14 @@ function sendSmsNotificationFromRemoteServer(req, res) {
 function sendSms(toPhone, body) {
     if (Common.smsHandler) {
         try {
-            require(Common.smsHandler)(toPhone, body);
+            let scriptFile;
+            if (Common.smsHandler.startsWith('/')) {
+                scriptFile = Common.smsHandler;
+            } else {
+                scriptFile = Common.path.join(Common.rootDir,Common.smsHandler);
+            }
+            logger.info(`smsHandler: ${scriptFile}`);
+            require(scriptFile)(toPhone, body);
         } catch (e) {
             console.log("e: ", e);
             logger.error("Cannot send sms, exception: " + JSON.stringify(e));

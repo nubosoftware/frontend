@@ -41,6 +41,11 @@ function AppController() {
         }
         currentView = view;
         currentView.render();
+        // load logo
+        if (Common.logoURL) {
+            console.log("Change logo url to: "+Common.logoURL);
+            $("#nubologo").attr("src",Common.logoURL);
+        }
         //$("#maindiv").html(this.currentView.el);
     };
 }
@@ -1119,7 +1124,7 @@ $(function() {
         activationDeviceType: "",
         render: function() {
             var template;
-
+                $("#menuBtn").hide();
                 if (this.successActivation) {
                     template = _.template($("#welcome_template").html(), {
                         "activationDeviceType": this.activationDeviceType
@@ -1136,6 +1141,7 @@ $(function() {
                         $("#activationErrorText").text(l("activationExpired"));
                     }
                 }
+
 
 
             track();
@@ -1168,7 +1174,7 @@ $(function() {
         render: function() {
             var template;
             console.log("ResetPasscodeLinkView: render...");
-
+            $("#menuBtn").hide();
                 if (this.successReset) {
                     template = _.template($("#resetPasscodeLink_template").html(), {
                         "activationDeviceType": this.resetDeviceType
@@ -1215,6 +1221,7 @@ $(function() {
         successUnlock: false,
         render: function() {
             var template;
+            $("#menuBtn").hide();
             if (!this.afterValidation) {
                 this.$el.html("");
                 this.checkUnlockLink();
@@ -3916,6 +3923,7 @@ $(function() {
     if (Backbone.History.started == false) {
         Backbone.history.start();
     }
+
 
 
     dragMenu(document.getElementById("menuBtn"),document.getElementById("menuBar"));

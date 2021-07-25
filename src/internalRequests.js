@@ -366,8 +366,15 @@ function forwardActivationLink(req, res, next) {
         if (!deviceType || deviceType == "") {
             deviceType = "NA";
         }
+        let location = '/html/player/login.html#activationLink/'+resObjData.status+"/"+deviceType;
+        if (Common.webCommon && Common.webCommon.activationLinkApprove && resObjData.status == 0) {
+            location = Common.webCommon.activationLinkApprove;
+        } else if (Common.webCommon && Common.webCommon.activationLinkExpired && resObjData.status != 0) {
+            location = Common.webCommon.activationLinkExpired;
+        }
         res.writeHead(302, {
-            'Location': '/html/player/login.html#activationLink/'+resObjData.status+"/"+deviceType
+
+            'Location': location
             //add other headers here...
         });
         res.end();
@@ -432,8 +439,14 @@ function forwardResetPasscodeLink(req, res, next) {
         if (!deviceType || deviceType == "") {
             deviceType = "NA";
         }
+        let location = '/html/player/login.html#resetPasscodeLink/'+resObjData.status+"/"+deviceType;
+        if (Common.webCommon && Common.webCommon.resetPasscodeLinkApprove && resObjData.status == 0) {
+            location = Common.webCommon.resetPasscodeLinkApprove;
+        } else if (Common.webCommon && Common.webCommon.resetPasscodeLinkExpired && resObjData.status != 0) {
+            location = Common.webCommon.resetPasscodeLinkExpired;
+        }
         res.writeHead(302, {
-            'Location': '/html/player/login.html#resetPasscodeLink/'+resObjData.status+"/"+deviceType
+            'Location': location
             //add other headers here...
         });
         res.end();

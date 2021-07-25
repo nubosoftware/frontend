@@ -8,7 +8,8 @@ webplayer_files_list := $(filter html/%,$(full_files_list))
 js_files_list := $(filter-out $(webplayer_files_list),$(full_files_list))
 js_files_list := $(filter-out debbuilder/% rpmbuild/%,$(js_files_list))
 js_files_list := $(filter-out .gitignore Makefile rsyslog-nubomanagement-public.conf nubomanagement-public.service,$(js_files_list))
-js_files_list := $(filter-out src/% webpack.config.js,$(js_files_list))
+js_files_list := $(filter-out dist/%,$(js_files_list))
+#js_files_list := $(filter-out src/% webpack.config.js,$(js_files_list))
 src_files_list := $(filter src/%,$(full_files_list))
 node_modules_files_list := package.json
 

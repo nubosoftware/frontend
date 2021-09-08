@@ -343,12 +343,15 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             if (enableSound == 1) {
                 note.sound = "default";
             }
+            note.collapseId = type;
+            note.contentAvailable = true;
         } else {
             if (enableSound == 1) {
                 note.sound = "default";
             }
             note.contentAvailable = true;
         }
+	    note.category = "NuboNotification";
         logger.info("APN note: "+JSON.stringify(note,null,2));
         apnProvider.send(note, token).then( (result) => {
             logger.info("APN result: "+JSON.stringify(result,null,2));

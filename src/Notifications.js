@@ -343,7 +343,8 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             if (enableSound == 1) {
                 note.sound = "default";
             }
-            note.collapseId = type;
+	    let collapseId = (packageID === undefined || packageID == "" ? type : packageID)
+            note.collapseId = collapseId;
             note.contentAvailable = true;
         } else {
             if (enableSound == 1) {

@@ -163,7 +163,9 @@ var filter = {
         "constraints": {
             "sessionid": constraints.sessionIdConstrOptional,
             "loginemailtoken": constraints.requestedLoginTokenConstr,
-            "email": constraints.emailConstrRequested
+            "email": constraints.emailConstrRequested,
+            "mainDomain": constraints.adDomainNameConstrRequested,
+            "deviceID": constraints.deviceIdConstrRequested
         }
     }, {
         "path": "/file/uploadToSession",

@@ -1261,16 +1261,24 @@ $(function() {
                 if (DEBUG) {
                     console.log(JSON.stringify(data, null, 4));
                 }
+
                 unlockPasscodeLinkView.afterValidation = true;
                 if (data.status == 1) {
                     unlockPasscodeLinkView.successUnlock = true;
                     window.userEmail = data.email;
-                    unlockPasscodeLinkView.render();
-
+                    if (Common.unlockLinkApprove) {
+                        window.location.href = Common.unlockLinkApprove;
+                    } else {
+                        unlockPasscodeLinkView.render();
+                    }
                 } else {
                     console.log("checkUnlockLink. status: " + data.status);
                     unlockPasscodeLinkView.successUnlock = false;
-                    unlockPasscodeLinkView.render();
+                    if (Common.unlockLinkExpired) {
+                        window.location.href = Common.unlockLinkExpired;
+                    } else {
+                        unlockPasscodeLinkView.render();
+                    }
                 }
             });
 

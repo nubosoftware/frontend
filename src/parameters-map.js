@@ -400,7 +400,7 @@ var filter = {
             "loginToken": constraints.requestedLoginTokenConstr,
             "requestType": {
                 inclusion: {
-                    within: ["onepassReq", "ssenstoneReq","ssenstoneResp","ssenstoneRegResponse"]
+                    within: ["onepassReq", "ssenstoneReq","ssenstoneResp","ssenstoneRegResponse", "onepassAuth"]
                 }
             },
             "DUID": {},

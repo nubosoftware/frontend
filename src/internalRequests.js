@@ -122,7 +122,7 @@ function getStreamsFile(req, res, next) {
 //pipe upload file to backend server
 function forwardRequest(req, res, next) {
 
-    //logger.info("forwardRequest. method: "+req.method+", url: "+req.url);
+    //logger.info("forwardRequest. method: "+req.method+", url: "+req.url+", req.realIP: "+req.realIP);
     req.pause();
 
     var options = url.parse(req.url);
@@ -480,6 +480,43 @@ function forwardResetPasscodeLink(req, res, next) {
     });
 }
 
+/**
+ * Gateway function to check with thr management the a session is valid and can be use to connect
+ * It aslo update suspend or or connect the session with the suspend parameter
+ * @param {String} sessionID 
+ * @param {Number} suspend. 0 - connect, 1- suspend (disconnect), 2- do not update status just get the information
+ * @returns promise with the session parameters
+ */
+function validateUpdSession(sessionID, suspend) {
+    return new Promise((resolve, reject) => {
+        var options = getOptions();
+        options.path = '/redisGateway/validateUpdSession?session=' + sessionID+'&suspend='+suspend;
+        http.doGetRequest(options, function (err, resData) {
+            if (err) {
+                logger.info(`validateUpdSession request error: ${err}`);
+                reject(err);
+                return;
+            }
+            let resObjData = {};
+
+            try {
+                resObjData = JSON.parse(resData);
+                //console.log(resObjData)
+            } catch (e) {
+                logger.info(`validateUpdSession JSON parse error: ${e}`);
+                reject(e);
+                return;
+            }
+            if (resObjData.status == 0) {
+                resolve(resObjData);
+            } else {
+                logger.info(`validateUpdSession. Error: ${JSON.stringify(resObjData,null,2)}`);
+                reject(new Error("Invalid session id"));
+            }
+        });
+    });
+}
+
 function registerFrontEnd(hostname, callback) {
     var options = getOptions();
     options.path = '/frontEndService/registerFrontEnd?hostname=' + hostname;
@@ -572,7 +609,8 @@ module.exports = {
     registerFrontEnd: registerFrontEnd,
     refreshFrontEndTTL: refreshFrontEndTTL,
     unregisterFrontEnd: unregisterFrontEnd,
-    forwardPostRequest: forwardRequest
+    forwardPostRequest: forwardRequest,
+    validateUpdSession
 
 
 }

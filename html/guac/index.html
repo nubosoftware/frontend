@@ -1,0 +1,162 @@
+<!DOCTYPE HTML>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+
+    <head>
+        <link rel="stylesheet" type="text/css" href="guacamole.css">
+        <title>Guacamole (EXAMPLE)</title>
+    </head>
+
+    <body>
+
+        <!-- Display  style="background: red;"-->
+        <div id="display" ></div>
+
+
+
+        <!-- Guacamole JavaScript API -->
+        <script type="text/javascript"
+            src="all.js"></script>
+
+        <!-- Init -->
+        <script type="text/javascript"> /* <![CDATA[ */
+
+        var win = window,
+            doc = document,
+            docElem = doc.documentElement,
+            body = doc.getElementsByTagName('body')[0],
+            x = win.innerWidth || docElem.clientWidth || body.clientWidth,
+            y = win.innerHeight|| docElem.clientHeight|| body.clientHeight;
+
+            console.log("x: "+x+", y: "+y);
+
+
+            // Get display div from document
+            var display = document.getElementById("display");
+
+            // Instantiate client, using an HTTP tunnel for communications.
+            /*var guac = new Guacamole.Client(
+                new Guacamole.HTTPTunnel("tunnel",false,{
+                    "username": "test",
+                    "password": "JirwUh4iUco1bwk2",
+                    "hostname": "172.21.0.4",
+                    "port": "3389",
+                    "guacd-hostname": "172.16.80.151",
+                    "guacd-port": "4822",
+                    "width": ""+x,
+                    "height": ""+y
+                })
+            );*/
+
+            var guac = new Guacamole.Client(
+                new Guacamole.WebSocketTunnel("/guacWebSocket")
+            );
+
+            
+
+            guac.sendSize(x,y);
+
+            // Add client to display div
+            display.appendChild(guac.getDisplay().getElement());
+
+            // Error handler
+            guac.onerror = function(error) {
+                console.error(error);
+                alert(error);
+            };
+
+            let startAudio = false;
+
+            guac.onaudio = function (stream,mimetype) {
+                console.log(`onaudio! mimetype: ${mimetype}`);
+                //return null;
+                startAudio = true;
+                return null;
+                
+            }
+
+            // Connect
+            guac.connect(`loginToken=AABBCC&width=${x}&height=${y}&BB=CC`);
+
+            // Disconnect on close
+            window.onunload = function() {
+                guac.disconnect();
+            }
+
+            // Mouse
+            var mouse = new Guacamole.Mouse(display);
+
+            const handleMouseEvent = function (state) {
+
+                // Do not attempt to handle mouse state changes if the client
+                // or display are not yet available
+                //console.log("handleMouseEvent");
+                //console.log(event);
+                if (!guac)
+                    return;
+
+                //event.stopPropagation();
+                //event.preventDefault();
+
+                // Send mouse state, show cursor if necessary
+                //guac.getDisplay().showCursor(true);
+                guac.sendMouseState(state);
+                /*if (startAudio) {
+                    console.log('starting audio...')
+                    let context = Guacamole.AudioContextFactory.getAudioContext()
+                    context.resume().then(() => {
+                        startAudio = false;
+                        console.log('play audio')
+                    })
+                };*/keyboard
+
+            };
+            mouse.onmousedown = handleMouseEvent;
+            mouse.onmouseup = handleMouseEvent;
+            mouse.onmousemove = handleMouseEvent;
+
+            /*mouse.onEach(['mousedown', 'mouseup', 'mousemove'], function sendMouseEvent(e) {
+                guac.sendMouseState(e.state);
+            });*/
+
+            // Keyboard
+            var keyboard = new Guacamole.Keyboard(document);
+
+            keyboard.onkeydown = function (keysym) {
+                //console.log("onkeydown");
+                //console.log(keysym);
+                guac.sendKeyEvent(1, keysym);
+
+            };
+
+            keyboard.onkeyup = function (keysym) {
+                //console.log("onkeyup");
+                //console.log(keysym);
+                guac.sendKeyEvent(0, keysym);
+            };
+
+
+
+
+        /* ]]> */ </script>
+
+    </body>
+
+</html>

@@ -32,7 +32,7 @@ var filter = {
             "last": constraints.ExcludeSpecialCharactersOptional,
             "title": constraints.openTextConstrOptional,
             "deviceType": {
-                "inclusion": ["iPhone", "iPad", "Web", "Android"]
+                "inclusion": ["iPhone", "iPad", "Web", "Android","Desktop"]
             },
             "silentActivation": {
                 "inclusion": {
@@ -273,7 +273,7 @@ var filter = {
             "notifyTitle": constraints.openTextConstrOptional,
             "deviceType": {
                 "presence": true,
-                "inclusion": ["iPhone", "iPad", "Web", "Android"]
+                "inclusion": ["iPhone", "iPad", "Web", "Android","Desktop"]
             },
             "pushRegID": {
                 "presence": false,
@@ -479,6 +479,44 @@ var filter = {
             "loginToken": constraints.requestedLoginTokenConstr,
         }
     },
+    /*{
+        "path": "/interfDeviceBiz/processRequest.do",
+        "constraints": {
+        },
+        "headerConstraints": {
+        },
+        "bodyConstraints": {
+        }
+    },
+    {
+        "path": "/fido/deviceUaf/processUafRequest.do",
+        "constraints": {
+        },
+        "headerConstraints": {
+        },
+        "bodyConstraints": {
+        }
+    },
+    {
+        "path": "/fido/deviceUaf/processUafResponse.do",
+        "constraints": {
+        },
+        "headerConstraints": {
+        },
+        "bodyConstraints": {
+        }
+    },
+    {
+        "path": "/fido/deviceUaf/trustedFacets.do",
+        "constraints": {
+            "siteId": constraints.ExcludeSpecialCharactersOptional,
+            "svcId": constraints.ExcludeSpecialCharactersOptional
+        },
+        "headerConstraints": {
+        },
+        "bodyConstraints": {
+        }
+    },*/
     {
         "regex": true,
         "path": "/api/.*",

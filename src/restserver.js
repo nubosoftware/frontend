@@ -25,6 +25,10 @@ var checkStreamFile;
 var filterModule;
 var parametersMap;
 var mgmtPublicRegistration;
+var guacHandler;
+const guacTunnel = require('./guacTunnel');
+const GuacGateway = require('./guacGateway'); 
+const guacWebSocketGateway = require ('./guacWebSocketGateway');
 //===============================================================
 
 var accesslogger = accesslog({
@@ -133,20 +137,31 @@ var mainFunction = function(err, firstTimeLoad) {
     };
 
     var webSocketRequest = function(request) {
-        logger.info("websocket request: " + JSON.stringify(request.resourceURL, null, 2));
-        if (request.resourceURL.pathname !== "/gatewayProxy") {
-            request.reject();
-            logger.info("Invalid gatewayProxy connection");
+        //logger.info("websocket request: " + JSON.stringify(request.resourceURL, null, 2));
+        if (request.resourceURL.pathname === "/gatewayProxy") {
+            var connection = request.accept('binary', request.origin);
+
+            if (request.resourceURL.query.playbackMode == "Y") {
+                SendPlayback.sendPlayback(connection, request.origin, request.resourceURL);
+            } else {
+                new_client(connection, request.origin, request.resourceURL);
+            }
+            return;
+        }
+        if (request.resourceURL.pathname === "/guacWebSocket") {
+            // send to gucamole websocket implementation
+            let guacWebSocketHandler = new guacWebSocketGateway();  
+            guacWebSocketHandler.doWebSocketConnect(request);
             return;
         }
 
-        var connection = request.accept('binary', request.origin);
+        // if unrecognized request
+        request.reject();
+        logger.info("Invalid gatewayProxy connection");
+        return;
+        
 
-        if (request.resourceURL.query.playbackMode == "Y") {
-            SendPlayback.sendPlayback(connection, request.origin, request.resourceURL);
-        } else {
-            new_client(connection, request.origin, request.resourceURL);
-        }
+        
 
     };
 
@@ -422,6 +437,7 @@ function filterObjUseHandlerWrapper(req, res, next) {
     }
 }
 
+
 function buildServerObject(server,listenOptions) {
     /*
     listenOptions = {
@@ -450,7 +466,10 @@ function buildServerObject(server,listenOptions) {
                 return;
             }
         }
-        req.realIP = (Common.proxyClientIpHeader && req.headers[Common.proxyClientIpHeader]) || req.connection.remoteAddress;
+        req.realIP = (Common.proxyClientIpHeader && req.headers[Common.proxyClientIpHeader]) || req.socket.remoteAddress || req.connection.remoteAddress;
+        if (req.realIP.substr(0, 7) == "::ffff:") {
+            req.realIP = req.realIP.substr(7)
+          }
         next();
 
     });
@@ -484,6 +503,10 @@ function buildServerObject(server,listenOptions) {
         server.get('/reregisterFidoAuth', internalRequests.forwardGetRequest);
         server.post('/reregisterFidoAuth', internalRequests.forwardPostRequest);
         server.get('/getFidoFacets', internalRequests.forwardGetRequest);
+        /*server.post('/interfDeviceBiz/processRequest.do', internalRequests.forwardPostRequest);
+        server.post('/fido/deviceUaf/processUafRequest.do', internalRequests.forwardPostRequest);
+        server.post('/fido/deviceUaf/processUafResponse.do', internalRequests.forwardPostRequest);
+        server.get('/fido/deviceUaf/trustedFacets.do', internalRequests.forwardGetRequest);*/
         server.get('/checkOtpAuth', internalRequests.forwardGetRequest);
         server.get('/resendOtpCode', internalRequests.forwardGetRequest);
         server.get('/getClientConf', internalRequests.forwardGetRequest);
@@ -518,6 +541,20 @@ function buildServerObject(server,listenOptions) {
         server.post('/receiveSMS', internalRequests.forwardPostRequest);
         server.get('/getAvailableNumbers', internalRequests.forwardGetRequest);
         server.get('/subscribeToNumber', internalRequests.forwardGetRequest);
+
+        //guacamole proxy
+
+        if (!guacHandler) {
+            guacHandler = new GuacGateway();
+        }
+        
+        server.post('/html/guac/tunnel', /*guacTunnel.tunnel*/ function (req,res) {
+            guacHandler.handleTunnelRequest(req,res);
+        });
+        server.get('/html/guac/tunnel', /*guacTunnel.tunnel*/ function (req,res) {
+            guacHandler.handleTunnelRequest(req,res);
+        });
+        
 
         if (Common.isHandlingMediaStreams) {
             server.get('/getStreamsFile', internalRequests.getStreamsFile);

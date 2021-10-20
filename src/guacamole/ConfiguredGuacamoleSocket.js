@@ -13,7 +13,7 @@ const EventEmitter = require('events');
 const GuacamoleLoggerFactory = require('./GuacamoleLoggerFactory');
 const GuacamoleSocket = require('./GuacamoleSocket');
 
-const SOCKET_TIMEOUT = 15000;
+const SOCKET_TIMEOUT = 5000;
 
 
 

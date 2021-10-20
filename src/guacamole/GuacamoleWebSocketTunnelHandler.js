@@ -43,6 +43,8 @@ class GuacamoleWebSocketTunnelHandler {
         GuacamoleLoggerFactory.getLogger();
     }
 
+    connectionClosed = false;
+
     /**
      * Sends the given numeric Guacamole and WebSocket status
      * on the given WebSocket connection and closes the
@@ -58,7 +60,10 @@ class GuacamoleWebSocketTunnelHandler {
      *     The numeric WebSocket status code to send.
      */
     closeConnectionImp(connection, guacamoleStatusCode, webSocketCode) {
-        connection.close(webSocketCode, '' + guacamoleStatusCode);
+        if (!this.connectionClosed) {
+            this.connectionClosed = true;
+            connection.close(webSocketCode, '' + guacamoleStatusCode);
+        }
     }
 
     /**
@@ -189,18 +194,16 @@ class GuacamoleWebSocketTunnelHandler {
             return;
         }
 
-        /*target.on('end', function() {
-            log('target disconnected');
+        this.tunnel.on('error', function(err) {
+            handler.logger.info('target error: ' + err);
+            handler.closeConnection(handler.connection, GuacamoleStatus.UPSTREAM_ERROR);
         });
-        target.on('error', function(err) {
-            log('target error: ' + err);
+        this.tunnel.on('close', function(err) {
+            handler.logger.info('target closed');
+            handler.closeConnection(handler.connection, GuacamoleStatus.SERVER_ERROR);
         });
-        target.on('close', function(err) {
-            log('target closed');
-            client.close();
-        });*/
 
-        this.logger.info("acquireReader");
+        //this.logger.info("acquireReader");
         let reader = await this.tunnel.acquireReader();
         let readMessage;
         let buffer = "";

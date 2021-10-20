@@ -19,16 +19,17 @@
 
 const GuacamoleReader = require('./GuacamoleReader');
 const GuacamoleWriter = require('./GuacamoleWriter');
-const ConfiguredGuacamoleSocket = require('./ConfiguredGuacamoleSocket');
 const Lock = require('./Lock');
 const GuacamoleSocket = require('./GuacamoleSocket');
+const GuacamoleLoggerFactory = require('./GuacamoleLoggerFactory');
 const { v4: uuidv4 } = require('uuid');
+const { EventEmitter } = require('events');
 
 /**
  * Provides a unique identifier and synchronized access to the GuacamoleReader
  * and GuacamoleWriter associated with a GuacamoleSocket.
  */
-class GuacamoleTunnel {
+class GuacamoleTunnel extends EventEmitter{
 
 
     uuid = uuidv4();
@@ -41,7 +42,28 @@ class GuacamoleTunnel {
      * @param {GuacamoleSocket} socket The GuacamoleSocket to provide synchronized access for.
      */
     constructor(socket) {
+        super();
         this.socket = socket;
+        this.logger = GuacamoleLoggerFactory.getLogger();
+        
+
+        const errorHandler = (err) => {
+            this.logger.error(`[GuacamoleTunnel] error on socket`, err);
+            this._err = err;
+            this._open = false;
+            this.emit('error', err);
+        };
+
+        const closeHandler = () => {
+            this.logger.info(`[GuacamoleTunnel] socket closed`);
+            this._open = false;
+            this.socket.removeListener("error", errorHandler);
+            this.socket.removeListener("close", closeHandler)
+            this.emit('close');
+        }
+
+        this.socket.on('error', errorHandler);
+        this.socket.on('close', closeHandler);
     }
 
     socket

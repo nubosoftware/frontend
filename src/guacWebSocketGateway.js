@@ -83,7 +83,7 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
             "height": height
         };
 
-        let gsocket = new ConfiguredGuacamoleSocket("labil.nubosoftware.com", 4822, conf, info);
+        let gsocket = new ConfiguredGuacamoleSocket("nubo-guac", 4822, conf, info);
         console.log(`Before init. Headers: ${JSON.stringify(request.headers,null,2)}`);
         gsocket.on("error", (err) => {
             console.error("ConfiguredGuacamoleSocket error",err);

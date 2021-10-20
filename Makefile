@@ -77,6 +77,16 @@ versions:
 	@echo "node_modules version $(node_modules_version) $(node_modules_buildid)"
 	@echo "webplayer version $(webplayer_version) $(webplayer_buildid)"
 
+docker: debs
+	mkdir -p docker_build/debs/
+	cp $(nubo_proj_dir)/debs/latest/nubomanagement-public-webplayer-$(webplayer_version)-$(webplayer_buildid).deb docker_build/debs/nubomanagement-public-webplayer.deb
+	cp $(nubo_proj_dir)/debs/latest/nubomanagement-public-node-modules-$(node_modules_version)-$(node_modules_buildid).deb docker_build/debs/nubomanagement-public-node-modules.deb
+	cp $(nubo_proj_dir)/debs/latest/nubomanagement-public-js-$(js_version)-$(js_buildid).deb docker_build/debs/nubomanagement-public-js.deb
+	cp $(nubo_proj_dir)/debs/latest/nubomanagement-public-common-$(common_version)-$(common_buildid).deb docker_build/debs/nubomanagement-public-common.deb
+	cp $(nubo_proj_dir)/debs/latest/nubomanagement-public-$(public_version)-$(public_buildid).deb docker_build/debs/nubomanagement-public.deb
+	cp $(nubo_proj_dir)/debs/latest/nubo-common-3.0-1.deb docker_build/debs/nubo-common.deb
+	sudo docker build -t nubofrontend:$(public_version)-$(public_buildid) docker_build/.
+
 rpms debs: versions
 
 define make_rpm

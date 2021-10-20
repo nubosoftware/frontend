@@ -1,39 +1,24 @@
-{
-    "authValidatorPermittedMode": true,
-    "logLevel": "debug",
-    "sequelizeLogs": false,
+{    
+    "logLevel": "debug",    
     "webCommon": {
-        "production": true,
-        "withService": false
-    },
-    "withService": false,
-    "serverurl" : "http://127.0.0.1/",
-    "publicurl" : "http://127.0.0.1/",
-    "internalurl" : "http://127.0.0.1:8080/",
-    "redishost": "127.0.0.1",
-    "redisport": 6379,
-    "nfshomefolder": "/srv/nfs/homes/",
-    "adminName": "Admin",
-    "dcName": "DATA CENTER",
+        "production": true        
+    },        
+    "internalurl" : "http://nubo-management:8080/",    
     "listenAddresses": [
         "http://"
-    ],
-    "mailOptions": false,
-    "NumOfTreads": 2,
-    "autoActivation": false,
-    "http_proxy": "http://172.16.1.203:3128",
+    ],            
     "http_proxy": false,
-    "RemoteServers": {
-        "BE": "BEBE"
+    "RemoteServers": {        
+    },
+    "backendAuth": {
+	    "user": "user",
+	    "password": "password"
     },
     "NotificationGateway": {
-        "smsUrl": "https://nubo02.nubosoftware.com/SmsNotification/sendSmsNotificationFromRemoteServer",
-        "url" : "https://nubo02.nubosoftware.com/Notifications/sendNotificationFromRemoteServer",
-        "serverID": "BE",
-        "authKey": "BEBE"
+        "smsUrl": "https://gl.nubosoftware.com/SmsNotification/sendSmsNotificationFromRemoteServer",
+        "url" : "https://gl.nubosoftware.com/Notifications/sendNotificationFromRemoteServer",
+        "serverID": "DEFAULT",
+        "authKey": "DEFAULT"
     },
-    "username": "nubo",
-    "platformVersionCode": 79,
-    "sendTrackData": true,
-    "trackURL": "https://nubosoftware.com/track/trackAPI"
+    "username": false   
 }

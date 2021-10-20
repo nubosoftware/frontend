@@ -1,7 +1,13 @@
 #!/bin/sh
 
-service rsyslog reload > /dev/null 2>&1 ||:
+FILE=/etc/.nubo/.docker
+if [ -f "$FILE" ]; then
+# inside docker - TBD add docker restart of services
+    echo "Running in a docker container"   
+else 
+    service rsyslog reload > /dev/null 2>&1 ||:
+    chown 1000.1000 -R /opt/nubomanagement-public
+    systemctl enable nubomanagement-public.service
+    systemctl restart nubomanagement-public.service
+fi
 
-chown 1000.1000 -R /opt/nubomanagement-public
-systemctl enable nubomanagement-public.service
-systemctl restart nubomanagement-public.service

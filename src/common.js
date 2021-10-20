@@ -5,6 +5,7 @@ var dataEncryptor = require('./dataEncryptor.js');
 var url = require('url');
 var async = require('async');
 var _ = require('underscore');
+var fsp = require('fs').promises;
 
 var Common = {
     STATUS_OK : 1,
@@ -193,15 +194,74 @@ function to_array(args) {
     return arr;
 }
 
+async function fileExists(filepath) {
+    try {
+        await fsp.access(filepath);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+async function fileMoveIfNedded(newFilePath,oldFilePath) {
+    let exists = await fileExists(newFilePath);
+    if (exists) {
+        return;
+    }
+    let oldExists = await fileExists(oldFilePath);
+    if (oldExists) {
+        console.log(`Moving file ${oldFilePath} to new location at: ${newFilePath}`);
+        let dir = Common.path.dirname(newFilePath);
+        await fsp.mkdir(dir,{recursive: true});
+        await fsp.copyFile(oldFilePath,newFilePath);
+        await fsp.unlink(oldFilePath);
+        return;
+    } else {
+        throw new Error(`File not found in both old location: ${oldFilePath} and new location: ${newFilePath}`);
+    }
+}
+
+
+
+const DOCKERKEY = '/etc/.nubo/.docker';
+
+async function checkDockerConf() {
+    if (!Common._isDockerChecked) {
+        let isDocker = await fileExists(DOCKERKEY);
+        Common.isDocker = true;
+        let settingsFileName;
+        if (isDocker) {
+            console.log("Runnig in a docker container");
+            settingsFileName = Common.path.join(Common.rootDir,'conf','Settings.json');
+            // move file if needed
+            const oldfileLocation = Common.path.join(Common.rootDir,'Settings.json');
+            await fileMoveIfNedded(settingsFileName,oldfileLocation);           
+        } else {
+            Common.isDocker = false;
+            settingsFileName = Common.path.join(Common.rootDir,'Settings.json');
+        }  
+        Common._isDockerChecked = true;
+        Common.settingsFileName = settingsFileName;
+    }
+}
+
 function load_settings(callback) {
     var decryptedSettings;
     var encryptedSettings;
     var settings;
 
     async.series([
+        function(callback) {
+            checkDockerConf().then(() => {
+                callback(null);
+            }).catch(err => {
+                logger.error(`Fatal error: cannot find Settings.json: ${err}`,err);
+                callback(err);
+            });
+        },
         //read file
         function(callback) {
-            Common.fs.readFile('Settings.json', function(err, data) {
+            Common.fs.readFile(Common.settingsFileName, function(err, data) {
                 if (err) {
                     callback(err);
                     return;

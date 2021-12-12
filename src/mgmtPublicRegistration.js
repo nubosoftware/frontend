@@ -20,6 +20,7 @@ function register(callback) {
     internalRequests.registerFrontEnd(hostname, function(err, idx) {
         if (err) {
             logger.error("mgmtPublicRegistration::register: " + err);
+            console.error(err);
             return callback(err);
         }
 

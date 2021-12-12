@@ -510,7 +510,7 @@ function buildServerObject(server,listenOptions) {
         server.get('/checkOtpAuth', internalRequests.forwardGetRequest);
         server.get('/resendOtpCode', internalRequests.forwardGetRequest);
         server.get('/getClientConf', internalRequests.forwardGetRequest);
-
+        server.get('/recheckValidate', internalRequests.forwardGetRequest);
         server.get('/authenticateUser', internalRequests.forwardGetRequest);
         server.get('/checkPasscode', internalRequests.forwardGetRequest);
         server.get('/checkBiometric', internalRequests.forwardGetRequest);

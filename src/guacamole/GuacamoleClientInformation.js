@@ -25,7 +25,7 @@ class GuacamoleClientInformation {
     /**
      * The list of audio mimetypes reported by the client to be supported.
      */
-    audioMimetypes = []; //['audio/L8','audio/L16'];
+    audioMimetypes = ['audio/L16']; //['audio/L8','audio/L16'];
 
     /**
      * The list of video mimetypes reported by the client to be supported.

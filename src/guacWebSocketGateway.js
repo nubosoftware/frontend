@@ -17,6 +17,10 @@ const WebSocketRequest = require("websocket").request;
 const { validateUpdSession } = require('./internalRequests');
 
 
+var oldTunnel = null;
+var oldSocket =null;
+var oldConnID = null;
+
 class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
 
     constructor() {
@@ -58,6 +62,10 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
         }
         //logger.info(`Found valid session. sessionParams: ${JSON.stringify(sessionParams,null,2)}`);
         let conf = new GuacamoleConfiguration();
+        //conf.connectionID = "1";
+        if (oldConnID) {
+            conf.connectionID = oldConnID;
+        }
         let info = new GuacamoleClientInformation();
         
         conf.protocol = "rdp";
@@ -77,28 +85,41 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
             username: sessionParams.session.containerUserName,
             password: sessionParams.session.containerUserPass,
             "ignore-cert": "true",
-            "security": "tls",
+            "security": "any",
             //"color-depth": "8",
             "width": width,
             "height": height
         };
 
-        let gsocket = new ConfiguredGuacamoleSocket("nubo-guac", 4822, conf, info);
-        console.log(`Before init. Headers: ${JSON.stringify(request.headers,null,2)}`);
-        gsocket.on("error", (err) => {
-            console.error("ConfiguredGuacamoleSocket error",err);
-        });
-        await gsocket.init();
-        
-        console.log("After init..");
+        let tunnel;
+        if (!oldTunnel) {
+            let gsocket = new ConfiguredGuacamoleSocket(/*"nubo-guac"*/"labil.nubosoftware.com", 4822, conf, info);
+            console.log(`Before init. Headers: ${JSON.stringify(request.headers,null,2)}`);
+            gsocket.on("error", (err) => {
+                console.error("ConfiguredGuacamoleSocket error",err);
+            });
+            await gsocket.init();
 
-        // Create tunnel from now-configured socket
-        let tunnel = new GuacamoleTunnel(gsocket);
+            //oldConnID = gsocket.id;
+            
+            console.log("After init..");
+
+            // Create tunnel from now-configured socket
+            tunnel = new GuacamoleTunnel(gsocket);
+            //oldTunnel = tunnel;
+            //oldSocket = gsocket;
+        } else {
+            console.log('Using old tunnel...');
+            oldSocket.init(true);
+            tunnel = oldTunnel;
+        }
 
         // notifi mgmt the session connected
         await validateUpdSession(sessID,0);
         return tunnel;
     }
+
+    
 
     
 

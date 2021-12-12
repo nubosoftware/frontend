@@ -13,7 +13,7 @@ const EventEmitter = require('events');
 const GuacamoleLoggerFactory = require('./GuacamoleLoggerFactory');
 const GuacamoleSocket = require('./GuacamoleSocket');
 
-const SOCKET_TIMEOUT = 5000;
+const SOCKET_TIMEOUT = 500000;
 
 
 
@@ -72,42 +72,44 @@ class ConfiguredGuacamoleSocket extends GuacamoleSocket {
         this.logger = GuacamoleLoggerFactory.getLogger();
     }
 
-    async init() {
-        this.socket = await this.connect({ port: this.port, host: this.hostname });
-        this._open = true;
-        this.socket.setNoDelay(true);
-        this.logger.info("Connected...")
-        const errorHandler = (err) => {
-            this.logger.error(`error on soccket`, err);
-            this._err = err;
-            this._open = false;
-            this.emit('error', err);
-        };
-
-        const closeHandler = () => {
-            this.logger.info(`socket closed`);
-            this._open = false;
-            this.socket.removeListener("error", errorHandler);
-            this.socket.removeListener("close", closeHandler)
-            this.emit('close');
-        }
-        const timeoutHandler = () => {
-            this.logger.info(`socket timeout`);
-            try {
-                this._err = new Error("Socket timeout");
+    async init(reinit) {
+        if (!this.socket)  {
+            this.socket = await this.connect({ port: this.port, host: this.hostname });
+            this._open = true;
+            this.socket.setNoDelay(true);
+            this.logger.info("Connected...")
+            const errorHandler = (err) => {
+                this.logger.error(`error on soccket`, err);
+                this._err = err;
                 this._open = false;
-                this.socket.destroy(new Error("Socket timeout"));
-            } catch (err) {
+                this.emit('error', err);
+            };
 
+            const closeHandler = () => {
+                this.logger.info(`socket closed`);
+                this._open = false;
+                this.socket.removeListener("error", errorHandler);
+                this.socket.removeListener("close", closeHandler)
+                this.emit('close');
             }
+            const timeoutHandler = () => {
+                this.logger.info(`socket timeout`);
+                try {
+                    this._err = new Error("Socket timeout");
+                    this._open = false;
+                    this.socket.destroy(new Error("Socket timeout"));
+                } catch (err) {
+
+                }
+            }
+
+            this.socket.on("error", errorHandler);
+            this.socket.on("close", closeHandler)
+            this.socket.on('timeout', timeoutHandler);
+
+            this.reader = new GuacamoleReader(this.socket);
+            this.writer = new GuacamoleWriter(this.socket);
         }
-
-        this.socket.on("error", errorHandler);
-        this.socket.on("close", closeHandler)
-        this.socket.on('timeout', timeoutHandler);
-
-        this.reader = new GuacamoleReader(this.socket);
-        this.writer = new GuacamoleWriter(this.socket);
 
         // Get protocol / connection ID
         let select_arg = this.config.connectionID;
@@ -183,11 +185,11 @@ class ConfiguredGuacamoleSocket extends GuacamoleSocket {
                 ));
 
         // Send supported video formats
-        /*await this.writer.writeInstruction(
+        await this.writer.writeInstruction(
                 new GuacamoleInstruction(
                     "video",
                     this.info.videoMimetypes
-                ));*/
+                ));
 
         // Send supported image formats
         this.writer.writeInstruction(
@@ -218,6 +220,7 @@ class ConfiguredGuacamoleSocket extends GuacamoleSocket {
 
         this.id = ready.args[0];
         this.logger.info(`Recieved connection id: ${this.id}`);
+        
 
     }
 

@@ -442,6 +442,11 @@ var filter = {
                 }
             }
         }
+    }, {
+        "path": "/recheckValidate",
+        "constraints": {
+            "loginToken": constraints.requestedLoginTokenConstr,
+        }
     },
     {
         "path": "/logoutUser",

@@ -22,14 +22,21 @@ nubo management web service that run in public network
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/opt/nubomanagement-public
 
-#Copy js files from git project
-FILES=`git ls-tree --full-tree -r HEAD | awk '
-($4 ~ /.+\.js$/) || ($4 ~ /^unittests\/.+/) {print $4}
-'`
+echo "Run webpack..."
+cd $NUBO_PROJ_PATH/nubomanagement-public
+npm run-script build
+cp -a dist/ $RPM_BUILD_ROOT/opt/nubomanagement-public/dist/
+cd -
 
-for file in ${FILES}; do
-    install -D -m 644 $NUBO_PROJ_PATH/nubomanagement-public/$file $RPM_BUILD_ROOT/opt/nubomanagement-public/$file
-done
+#Copy js files from git project
+#FILES=`git ls-tree --full-tree -r HEAD | awk '
+#($4 ~ /.+\.js$/) || ($4 ~ /^unittests\/.+/) {print $4}
+#'`
+
+#for file in ${FILES}; do
+#    install -D -m 644 $NUBO_PROJ_PATH/nubomanagement-public/$file $RPM_BUILD_ROOT/opt/nubomanagement-public/$file
+#done
+
 install -m 644 $NUBO_PROJ_PATH/nubomanagement-public/Settings.json.init $RPM_BUILD_ROOT/opt/nubomanagement-public/Settings.json
 rm -rf $RPM_BUILD_ROOT/opt/nubomanagement-public/html
 

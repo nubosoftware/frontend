@@ -15,7 +15,6 @@
     "querystring": "0.2.0",
     "request": "^2.88.2",
     "restify": "^8.5.1",
-    "restify-cors-middleware": "1.1.1",
     "twilio": "^3.28.0",
     "underscore": "1.9.1",
     "unix-dgram": "^2.0.4",

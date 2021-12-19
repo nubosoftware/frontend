@@ -85,7 +85,7 @@ docker: debs
 	cp $(nubo_proj_dir)/debs/latest/nubomanagement-public-common-$(common_version)-$(common_buildid).deb docker_build/debs/nubomanagement-public-common.deb
 	cp $(nubo_proj_dir)/debs/latest/nubomanagement-public-$(public_version)-$(public_buildid).deb docker_build/debs/nubomanagement-public.deb
 	cp $(nubo_proj_dir)/debs/latest/nubo-common-3.0-1.deb docker_build/debs/nubo-common.deb
-	sudo docker build -t nubofrontend:$(public_version)-$(public_buildid) docker_build/.
+	sudo docker build --no-cache -t nubofrontend:$(public_version)-$(public_buildid) docker_build/.
 
 rpms debs: versions
 

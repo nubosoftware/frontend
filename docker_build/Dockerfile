@@ -11,7 +11,7 @@ RUN apt install -y \
     dnsutils \
     net-tools \
     sudo
-RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 RUN apt install -y nodejs
 
 # mark this as docker installation

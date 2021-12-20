@@ -532,7 +532,8 @@ function buildServerObject(server,listenOptions) {
         server.get('/getResource', internalRequests.forwardGetRequest);
 
         server.get('/getResourceListByDevice', internalRequests.forwardGetRequest);
-        server.get('/html/player/common.js', require('./webCommon.js'));
+        server.get('/html/player/common.js', require('./webCommon.js').getJS);
+        server.get('/getWebCommon',require('./webCommon.js').getJSON);
         server.get('/download', downloadFunc);
         server.post('/file/uploadToSession', internalRequests.upload);
         server.post('/file/uploadToLoginToken', internalRequests.upload);

@@ -484,6 +484,10 @@ var filter = {
             "loginToken": constraints.requestedLoginTokenConstr,
         }
     },
+    {
+        "path": "/getWebCommon",
+        "constraints": {}
+    },
     /*{
         "path": "/interfDeviceBiz/processRequest.do",
         "constraints": {

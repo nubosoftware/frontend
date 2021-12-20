@@ -535,6 +535,12 @@ function registerFrontEnd(hostname, callback) {
             return;
         }
         if (resObjData.status == Common.STATUS_OK) {
+            if (resObjData.params) {
+                // add params to the web common
+                if (!Common.webCommon) {
+                    Common.webCommon = {};                }
+                _.extend(Common.webCommon,resObjData.params);
+            }
             callback(null, resObjData.index);
         } else if (resObjData.status == Common.STATUS_ERROR) {
             callback(resObjData.message);
@@ -556,6 +562,12 @@ function refreshFrontEndTTL(index, callback) {
         try {
             resObjData = JSON.parse(resData);
             if (resObjData.status == Common.STATUS_OK) {
+                if (resObjData.params) {
+                    // add params to the web common
+                    if (!Common.webCommon) {
+                        Common.webCommon = {};                }
+                    _.extend(Common.webCommon,resObjData.params);
+                }
                 callback(null);
             } else if (resObjData.status == Common.STATUS_ERROR) {
                 callback(resObjData.message);

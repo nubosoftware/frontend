@@ -1,11 +1,18 @@
 "use strict";
 var Common = require('./common.js');
 
-function get(req, res, next) {
-    var webCommon = Common.webCommon || {};
-    if (Common.withService) webCommon.withService = true;
+function getJS(req, res, next) {
+    var webCommon = Common.webCommon || {};    
     var body = "var Common = " + JSON.stringify(webCommon);
     res.end(body);
 }
 
-module.exports = get;
+function getJSON(req, res, next) {
+    var webCommon = Common.webCommon || {};
+    res.send(webCommon);
+}
+
+module.exports = {
+    getJS,
+    getJSON
+};

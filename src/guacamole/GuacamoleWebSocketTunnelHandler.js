@@ -159,6 +159,7 @@ class GuacamoleWebSocketTunnelHandler {
                     handler.logger.info(`Tunnel close error: ${err}`);
                 }
             }
+            handler.onDisconnect();
         });
         this.connection.on('error', function (a) {
             handler.logger.info('WebSocket client error: ' + a);

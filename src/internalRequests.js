@@ -366,7 +366,12 @@ function forwardActivationLink(req, res, next) {
         if (!deviceType || deviceType == "") {
             deviceType = "NA";
         }
-        let location = '/html/player/login.html#activationLink/'+resObjData.status+"/"+deviceType;
+        let location;
+        if (Common.webCommon && Common.webCommon.deviceTypes && Common.webCommon.deviceTypes.indexOf("desktop") >= 0) {
+            location = '/html/desktop/#/ActivationLink/'+resObjData.status+"/Activation";
+        } else {
+            location = '/html/player/login.html#activationLink/'+resObjData.status+"/"+deviceType;
+        }
         if (Common.webCommon && Common.webCommon.activationLinkApprove && resObjData.status == 0) {
             location = Common.webCommon.activationLinkApprove;
         } else if (Common.webCommon && Common.webCommon.activationLinkExpired && resObjData.status != 0) {
@@ -377,33 +382,7 @@ function forwardActivationLink(req, res, next) {
             'Location': location
             //add other headers here...
         });
-        res.end();
-        /*
-        if (resObjData.status == 0) {
-            fs.readFile("html/player/activateDevice.html", function(error, page) {
-                if (error) {
-                    res.write(resData);
-                } else {
-                    res.writeHead(200, {
-                        'Content-Type': 'text/html'
-                    });
-                    res.write(page);
-                }
-                res.end();
-            });
-        } else {
-            fs.readFile("html/player/activateErrorDevice.html", function(error, page) {
-                if (error) {
-                    res.write(resData);
-                } else {
-                    res.writeHead(200, {
-                        'Content-Type': 'text/html'
-                    });
-                    res.write(page);
-                }
-                res.end();
-            });
-        }*/
+        res.end();        
         return;
     });
 }
@@ -439,7 +418,12 @@ function forwardResetPasscodeLink(req, res, next) {
         if (!deviceType || deviceType == "") {
             deviceType = "NA";
         }
-        let location = '/html/player/login.html#resetPasscodeLink/'+resObjData.status+"/"+deviceType;
+        let location
+        if (Common.webCommon && Common.webCommon.deviceTypes && Common.webCommon.deviceTypes.indexOf("desktop") >= 0) {
+            location = '/html/desktop/#/ActivationLink/'+resObjData.status+"/ResetPassword";
+        } else {
+            location = '/html/player/login.html#resetPasscodeLink/'+resObjData.status+"/"+deviceType;
+        }
         if (Common.webCommon && Common.webCommon.resetPasscodeLinkApprove && resObjData.status == 0) {
             location = Common.webCommon.resetPasscodeLinkApprove;
         } else if (Common.webCommon && Common.webCommon.resetPasscodeLinkExpired && resObjData.status != 0) {
@@ -449,33 +433,62 @@ function forwardResetPasscodeLink(req, res, next) {
             'Location': location
             //add other headers here...
         });
-        res.end();
+        res.end();        
+        return;
+    });
+}
 
-        /*if (resObjData.status == 0) {
-            fs.readFile("html/player/resetPasscode.html", function(error, page) {
-                if (error) {
-                    res.write(resData);
-                } else {
-                    res.writeHead(200, {
-                        'Content-Type': 'text/html'
-                    });
-                    res.write(page);
-                }
-                res.end();
+function forwardUnlockPasscodeLink(req, res, next) {
+    var options = getOptions();
+    var email = encodeURIComponent(req.params.email);
+    var loginemailtoken = encodeURIComponent(req.params.loginemailtoken);
+    var mainDomain = encodeURIComponent(req.params.mainDomain);
+    var deviceID = encodeURIComponent(req.params.deviceID);
+    options.path = `/unlockPassword?email=${email}&loginemailtoken=${loginemailtoken}&mainDomain=${mainDomain}&deviceID=${deviceID}`;
+    options.headers['x-client-ip'] = req.realIP;
+    res.contentType = 'json';
+
+    http.doGetRequest(options, function(err, resData) {
+        if (err) {
+            res.send({
+                status: Common.STATUS_ERROR,
+                message: "Internal error"
             });
+            return;
+        }
+
+        var resObjData;
+        try {
+            resObjData = JSON.parse(resData);
+        } catch (e) {
+            res.send({
+                status: Common.STATUS_ERROR,
+                message: "Internal error"
+            });
+            return;
+        }
+
+        logger.info("forwardUnlockPasscodeLink: status: " + resObjData.status + ", message: " + resObjData.message);
+        let deviceType = resObjData.deviceType;
+        if (!deviceType || deviceType == "") {
+            deviceType = "NA";
+        }
+        let location
+        if (Common.webCommon && Common.webCommon.deviceTypes && Common.webCommon.deviceTypes.indexOf("desktop") >= 0) {
+            location = '/html/desktop/#/ActivationLink/'+resObjData.status+"/UnlockPassword";
         } else {
-            fs.readFile("html/player/resetPasscodeError.html", function(error, page) {
-                if (error) {
-                    res.write(resData);
-                } else {
-                    res.writeHead(200, {
-                        'Content-Type': 'text/html'
-                    });
-                    res.write(page);
-                }
-                res.end();
-            });
-        }*/
+            location = '/html/player/login.html#unlockPassword/'+resObjData.status;
+        }
+        if (Common.webCommon && Common.webCommon.unlockLinkApprove && resObjData.status == 1) {
+            location = Common.webCommon.unlockLinkApprove;
+        } else if (Common.webCommon && Common.webCommon.unlockLinkExpired && resObjData.status != 1) {
+            location = Common.webCommon.unlockLinkExpired;
+        }
+        res.writeHead(302, {
+            'Location': location
+            //add other headers here...
+        });
+        res.end();        
         return;
     });
 }
@@ -517,6 +530,41 @@ function validateUpdSession(sessionID, suspend) {
     });
 }
 
+let oldParams;
+
+/**
+ * Update webCommon with the new params recived from mgmt
+ * If webCommon updated, save it to Settings.json file
+ * @param {*} params 
+ * @returns 
+ */
+async function updateWebCommon(params) {
+    try {
+        if (oldParams && _.isEqual(oldParams,params)) {
+            return; // params not changed
+        }
+        oldParams = _.clone(params);
+        let newWebCommon;
+        if (!Common.webCommon) {
+            newWebCommon = {};            
+        } else {
+            newWebCommon = _.clone(Common.webCommon);
+        }
+        _.extend(newWebCommon,params);
+        if (Common.webCommon && _.isEqual(newWebCommon,Common.webCommon)) {
+            return; // no need to update it
+        }
+        Common.webCommon = newWebCommon;
+        const fsp = require('fs').promises;
+        let settingsStr = await fsp.readFile(Common.settingsFileName,"utf8");
+        let settingsObj = JSON.parse(settingsStr);
+        settingsObj.webCommon = newWebCommon;
+        await fsp.writeFile(Common.settingsFileName,JSON.stringify(settingsObj,null,2));
+        
+    } catch (err) {
+        logger.info(`updateWebCommon error: ${err}`,err);
+    }
+}
 function registerFrontEnd(hostname, callback) {
     var options = getOptions();
     options.path = '/frontEndService/registerFrontEnd?hostname=' + hostname;
@@ -533,13 +581,10 @@ function registerFrontEnd(hostname, callback) {
             console.log("ERROR!!");
             callback(e);
             return;
-        }
-        if (resObjData.status == Common.STATUS_OK) {
+        }        
+        if (resObjData.status == Common.STATUS_OK) {            
             if (resObjData.params) {
-                // add params to the web common
-                if (!Common.webCommon) {
-                    Common.webCommon = {};                }
-                _.extend(Common.webCommon,resObjData.params);
+                updateWebCommon(resObjData.params);                
             }
             callback(null, resObjData.index);
         } else if (resObjData.status == Common.STATUS_ERROR) {
@@ -560,13 +605,10 @@ function refreshFrontEndTTL(index, callback) {
         }
 
         try {
-            resObjData = JSON.parse(resData);
+            resObjData = JSON.parse(resData);            
             if (resObjData.status == Common.STATUS_OK) {
                 if (resObjData.params) {
-                    // add params to the web common
-                    if (!Common.webCommon) {
-                        Common.webCommon = {};                }
-                    _.extend(Common.webCommon,resObjData.params);
+                    updateWebCommon(resObjData.params);                    
                 }
                 callback(null);
             } else if (resObjData.status == Common.STATUS_ERROR) {
@@ -622,7 +664,8 @@ module.exports = {
     refreshFrontEndTTL: refreshFrontEndTTL,
     unregisterFrontEnd: unregisterFrontEnd,
     forwardPostRequest: forwardRequest,
-    validateUpdSession
+    validateUpdSession,
+    forwardUnlockPasscodeLink
 
 
 }

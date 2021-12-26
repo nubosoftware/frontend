@@ -126,12 +126,12 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
      * Notify the handler that websocket disconnected
      */
       async onDisconnect(){
-          
+        logger.info(`guacWebSocketGateway. onDisconnect. sessID: ${this.sessID}`);
         if (!this.sessID) {
             return;
         }
         try {
-            await validateUpdSession(sessID,1); // send discconnect to the management
+            await validateUpdSession(this.sessID,1); // send discconnect to the management
         } catch (err) {
             logger.info(`onDisconnect error: ${err}`);
         }

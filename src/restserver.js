@@ -523,7 +523,7 @@ function buildServerObject(server,listenOptions) {
         // server.get('/activationLink', internalRequests.forwardGetRequest);
         server.get('/activationLink', internalRequests.forwardActivationLink);
         server.get('/resetPasscodeLink', internalRequests.forwardResetPasscodeLink);
-        server.get('/unlockPassword', internalRequests.forwardGetRequest);
+        server.get('/unlockPassword', internalRequests.forwardUnlockPasscodeLink);
         server.get('/startsession', internalRequests.forwardGetRequest);
         server.post('/startsession', internalRequests.forwardPostRequest);
         server.get('/logoutUser', internalRequests.forwardGetRequest);

@@ -245,6 +245,7 @@ async function checkDockerConf() {
     }
 }
 
+
 function load_settings(callback) {
     var decryptedSettings;
     var encryptedSettings;
@@ -307,7 +308,7 @@ function load_settings(callback) {
                 }
 
                 if(newSettingsToFile){
-                    Common.fs.writeFile('Settings.json', newSettingsToFile, callback);
+                    Common.fs.writeFile(Common.settingsFileName, newSettingsToFile, callback);
                 }
                 else{
                     callback(null);
@@ -361,9 +362,16 @@ function parse_configs() {
         if(Common.platformpath) Common.imagesPath = Common.platformpath + "/out/target/product/x86_platform";
 
 
-        // if (firstTimeLoad) {
-
-        // }
+        if (firstTimeLoad) {
+            Common.fs.watchFile(Common.settingsFileName, {
+                persistent : false,
+                interval : 5007
+            }, function(curr, prev) {
+                logger.info('Settings.json. the current mtime is: ' + curr.mtime);
+                logger.info('Settings.json. the previous mtime was: ' + prev.mtime);
+                parse_configs();
+            });
+        }
 
 
         if (Common.loadCallback)
@@ -400,14 +408,7 @@ Common.dec = function(encText) {
 
 parse_configs();
 
-Common.fs.watchFile('Settings.json', {
-    persistent : false,
-    interval : 5007
-}, function(curr, prev) {
-    logger.info('Settings.json. the current mtime is: ' + curr.mtime);
-    logger.info('Settings.json. the previous mtime was: ' + prev.mtime);
-    parse_configs();
-});
+
 
 
 Common.quit = function() {

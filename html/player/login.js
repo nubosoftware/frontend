@@ -1211,39 +1211,38 @@ $(function() {
         initialize: function() {
             unlockPasscodeLinkView = this;
         },
-        token: null,
-        email: null,
-        mainDomain: null,
-        deviceID: null,
-        cloneActivation: null,
+        status: null,
+        
         timeoutId: 0,
         afterValidation: false,
         successUnlock: false,
         render: function() {
             var template;
             $("#menuBtn").hide();
-            if (!this.afterValidation) {
-                this.$el.html("");
-                this.checkUnlockLink();
+            if (this.status == 1) {
+                this.successUnlock = true;
             } else {
-                if (this.successUnlock) {
-                    template = _.template($("#unlockPasscodeLink_template").html(), vars);
-                    this.$el.html(template);
-                    formatPage();
-                } else {
-                    if (DEBUG) {
-                        console.log("UnlockPasscodeLinkView. activation_err");
-                    }
-
-                    var vars = settings.attributes;
-                    template = _.template($("#activation_err_template").html(), vars);
-                    this.$el.html(template);
-                    formatPage();
-                    // $("#activationErrorText").text(l("activationExpired")+" "+l("openApp") );
-                    $("#unlockPasscodeTxt").text(l("activationExpired") + " " + l("openApp"));
+                this.successUnlock = false;
+            }
+            
+            if (this.successUnlock) {
+                template = _.template($("#unlockPasscodeLink_template").html(), vars);
+                this.$el.html(template);
+                formatPage();
+            } else {
+                if (DEBUG) {
+                    console.log("UnlockPasscodeLinkView. activation_err");
                 }
 
+                var vars = settings.attributes;
+                template = _.template($("#activation_err_template").html(), vars);
+                this.$el.html(template);
+                formatPage();
+                // $("#activationErrorText").text(l("activationExpired")+" "+l("openApp") );
+                $("#unlockPasscodeTxt").text(l("activationExpired") + " " + l("openApp"));
             }
+
+            
             track();
 
         },
@@ -3645,7 +3644,7 @@ $(function() {
             "ppage/:id": "getPlayerPage",
             "activationLink/:activationStatus/:activationDeviceType": "getActivationLink",
             "resetPasscodeLink/:activationStatus/:activationDeviceType": "getResetPasscodeLink",
-            "unlockPassword/:token/:email/:mainDomain/:deviceID": "getUnlockPassword",
+            "unlockPassword/:status": "getUnlockPassword",
             "downloadApp": "getDownloadApp",
             "downloadApp/:domain": "getDownloadApp",
             "autoapp/:packageName/:domainName": "autoapp",
@@ -3727,14 +3726,10 @@ $(function() {
 
     });
 
-    app_router.on('route:getUnlockPassword', function(token, email, mainDomain, deviceID) {
-        // console.log("route:getUnlockPassword. token:" + token + ", email:" + email);
+    app_router.on('route:getUnlockPassword', function(status) {       
         resetValidationEvent();
         var unlockPasscode_link_view = new UnlockPasscodeLinkView();
-        unlockPasscode_link_view.token = token;
-        unlockPasscode_link_view.email = email;
-        unlockPasscode_link_view.mainDomain = mainDomain;
-        unlockPasscode_link_view.deviceID = deviceID;
+        unlockPasscode_link_view.status = status;        
         appController.showView(unlockPasscode_link_view);
 
     });

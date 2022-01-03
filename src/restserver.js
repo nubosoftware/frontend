@@ -477,7 +477,7 @@ function buildServerObject(server,listenOptions) {
 
     server.use(accesslogger);
     server.use(nocache);
-    if (Common.allowedOrigns && Common.allowedOrigns.length > 0) {
+    /*if (Common.allowedOrigns && Common.allowedOrigns.length > 0) {
         const corsMiddleware = require('restify-cors-middleware');
         const cors = corsMiddleware({
             origins: Common.allowedOrigns,
@@ -486,7 +486,7 @@ function buildServerObject(server,listenOptions) {
           server.pre(cors.preflight);
           server.use(cors.actual);
           //logger.info("Added CORS with allowedOrigns: "+Common.allowedOrigns);
-    }
+    }*/
 
 
     // --------------------------------------------------------------------------------------------

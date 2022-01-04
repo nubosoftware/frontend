@@ -301,7 +301,8 @@ var mainFunction = function(err, firstTimeLoad) {
                 mode: filterModule.mode.URL,
                 permittedMode: permittedMode
             };
-            filterObj = new filterModule.filter(parametersMap.rules, filterOpts);
+            const validate = require('validate.js');
+            filterObj = new filterModule.filter(parametersMap.rules, filterOpts,validate);
             return callback(null);
         },
         function(callback) {
@@ -744,7 +745,7 @@ function loadRequires() {
     Notifications = require('./Notifications.js');
     SmsNotification = require('./SmsNotification.js');
     internalRequests = require('./internalRequests.js');
-    filterModule = require('permission-parser');
+    filterModule = require('@nubosoftware/permission-parser');
     parametersMap = require("./parameters-map.js");
     mgmtPublicRegistration = require("./mgmtPublicRegistration.js");
     checkStreamFile = require('./checkStreamFile.js');

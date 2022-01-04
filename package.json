@@ -4,14 +4,14 @@
     "build": "rm -rf dist && node --max_old_space_size=10240 ./node_modules/webpack/bin/webpack.js --progress=profile --mode production"
   },
   "dependencies": {
+    "@nubosoftware/nubo-validateconstraints": "^0.1.10",
+    "@nubosoftware/permission-parser": "^0.1.10",
     "accesslog": "0.0.2",
     "apn": "^2.2.0",
     "async": "2.6.1",
     "html-entities": "1.2.1",
     "node-gcm": "^1.0.3",
-    "node-static": "https://na01.nubosoftware.com:4872/node-static/-/node-static-0.7.11.tgz",
-    "nubo-validateConstraints": "https://na01.nubosoftware.com:4872/nubo-validateConstraints/-/nubo-validateConstraints-0.0.36.tgz",
-    "permission-parser": "https://na01.nubosoftware.com:4872/permission-parser/-/permission-parser-0.0.11.tgz",
+    "node-static": "^0.7.11",
     "querystring": "0.2.0",
     "request": "^2.88.2",
     "restify": "^8.5.1",
@@ -19,7 +19,7 @@
     "underscore": "1.9.1",
     "unix-dgram": "^2.0.4",
     "uuid": "^8.3.2",
-    "validate.js": "0.9.0",
+    "validate.js": "^0.13.1",
     "websocket": "^1.0.33",
     "winston": "3.1.0",
     "winston-syslog": "^2.0.1"

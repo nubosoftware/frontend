@@ -1,7 +1,8 @@
 "use strict";
 
 var Common = require("./common.js");
-var constraints = require("nubo-validateConstraints")(Common.withService);
+var validate = require('validate.js');
+var constraints = require("@nubosoftware/nubo-validateconstraints")(validate);
 
 var filter = {
     "rules": [{

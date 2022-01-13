@@ -278,9 +278,9 @@ var filter = {
             },
             "pushRegID": {
                 "presence": false,
-                "format": "^[.a-zA-Z0-9_\\-():]+$",
+                "format": "^[.a-zA-Z0-9_\\-():]+$|^$",
                 "length": {
-                    "minimum": 1,
+                    "minimum": 0,
                     "maximum": 255
                 }
             },
@@ -304,9 +304,9 @@ var filter = {
             },
             "packageID": {
                 "presence": false,
-                "format": "^[.a-zA-Z0-9_]+[a-zA-Z0-9_]([,][a-zA-Z0-9_]+)?$",
+                "format": "^[.a-zA-Z0-9_]+[a-zA-Z0-9_]([,][a-zA-Z0-9_]+)?$|^$",
                 "length": {
-                    "minimum": 1,
+                    "minimum": 0,
                     "maximum": 255
                 }
             }

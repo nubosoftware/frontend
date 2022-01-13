@@ -97,9 +97,10 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
         if (!guacAddr) {
             guacAddr = "nubo-guac";
         }
+        console.log(`guacAddr: ${guacAddr}`);
 
         let gsocket = new ConfiguredGuacamoleSocket(guacAddr, 4822, conf, info);
-        console.log(`Before init. Headers: ${JSON.stringify(request.headers,null,2)}`);
+        //console.log(`Before init. Headers: ${JSON.stringify(request.headers,null,2)}`);
         gsocket.on("error", (err) => {
             console.error("ConfiguredGuacamoleSocket error",err);
         });

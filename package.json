@@ -4,7 +4,7 @@
     "build": "rm -rf dist && node --max_old_space_size=10240 ./node_modules/webpack/bin/webpack.js --progress=profile --mode production"
   },
   "dependencies": {
-    "@nubosoftware/nubo-validateconstraints": "^0.1.10",
+    "@nubosoftware/nubo-validateconstraints": "^0.1.11",
     "@nubosoftware/permission-parser": "^0.1.10",
     "accesslog": "0.0.2",
     "apn": "^2.2.0",

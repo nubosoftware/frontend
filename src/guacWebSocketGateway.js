@@ -97,7 +97,13 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
         if (!guacAddr) {
             guacAddr = "nubo-guac";
         }
-        console.log(`guacAddr: ${guacAddr}`);
+        //console.log(`guacAddr: ${guacAddr}`);
+        this.user = sessionParams.session.email;
+        logger.log("info",`guacWebSocketGateway connect RDP. sessID: ${this.sessID}, guacAddr: ${guacAddr}, hostname: ${sessionParams.session.containerIpAddress}, user: ${sessionParams.session.containerUserName}`,
+            {
+                user: this.user,
+                mtype: "important"
+            });        
 
         let gsocket = new ConfiguredGuacamoleSocket(guacAddr, 4822, conf, info);
         //console.log(`Before init. Headers: ${JSON.stringify(request.headers,null,2)}`);
@@ -107,7 +113,7 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
         await gsocket.init();
                     
         
-        console.log("After init..");
+        //console.log("After init..");
 
         // Create tunnel from now-configured socket
         tunnel = new GuacamoleTunnel(gsocket);
@@ -127,7 +133,11 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
      * Notify the handler that websocket disconnected
      */
       async onDisconnect(){
-        logger.info(`guacWebSocketGateway. onDisconnect. sessID: ${this.sessID}`);
+        logger.log('info',`guacWebSocketGateway disconnect RDP. sessID: ${this.sessID}`,{           
+            user: this.user,
+            mtype: "important"
+        });
+        //logger.info(`guacWebSocketGateway. onDisconnect. sessID: ${this.sessID}`);
         if (!this.sessID) {
             return;
         }

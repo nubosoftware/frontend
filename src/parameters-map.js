@@ -21,9 +21,10 @@ var filter = {
             "email": constraints.userNameConstrRequested,
             "deviceid": constraints.deviceIdConstrRequested,
             "imsi": {
-                "format": "^[0-9a-zA-Z]+$",
+                "presence": false,
+                "format": "^[0-9a-zA-Z]+$|^$",
                 "length": {
-                    "minimum": 1,
+                    "minimum": 0,
                     "maximum": 15
                 }
             },
@@ -43,9 +44,9 @@ var filter = {
             "signature": constraints.ExcludeSpecialCharactersRequested,
             "regid": {
                 "presence": false,
-                "format": "^[.a-zA-Z0-9_\\-():]+$",
+                "format": "^[.a-zA-Z0-9_\\-():]+$|^$",
                 "length": {
-                    "minimum": 1,
+                    "minimum": 0,
                     "maximum": 255
                 }
             },

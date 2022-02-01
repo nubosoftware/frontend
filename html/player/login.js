@@ -211,7 +211,7 @@ var oldPassword = "";
 var pendingValidation = false;
 var pendingResetPassword = false;
 var isSplashTemplate = false;
-var getJSON, jsonError;
+var getJSON, jsonError, postJSON;
 
 var playerVersion = '1.2';
 var wallpaperColor = "#58585A";
@@ -3164,6 +3164,9 @@ $(function() {
 
     var uxip = null;
 
+
+   
+
     var PlayerView = Backbone.View.extend({
         viewName: "PlayerView",
         el: $("#maindiv"),
@@ -3206,8 +3209,9 @@ $(function() {
             if (DEBUG) {
                 console.log("PlayerView. " + url);
             }
+            let deviceParams = uxip.getStartSessionParams();
 
-            getJSON(url, function(data) {
+            postJSON(url, deviceParams, function(data) {
                 if (DEBUG) {
                     console.log(JSON.stringify(data, null, 4));
                 }
@@ -3607,6 +3611,22 @@ $(function() {
         console.log("Error in JSON. status:" + textStatus + ", errorThrown:" + errorThrown);
         window.location.hash = "error";
     };
+
+    postJSON = function(url,data,success,timeout) {
+        
+        if (timeout == null)
+            timeout = 10000;
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: url,
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            success: success,
+            error: jsonError,
+            'timeout': timeout
+        });
+    }
 
     getJSON = function(url, success, timeout) {
         if (timeout == null)

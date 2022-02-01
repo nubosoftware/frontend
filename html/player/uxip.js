@@ -758,6 +758,71 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
     };
     var isMobile = (typeof navigator !== "undefined") && mobilecheck();
 
+    publicinterface.getStartSessionParams = function () {
+        var baseDpi = 163;
+        if (isMobile) {
+            baseDpi = 326;
+        }
+
+        var mDensityDpi = 163;
+        var baseScale = 1;
+        var mXDpi = baseDpi;
+        var mYDpi = baseDpi;
+        var mScaledDensity = baseScale;
+        var mRotation = 0;
+        var mNavBarHeightPortrait = 0;
+        var mNavBarHeightLandscape = 0;
+        var mNavBarWidth = 0;
+
+        var romClientType = RomClientType.WEB;
+        if (Modernizr && Modernizr.webp) {
+            romClientType = romClientType | RomClientType.ROM_IMAGES_WEBP;
+        } else {
+            romClientType = romClientType | RomClientType.ROM_IMAGES_PNG;
+        }
+        if (isMobile) {
+            romClientType = romClientType | RomClientType.ROM_HW_KEYBOARD_NONE;
+        } else {
+            romClientType = romClientType | RomClientType.ROM_HW_KEYBOARD_EXISTS;
+        }
+
+        var nuboFlags = 0;
+        var hideNuboAppPackgeName = getHideNuboAppPackgeName();
+        if (hideNuboAppPackgeName && hideNuboAppPackgeName != undefined) {
+            nuboFlags = 1;
+        }
+        
+
+        let deviceParams = {
+            appName: "Nubo Web",
+            timeZone: "UTC",
+            width: mWidth,
+            height: mHeight,
+            densityDpi: mDensityDpi,
+            xdpi: mXDpi,
+            ydpi: mYDpi,
+            scaledDensity: mScaledDensity,
+            rotation: mRotation,
+            navBarHeightPortrait: mNavBarHeightPortrait,
+            navBarHeightLandscape: mNavBarHeightLandscape,
+            navBarWidth: mNavBarWidth,
+            romClientType: romClientType,
+            romSdkVersion: 17,
+            romBuildVersion: 'web',
+            nuboClientVersion: '1.2.0.91', 
+            nuboProtocolVersion: '1.2',
+            nuboVersionCode: 201,
+            nuboClientMaxMemory: (4 * mHeight * mWidth),
+            networkConQuality: -1,
+            nuboFlags: nuboFlags,
+            packageName: hideNuboAppPackgeName,
+            camerasInfo: []
+        };
+
+        Log.e(TAG, "getStartSessionParams. w: " + JSON.stringify(deviceParams,null,2));
+
+        return deviceParams;
+    }
     this.initProtocol = function(sessID, deviceid) {
         protocolState = psInit;
         // Log.d("sessid=" + sessID);
@@ -980,7 +1045,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
                 Log.v(TAG, "drawCmdLog.cmdName: " + drawCmdLog.cmdName + ", cmdcode: " + cmdcode);
             }
 
-            //Log.v(TAG, "processId=" + processId + ", cmdcode=" + cmdcode + ", wndId=" + wndId+", bytesCount="+bytesCount);
+            Log.v(TAG, "processId=" + processId + ", cmdcode=" + cmdcode + ", wndId=" + wndId+", bytesCount="+bytesCount);
             if (bytesCount > headSize && !reader.canReadBytes(bytesCount - headSize)) {
                 if (DEBUG_PROTOCOL_NETWORK) {
                     Log.d(TAG + DEBUG_PROTOCOL_NETWORK_STR, "insufficient buffer. Rollback...");
@@ -1295,6 +1360,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
                 catch (err) {
                     //Handle errors here
                     Log.e(TAG + DEBUG_PROTOCOL_NETWORK_STR, "Error during draw command " + drawCmdCodeToText(cmdcode) + " err: " + err);
+                    console.log(err);
                     var transactionSize = reader.getTransactionSize();
                     if (bytesCount - transactionSize > 0)
                         reader.incrementOffsetAfterRead(bytesCount - transactionSize);
@@ -1781,7 +1847,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
             return true;
         //Log.e(TAG, "drawText1. textRes:" + JSON.stringify(textRes));
         if (paint == null) {
-            Log.e(TAG, "Null paint!");
+            Log.e(TAG, "Null paint!");            
             return true;
         }
         drawTextOnCanvas(ctx, textRes, x, y, paint);
@@ -2078,7 +2144,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
             error: jsonError,
             'timeout': timeout
         });
-    };
+    };    
 
     applyColorFilter = function(img, paint, width, height) {
         if (paint != null && paint.isColorFilter) {
@@ -2793,7 +2859,7 @@ function UXIP(width, height, passcodeTimeout, isSpecialLanguage, playbackMode, p
         }
         var bitmapDensity = reader.readInt();
         var canvasDensity = reader.readInt();
-
+        
         var paint = null;
         var paintRet = reader.readPaint(processId);
         if (paintRet.canRead) {

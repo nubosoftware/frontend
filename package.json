@@ -9,6 +9,7 @@
     "accesslog": "0.0.2",
     "apn": "^2.2.0",
     "async": "2.6.1",
+    "axios": "^0.26.0",
     "html-entities": "1.2.1",
     "node-gcm": "^1.0.3",
     "node-static": "^0.7.11",

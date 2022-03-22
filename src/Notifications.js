@@ -14,6 +14,8 @@ var querystring = require('querystring');
 var ThreadedLogger = require('./ThreadedLogger.js');
 var Entities = require('html-entities').XmlEntities;
 var dgram = require('dgram');
+const NCMSender = require('./ncmSender');
+var ncmSender = null;
 
 var Notifications = {
     sendNotificationFromRemoteServer: sendNotificationFromRemoteServer
@@ -228,7 +230,14 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
     logger.info("Sending notification to " + pushRegID);
     if (deviceType === "Android") {
         var sender;
-        if (pushRegID && pushRegID.length > 150) {
+        if (pushRegID && pushRegID.startsWith("ncm:")) {
+            pushRegID = pushRegID.substring(4);
+            if (!ncmSender) {
+                ncmSender = new NCMSender(Common.NCMSenderID,Common.NCMServerURL);
+            }
+            sender = ncmSender;
+
+        } else if (pushRegID && pushRegID.length > 150) {
             // use FCM key
             if (!senderFCM) {
                 senderFCM = new gcm.Sender(Common.FCMSender);

@@ -232,7 +232,10 @@ function WindowManager(parentNodePrm, widthPrm, heightPrm, uxip, session, mgmtUR
             newCanvas.setAttribute('width', mWidth);
             newCanvas.setAttribute('height', mHeight);
             var newCtx = newCanvas.getContext("2d");
-
+            if (!sn.saveLayers) {
+                sn.saveLayers = new Array();
+                Log.e("saveLayerAlpha: sn.saveLayers is not exists. processId: " + processId + ", wndId: " + wndId);
+            }
             sn.saveLayers.push(sn.dirtyCanvas);
             sn.dirtyCanvas = newCanvas;
             sn.dirtyCtx = newCtx;

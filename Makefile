@@ -21,8 +21,8 @@ usage:
 all: nubomanagement-public nubomanagement-public-common
 all: nubomanagement-public-js nubomanagement-public-node_modules nubomanagement-public-webplayer
 
-BASE_TAG := nubo_release_3.1
-BASE_VERSION := 3.1
+BASE_TAG := nubo_release_3.2
+BASE_VERSION := 3.2
 
 define get_current_version
 $(eval $1_commit=$(shell git log -n 1 --format=oneline -- $($1_files_list)))
@@ -90,9 +90,9 @@ docker: debs
 rpms debs: versions
 
 define make_rpm
-$(eval cur_version=$(shell echo "$2" | sed 's/.*\(3\.1\)\-\([0-9]*\)\.\(.*\)/\1/'))
-$(eval cur_buildid=$(shell echo "$2" | sed 's/.*\(3\.1\)\-\([0-9]*\)\.\(.*\)/\2/'))
-$(eval cur_arch=$(shell echo "$2" | sed 's/.*\(3\.1\)\-\([0-9]*\)\.\(.*\)/\3/'))
+$(eval cur_version=$(shell echo "$2" | sed 's/.*\(3\.2\)\-\([0-9]*\)\.\(.*\)/\1/'))
+$(eval cur_buildid=$(shell echo "$2" | sed 's/.*\(3\.2\)\-\([0-9]*\)\.\(.*\)/\2/'))
+$(eval cur_arch=$(shell echo "$2" | sed 's/.*\(3\.2\)\-\([0-9]*\)\.\(.*\)/\3/'))
 #echo "rpm version $(cur_version) $(cur_buildid) $(cur_arch)"
 $(eval pkgname=$(subst -$2.rpm,,$(notdir $1)))
 NUBO_PROJ_PATH=$(nubo_proj_dir) \
@@ -129,8 +129,8 @@ $(nubo_proj_dir)/rpms/latest/nubomanagement-public-%.rpm:
 	$(call make_rpm,$@,$*)
 
 define make_deb
-$(eval cur_version=$(shell echo "$2" | sed 's/.*\(3\.1\)\-\([0-9]*\)/\1/'))
-$(eval cur_buildid=$(shell echo "$2" | sed 's/.*\(3\.1\)\-\([0-9]*\)/\2/'))
+$(eval cur_version=$(shell echo "$2" | sed 's/.*\(3\.2\)\-\([0-9]*\)/\1/'))
+$(eval cur_buildid=$(shell echo "$2" | sed 's/.*\(3\.2\)\-\([0-9]*\)/\2/'))
 #echo "rpm version $(cur_version) $(cur_buildid) $(cur_arch)"
 $(eval pkgname=$(subst -$2.deb,,$(notdir $1)))
 $(eval pkgname=$(subst -$(cur_version)-$(cur_buildid).deb,,$(notdir $@)))

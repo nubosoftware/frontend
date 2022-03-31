@@ -1,43 +1,52 @@
-FROM ubuntu:20.04
-LABEL Version 3.2
-RUN apt-get -y update
-# install linux packages
-RUN apt install -y \
-    curl \
-    supervisor \
-    rsyslog \
-    vim \
-    iputils-ping \
-    telnet \
-    dnsutils \
-    net-tools \
-    sudo
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
-RUN apt install -y nodejs
+FROM node:lts-alpine
+ARG BUILD_VER=3.2
+ARG TARGET_DIR=/opt/nubomanagement-public
+LABEL build_ver="${BUILD_VER}"
+
+# run required packages
+RUN apk add --update supervisor rsyslog
+
+# temporary add build dependencies
+RUN apk add --no-cache --virtual .build-deps-full \
+        binutils-gold \
+        g++ \
+        gcc \
+        gnupg \
+        libgcc \
+        linux-headers \
+        make \
+        python3
+
+# # configure files
+ADD docker_build/etc /etc
+ADD docker_build/bin /usr/local/bin
+RUN mkdir -p /var/log/supervisor/
+#RUN sed -i /imklog/s/module/#module/ /etc/rsyslog.conf
 
 # mark this as docker installation
 RUN mkdir -p /etc/.nubo/ && \
     touch  /etc/.nubo/.docker
 
-# install nubo debs
-COPY debs /tmp
-RUN apt install -y \
-    /tmp/nubo-common.deb \
-    /tmp/nubomanagement-public-webplayer.deb \
-    /tmp/nubomanagement-public-node-modules.deb \
-    /tmp/nubomanagement-public-js.deb \
-    /tmp/nubomanagement-public-common.deb \
-    /tmp/nubomanagement-public.deb
-    
-RUN rm -f /tmp/*.deb
+# copy files to target dir
+RUN mkdir -p ${TARGET_DIR}
+COPY package.json ${TARGET_DIR}/.
+COPY webpack.config.js ${TARGET_DIR}/.
+ADD src ${TARGET_DIR}/src
+ADD html ${TARGET_DIR}/html
+WORKDIR ${TARGET_DIR}
 
-# configure
-ADD etc /etc
-ADD bin /usr/bin
-RUN sed -i /imklog/s/module/#module/ /etc/rsyslog.conf
+# prepare the module
+RUN npm install
+
+# build the dist folder
+RUN npm run build
+
+# remove build dependencies
+RUN rm -rf src webpack.config.js
+RUN apk del .build-deps-full
 
 # Docker config
-VOLUME ["/opt/nubomanagement-public/conf","/opt/cert"]
+VOLUME ["${TARGET_DIR}/conf","/opt/cert"]
 EXPOSE 443 80
-ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
-CMD ["supervisord"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["supervisord", "--nodaemon", "--configuration", "/etc/supervisor/supervisord.conf"]

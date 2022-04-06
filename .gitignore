@@ -15,7 +15,7 @@ GWSettings.json
 nbproject/
 registerIMServer.sh
 html/player/extres/*
-html/player/compiler.jar
+html/player/compiler.jar.test
 html/player/out.js
 rpmbuild/RPMS/
 rpmbuild/SRPMS/

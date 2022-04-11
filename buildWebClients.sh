@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 # build admin control panel
-if [ ! -d "./nubo-admin" ] 
-then   
+if [ ! -d "./nubo-admin" ]
+then
     echo "Directory nubo-admin does not exists. Clone from git project."
     git clone git@github.com:nubosoftware/nubo-admin.git
 fi
@@ -19,8 +19,8 @@ fi
 cd -
 
 #build desktop client
-if [ ! -d "./nubo-desktop-client" ] 
-then   
+if [ ! -d "./nubo-desktop-client" ]
+then
     echo "Directory nubo-desktop-client does not exists. Clone from git project."
     git clone git@github.com:nubosoftware/nubo-desktop-client.git
 fi

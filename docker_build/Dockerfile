@@ -35,6 +35,13 @@ COPY webpack.config.js ${TARGET_DIR}/.
 ADD src ${TARGET_DIR}/src
 ADD html ${TARGET_DIR}/html
 
+# build web clients
+RUN COPY buildWebClients.sh {TARGET_DIR}/.
+WORKDIR ${TARGET_DIR}
+RUN ./buildWebClients.sh
+RUN rm -rf nubo-admin nubo-desktop-client buildWebClients.sh
+
+
 # build web player
 WORKDIR ${TARGET_DIR}/html/player
 RUN java -jar compiler.jar -O SIMPLE --language_in ECMASCRIPT6 --js_output_file=out.js login.js nubocache.js uxip.js uxipReader.js uxipWriter.js wm.js zlibReader.js NuboOutputStreamMgr.js nubocache.js opengl.js ops.js

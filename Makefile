@@ -78,7 +78,28 @@ versions:
 	@echo "webplayer version $(webplayer_version) $(webplayer_buildid)"
 
 docker:
-	docker build --build-arg BUILD_VER=$(public_version)-$(public_buildid) -f docker_build/Dockerfile -t nubofrontend:$(public_version)-$(public_buildid) .
+	docker build --build-arg BUILD_VER=$(public_version)-$(public_buildid) --no-cache --pull -f docker_build/Dockerfile -t nubofrontend:$(public_version)-$(public_buildid) .
+
+push-nubo: docker
+	docker tag nubofrontend:$(public_version)-$(public_buildid) docker.nubosoftware.com:5000/nubo/nubofrontend:$(public_version)-$(public_buildid)
+	docker push docker.nubosoftware.com:5000/nubo/nubofrontend:$(public_version)-$(public_buildid)
+	docker tag nubofrontend:$(public_version)-$(public_buildid) docker.nubosoftware.com:5000/nubo/nubofrontend:$(public_version)
+	docker push docker.nubosoftware.com:5000/nubo/nubofrontend:$(public_version)
+
+push-nubo-latest: push-nubo
+	docker tag nubofrontend:$(public_version)-$(public_buildid) docker.nubosoftware.com:5000/nubo/nubofrontend
+	docker push docker.nubosoftware.com:5000/nubo/nubofrontend
+
+push-hub: docker
+	docker tag nubofrontend:$(public_version)-$(public_buildid) nubosoftware/nubofrontend:$(public_version)-$(public_buildid)
+	docker push nubosoftware/nubofrontend:$(public_version)-$(public_buildid)
+	docker tag nubofrontend:$(public_version)-$(public_buildid) nubosoftware/nubofrontend:$(public_version)
+	docker push nubosoftware/nubofrontend:$(public_version)
+
+push-hub-latest: push-nubo
+	docker tag nubofrontend:$(public_version)-$(public_buildid) nubosoftware/nubofrontend
+	docker push nubosoftware/nubofrontend
+
 
 rpms debs: versions
 

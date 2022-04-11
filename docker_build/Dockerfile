@@ -15,6 +15,8 @@ RUN apk add --no-cache --virtual .build-deps-full \
         libgcc \
         linux-headers \
         make \
+        git \
+        openssh \
         openjdk11-jre-headless \
         python3
 
@@ -32,11 +34,11 @@ RUN mkdir -p /etc/.nubo/ && \
 RUN mkdir -p ${TARGET_DIR}
 COPY package.json ${TARGET_DIR}/.
 COPY webpack.config.js ${TARGET_DIR}/.
+COPY buildWebClients.sh ${TARGET_DIR}/.
 ADD src ${TARGET_DIR}/src
 ADD html ${TARGET_DIR}/html
 
 # build web clients
-RUN COPY buildWebClients.sh {TARGET_DIR}/.
 WORKDIR ${TARGET_DIR}
 RUN ./buildWebClients.sh
 RUN rm -rf nubo-admin nubo-desktop-client buildWebClients.sh

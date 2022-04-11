@@ -4,7 +4,11 @@
 if [ ! -d "./nubo-admin" ]
 then
     echo "Directory nubo-admin does not exists. Clone from git project."
-    git clone git@github.com:nubosoftware/nubo-admin.git
+    git clone https://github.com/nubosoftware/nubo-admin.git
+    if [ $retVal -ne 0 ]; then
+      echo "Error on git clone"
+      exit $retVal
+    fi
 fi
 cd ./nubo-admin
 echo "run npm i"
@@ -22,7 +26,11 @@ cd -
 if [ ! -d "./nubo-desktop-client" ]
 then
     echo "Directory nubo-desktop-client does not exists. Clone from git project."
-    git clone git@github.com:nubosoftware/nubo-desktop-client.git
+    git clone https://github.com/nubosoftware/nubo-desktop-client.git
+    if [ $retVal -ne 0 ]; then
+      echo "Error on git clone"
+      exit $retVal
+    fi
 fi
 cd ./nubo-desktop-client
 npm i

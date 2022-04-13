@@ -96,7 +96,7 @@ push-hub: docker
 	docker tag nubofrontend:$(public_version)-$(public_buildid) nubosoftware/nubofrontend:$(public_version)
 	docker push nubosoftware/nubofrontend:$(public_version)
 
-push-hub-latest: push-nubo
+push-hub-latest: push-hub
 	docker tag nubofrontend:$(public_version)-$(public_buildid) nubosoftware/nubofrontend
 	docker push nubosoftware/nubofrontend
 

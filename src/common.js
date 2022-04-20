@@ -6,6 +6,7 @@ var url = require('url');
 var async = require('async');
 var _ = require('underscore');
 var fsp = require('fs').promises;
+const os = require('os');
 
 var Common = {
     STATUS_OK : 1,
@@ -118,65 +119,92 @@ try {
     Common.fs.mkdirSync("./log");
 } catch(err) {}
 
-var loggerName = Common.path.basename(process.argv[1], '.js') + ".log";
-var exceptionLoggerName = Common.path.basename(process.argv[1], '.js') + "_exceptions.log";
-console.log("log file: " + loggerName);
+var logger;
 
-const { createLogger , format, transports  } = require('winston');
-const { combine, timestamp, label, printf } = format;
-require('winston-syslog').Syslog;
-const myFormat = printf(info => {
-    return `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`;
-});
+function createIntLogger() {
+    var loggerName = Common.path.basename(process.argv[1], '.js') + ".log";
+    var exceptionLoggerName = Common.path.basename(process.argv[1], '.js') + "_exceptions.log";
+    console.log("log file: " + loggerName);
 
-Common.logger = createLogger({
-    format: combine(
-        label({ label:  Common.path.basename(process.argv[1], '.js') }),
-        timestamp(),
-        myFormat
-    ),
-    transports : [
+    const { createLogger, format, transports } = require('winston');
+    const { combine, timestamp, label, printf } = format;
+
+    const myFormat = printf(info => {
+        return `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`;
+    });
+
+    let logTransports = [
         new (transports.Console)({
             timestamp: true,
             colorize: true
         }),
         new transports.File({
-            filename : Common.rootDir + '/log/' + loggerName,
-            handleExceptions : true,
-            maxsize: 100*1024*1024, //100MB
+            filename: Common.rootDir + '/log/' + loggerName,
+            handleExceptions: true,
+            maxsize: 100 * 1024 * 1024, //100MB
             maxFiles: 4
-        }),
-        new transports.Syslog({
-            app_name : "nubomanagement-public",
-            handleExceptions : true,
-            localhost: null,
-            protocol: "unix",
-            path: "/dev/log",
-            format: format.json()
         })
-    ],
-    exceptionHandlers : [
-        new (transports.Console)({
-            timestamp : true
-        }), new transports.File({
-            filename : Common.rootDir + '/log/' + exceptionLoggerName
-        })
-    ],
-    exitOnError : false
-});
+    ];
 
-var logger = Common.logger;
 
-Common.specialBuffers = {};
 
-logger.on('logging', function(transport, level, msg, meta) {
-    if (meta != null && meta.specialBuffer != null && transport.name == "console") {
-        if (Common.specialBuffers[meta.specialBuffer] == null)
-            Common.specialBuffers[meta.specialBuffer] = "";
-        Common.specialBuffers[meta.specialBuffer] += '\n' + new Date() + " [" + level + "] " + msg;
-        //console.log("logging. level:"+level+", msg:"+msg+", meta:"+JSON.stringify(meta,null,2)+", transport: "+JSON.stringify(transport,null,2));
+
+    let syslogParams = {
+        app_name: "nubomanagement-public",
+        handleExceptions: true,
+        localhost: os.hostname(),
+        type: "RFC5424",
+        //protocol: "unix",
+        //path: "/dev/log",
+        protocol: 'udp',
+        host: 'nubo-rsyslog',
+        port: 5514,
+        format: format.json()
+    };
+    if (Common.syslogParams) {
+        _.extend(syslogParams, Common.syslogParams);
+    } else {
+        syslogParams.disable = true;
     }
-});
+    console.log(`syslogParams.disable: ${syslogParams.disable}`);
+    if (!syslogParams.disable) {
+        let Syslog = require('@nubosoftware/winston-syslog').Syslog;
+        let syslogTransport = new Syslog(syslogParams);
+        logTransports.push(syslogTransport);
+    }
+
+    Common.logger = createLogger({
+        format: combine(
+            label({ label: Common.path.basename(process.argv[1], '.js') }),
+            timestamp(),
+            myFormat
+        ),
+        transports: logTransports,
+        exceptionHandlers: [
+            new (transports.Console)({
+                timestamp: true
+            }), new transports.File({
+                filename: Common.rootDir + '/log/' + exceptionLoggerName
+            })
+        ],
+        exitOnError: false
+    });
+
+    logger = Common.logger;
+
+    Common.specialBuffers = {};
+
+    logger.on('logging', function (transport, level, msg, meta) {
+        if (meta != null && meta.specialBuffer != null && transport.name == "console") {
+            if (Common.specialBuffers[meta.specialBuffer] == null)
+                Common.specialBuffers[meta.specialBuffer] = "";
+            Common.specialBuffers[meta.specialBuffer] += '\n' + new Date() + " [" + level + "] " + msg;
+            //console.log("logging. level:"+level+", msg:"+msg+", meta:"+JSON.stringify(meta,null,2)+", transport: "+JSON.stringify(transport,null,2));
+        }
+    });
+}
+
+createIntLogger();
 
 Common.sshPool = {};
 
@@ -235,11 +263,11 @@ async function checkDockerConf() {
             settingsFileName = Common.path.join(Common.rootDir,'conf','Settings.json');
             // move file if needed
             const oldfileLocation = Common.path.join(Common.rootDir,'Settings.json');
-            await fileMoveIfNedded(settingsFileName,oldfileLocation);           
+            await fileMoveIfNedded(settingsFileName,oldfileLocation);
         } else {
             Common.isDocker = false;
             settingsFileName = Common.path.join(Common.rootDir,'Settings.json');
-        }  
+        }
         Common._isDockerChecked = true;
         Common.settingsFileName = settingsFileName;
     }
@@ -363,6 +391,7 @@ function parse_configs() {
 
 
         if (firstTimeLoad) {
+            createIntLogger();
             Common.fs.watchFile(Common.settingsFileName, {
                 persistent : false,
                 interval : 5007

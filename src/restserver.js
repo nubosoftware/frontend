@@ -48,6 +48,8 @@ var mainFunction = function(err, firstTimeLoad) {
     if (!firstTimeLoad) // execute the following code only in the first time
         return;
 
+    logger = Common.logger;
+
     loadRequires();
 
     var WebSocketServer = websocket.server;

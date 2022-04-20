@@ -4,7 +4,7 @@ ARG TARGET_DIR=/opt/nubomanagement-public
 LABEL build_ver="${BUILD_VER}"
 
 # run required packages
-RUN apk add --update supervisor rsyslog
+RUN apk add --update supervisor
 
 # temporary add build dependencies
 RUN apk add --no-cache --virtual .build-deps-full \
@@ -24,7 +24,6 @@ RUN apk add --no-cache --virtual .build-deps-full \
 ADD docker_build/etc /etc
 ADD docker_build/bin /usr/local/bin
 RUN mkdir -p /var/log/supervisor/
-#RUN sed -i /imklog/s/module/#module/ /etc/rsyslog.conf
 
 # mark this as docker installation
 RUN mkdir -p /etc/.nubo/ && \

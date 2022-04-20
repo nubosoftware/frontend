@@ -77,6 +77,11 @@ versions:
 	@echo "node_modules version $(node_modules_version) $(node_modules_buildid)"
 	@echo "webplayer version $(webplayer_version) $(webplayer_buildid)"
 
+docker-hub-test:
+	docker build --build-arg dev=TRUE --build-arg BUILD_VER=$(public_version)-$(public_buildid) -f docker_build/Dockerfile -t nubofrontend:$(public_version)-$(public_buildid) .
+	docker tag nubofrontend:$(public_version)-$(public_buildid) nubosoftware/nubofrontend:test
+	docker push nubosoftware/nubofrontend:test
+
 docker:
 	docker build --build-arg BUILD_VER=$(public_version)-$(public_buildid) --no-cache --pull -f docker_build/Dockerfile -t nubofrontend:$(public_version)-$(public_buildid) .
 
@@ -178,7 +183,7 @@ $(nubo_proj_dir)/debs/latest/nubomanagement-public-%.deb:
 
 
 .PHONY: default clean nubomanagement nubomanagement-public nubomanagement-public-common
-.PHONY: nubomanagement-public-js nubomanagement-public-node_modules nubomanagement-public-webplayer
+.PHONY: nubomanagement-public-js nubomanagement-public-node_modules nubomanagement-public-webplayer docker-hub-test
 
 clean:
 

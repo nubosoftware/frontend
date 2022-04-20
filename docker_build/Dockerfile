@@ -57,8 +57,12 @@ RUN npm install
 # build the dist folder
 RUN npm run build
 
+# remove sources
+# delete the sources
+RUN if [[ -z "$dev" ]] ; then rm -rf src webpack.config.js ; else echo "Development build - not deleting sources" ; fi
+
 # remove build dependencies
-RUN rm -rf src webpack.config.js
+#RUN rm -rf src webpack.config.js
 RUN apk del .build-deps-full
 
 # Docker config

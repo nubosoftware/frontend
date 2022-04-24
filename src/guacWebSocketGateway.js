@@ -47,7 +47,7 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
      *     conditions required for connection are not met.
      */
      async doConnect(request) {
-        let sessID = request.resourceURL.query['sessID']; 
+        let sessID = request.resourceURL.query['sessID'];
         if (!sessID) {
             throw new GuacamoleExceptions.GuacamoleUnauthorizedException("Missing seesion id");
         }
@@ -66,7 +66,7 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
             conf.connectionID = oldConnID;
         }
         let info = new GuacamoleClientInformation();
-        
+
         conf.protocol = "rdp";
        let width = request.resourceURL.query['width'];
        if (!width) {
@@ -78,7 +78,8 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
        }
        info.optimalScreenWidth = width;
        info.optimalScreenHeight = height;
-        conf.parameters = {
+
+       conf.parameters = {
             hostname: sessionParams.session.containerIpAddress,
             port: "3389",
             username: sessionParams.session.containerUserName,
@@ -89,10 +90,15 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
             "width": width,
             "height": height
         };
+        if (sessionParams.session.recording && sessionParams.session.recording_path) {
+            conf.parameters["recording-path"] = sessionParams.session.recording_path;
+            conf.parameters["recording-name"] = sessionParams.session.recording_name;
+            logger.log("info",`guacWebSocketGateway recording-path: ${conf.parameters["recording-path"]}, recording-name: ${conf.parameters["recording-name"]}`);
+        }
 
         let tunnel;
-       
-            
+
+
         let guacAddr = sessionParams.session.guacAddr;
         if (!guacAddr) {
             guacAddr = "nubo-guac";
@@ -103,7 +109,7 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
             {
                 user: this.user,
                 mtype: "important"
-            });        
+            });
 
         let gsocket = new ConfiguredGuacamoleSocket(guacAddr, 4822, conf, info);
         //console.log(`Before init. Headers: ${JSON.stringify(request.headers,null,2)}`);
@@ -111,29 +117,29 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
             console.error("ConfiguredGuacamoleSocket error",err);
         });
         await gsocket.init();
-                    
-        
+
+
         //console.log("After init..");
 
         // Create tunnel from now-configured socket
         tunnel = new GuacamoleTunnel(gsocket);
 
-        
+
 
         // notifi mgmt the session connected
         await validateUpdSession(sessID,0);
         return tunnel;
     }
 
-    
 
-    
+
+
 
      /**
      * Notify the handler that websocket disconnected
      */
       async onDisconnect(){
-        logger.log('info',`guacWebSocketGateway disconnect RDP. sessID: ${this.sessID}`,{           
+        logger.log('info',`guacWebSocketGateway disconnect RDP. sessID: ${this.sessID}`,{
             user: this.user,
             mtype: "important"
         });

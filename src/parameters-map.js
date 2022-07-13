@@ -454,6 +454,7 @@ var filter = {
         "path": "/logoutUser",
         "constraints": {
             "loginToken": constraints.requestedLoginTokenConstr,
+            "deleteCacheDeviceData": constraints.Y_N_boolConstrOptional,
         }
     },
     {

@@ -21,4 +21,8 @@ rpmbuild/RPMS/
 rpmbuild/SRPMS/
 debbuild/
 package-lock.json
+nubo-admin/
+nubo-desktop-client/
+html/admin/
+html/desktop/
 

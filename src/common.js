@@ -380,6 +380,7 @@ function parse_configs() {
         Common.internalServerCredentials.options.host = internalUrlObj.hostname;
         Common.internalServerCredentials.options.port = Number(internalUrlObj.port);
         var isSSL = internalUrlObj.protocol === "https:";
+        Common.internalServerCredentials.options.isSSL = isSSL;
         if(isSSL && Common.internalServerCredentials.key && Common.internalServerCredentials.cert ){
             Common.internalServerCredentials.options.key = Common.fs.readFileSync(Common.internalServerCredentials.key);
             Common.internalServerCredentials.options.certificate = Common.fs.readFileSync(Common.internalServerCredentials.cert);

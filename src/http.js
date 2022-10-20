@@ -14,7 +14,7 @@ function doPostRequest(options, postData, callback) {
     var callbackDone = false;
     var resData = "";
     var request;
-    if(options.key) request = https.request;
+    if (options.isSSL) request = https.request;
     else request = http.request;
     var req = request(
         options,
@@ -47,7 +47,7 @@ function doGetRequest(options, callback) {
     var callbackDone = false;
     var resData = "";
     var request;
-    if(options.key) request = https.request;
+    if (options.isSSL) request = https.request;
     else request = http.request;
     var req = request(
         options,

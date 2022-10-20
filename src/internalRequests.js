@@ -62,7 +62,7 @@ function upload(req, res, next) {
     _.extend(options.headers, req.headers);
 
     var request;
-    if (options.key) request = nodeHttps.request;
+    if (options.isSSL) request = nodeHttps.request;
     else request = nodeHttp.request;
     // TODO move pipe request to http module
     var connector = request(options, function(serverResponse) {
@@ -98,7 +98,7 @@ function getStreamsFile(req, res, next) {
     options.method = req.method;
     options.agent = false;
     var request;
-    if (options.key) request = nodeHttps.request;
+    if (options.isSSL) request = nodeHttps.request;
     else request = nodeHttp.request;
     var connector = request(options, function(serverResponse) {
         serverResponse.pause();
@@ -133,7 +133,7 @@ function forwardRequest(req, res, next) {
     options.headers['x-client-ip'] = req.realIP;
 
     var request;
-    if (options.key) request = nodeHttps.request;
+    if (options.isSSL) request = nodeHttps.request;
     else request = nodeHttp.request;
     // TODO move pipe request to http module
     var connector = request(options, function(serverResponse) {
@@ -382,7 +382,7 @@ function forwardActivationLink(req, res, next) {
             'Location': location
             //add other headers here...
         });
-        res.end();        
+        res.end();
         return;
     });
 }
@@ -433,7 +433,7 @@ function forwardResetPasscodeLink(req, res, next) {
             'Location': location
             //add other headers here...
         });
-        res.end();        
+        res.end();
         return;
     });
 }
@@ -488,7 +488,7 @@ function forwardUnlockPasscodeLink(req, res, next) {
             'Location': location
             //add other headers here...
         });
-        res.end();        
+        res.end();
         return;
     });
 }
@@ -496,7 +496,7 @@ function forwardUnlockPasscodeLink(req, res, next) {
 /**
  * Gateway function to check with thr management the a session is valid and can be use to connect
  * It aslo update suspend or or connect the session with the suspend parameter
- * @param {String} sessionID 
+ * @param {String} sessionID
  * @param {Number} suspend. 0 - connect, 1- suspend (disconnect), 2- do not update status just get the information
  * @returns promise with the session parameters
  */
@@ -535,8 +535,8 @@ let oldParams;
 /**
  * Update webCommon with the new params recived from mgmt
  * If webCommon updated, save it to Settings.json file
- * @param {*} params 
- * @returns 
+ * @param {*} params
+ * @returns
  */
 async function updateWebCommon(params) {
     try {
@@ -546,7 +546,7 @@ async function updateWebCommon(params) {
         oldParams = _.clone(params);
         let newWebCommon;
         if (!Common.webCommon) {
-            newWebCommon = {};            
+            newWebCommon = {};
         } else {
             newWebCommon = _.clone(Common.webCommon);
         }
@@ -560,7 +560,7 @@ async function updateWebCommon(params) {
         let settingsObj = JSON.parse(settingsStr);
         settingsObj.webCommon = newWebCommon;
         await fsp.writeFile(Common.settingsFileName,JSON.stringify(settingsObj,null,2));
-        
+
     } catch (err) {
         logger.info(`updateWebCommon error: ${err}`,err);
     }
@@ -581,10 +581,10 @@ function registerFrontEnd(hostname, callback) {
             console.log("ERROR!!");
             callback(e);
             return;
-        }        
-        if (resObjData.status == Common.STATUS_OK) {            
+        }
+        if (resObjData.status == Common.STATUS_OK) {
             if (resObjData.params) {
-                updateWebCommon(resObjData.params);                
+                updateWebCommon(resObjData.params);
             }
             callback(null, resObjData.index);
         } else if (resObjData.status == Common.STATUS_ERROR) {
@@ -605,10 +605,10 @@ function refreshFrontEndTTL(index, callback) {
         }
 
         try {
-            resObjData = JSON.parse(resData);            
+            resObjData = JSON.parse(resData);
             if (resObjData.status == Common.STATUS_OK) {
                 if (resObjData.params) {
-                    updateWebCommon(resObjData.params);                    
+                    updateWebCommon(resObjData.params);
                 }
                 callback(null);
             } else if (resObjData.status == Common.STATUS_ERROR) {

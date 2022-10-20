@@ -39,7 +39,7 @@ function tunnel(req, res) {
         options.path = options.path.replace("/html/guac/tunnel", "/guacamole-example-1.3.0/tunnel")
         //logger.info(`guacTunnel. options: ${jsonPrint(options)}}`);
         var request;
-        if (options.key) request = nodeHttps.request;
+        if (options.isSSL) request = nodeHttps.request;
         else request = nodeHttp.request;
         // TODO move pipe request to http module
         var connector = request(options, function (serverResponse) {

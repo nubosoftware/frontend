@@ -38,9 +38,9 @@ ADD src ${TARGET_DIR}/src
 ADD html ${TARGET_DIR}/html
 
 # build web clients
-WORKDIR ${TARGET_DIR}
-RUN ./buildWebClients.sh
-RUN rm -rf nubo-admin nubo-desktop-client buildWebClients.sh
+# WORKDIR ${TARGET_DIR}
+# RUN ./buildWebClients.sh
+# RUN rm -rf nubo-admin nubo-desktop-client buildWebClients.sh
 
 
 # build web player

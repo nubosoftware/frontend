@@ -656,6 +656,30 @@ function buildServerObject(server,listenOptions) {
     server.get("/appstore/*/repo/*", internalRequests.forwardGetRequest );
     server.head("/appstore/*/repo/*", internalRequests.forwardGetRequest );
 
+    server.get("/html/admin/*", (req, res, next) => {
+        if (!isPermittedUrl(req.url)) {
+            logger.info("Access to " + req.url + " does not permitted");
+            res.send(401, "Access denied", {
+                "Content-Type": "application/json",
+                "Transfer-Encoding": ""
+            });
+            return;
+        }
+        return internalRequests.forwardGetRequest(req,res,next);
+    } );
+
+    server.get("/html/desktop/*", (req, res, next) => {
+        if (!isPermittedUrl(req.url)) {
+            logger.info("Access to " + req.url + " does not permitted");
+            res.send(401, "Access denied", {
+                "Content-Type": "application/json",
+                "Transfer-Encoding": ""
+            });
+            return;
+        }
+        return internalRequests.forwardGetRequest(req,res,next);
+    } );
+
     server.get("/*", function(req, res, next) {
         if (!isPermittedUrl(req.url)) {
             logger.info("Access to " + req.url + " does not permitted");

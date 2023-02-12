@@ -254,7 +254,15 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             }
             sender = senderGCM;
         }
-        var message = new gcm.Message();
+        let priority = 'high';
+        if (type == 7) {
+            priority = 'normal';
+        }
+        var message = new gcm.Message({
+            priority: priority,
+            contentAvailable: true,
+            delayWhileIdle: false,
+        });
         var nOfRetries = 4;
         message.addData('type', type);
         // is this 0 or 1?
@@ -264,11 +272,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         message.addData('enableSound', enableSound);
         message.addData('enableVibrate', enableVibrate);
         message.addData('nuboPackageID', packageID);
-        //message.collapseKey = 'demo';
-        //message.delayWhileIdle = false;
-        message.contentAvailable = true;
-        //message.timeToLive = 3;
-        message.priority = "high";
+
         logger.info("FCM message: "+JSON.stringify(message,null,2));
         sender.send(message, [pushRegID], nOfRetries, function(err, result) {
             if (err) {

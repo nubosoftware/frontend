@@ -542,6 +542,17 @@ var filter = {
     },
     {
         "regex": true,
+        "path": "/client/.*",
+        "constraints": {
+        },
+        "headerConstraints": {
+        },
+        "bodyConstraints": {
+
+        }
+    },
+    {
+        "regex": true,
         "path": "/html/.*",
         "constraints": {
         },

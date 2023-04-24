@@ -91,6 +91,11 @@ push-nubo: docker
 	docker tag nubofrontend:$(public_version)-$(public_buildid) docker.nubosoftware.com:5000/nubo/nubofrontend:$(public_version)
 	docker push docker.nubosoftware.com:5000/nubo/nubofrontend:$(public_version)
 
+push-nubo-test:
+	docker build --build-arg dev=TRUE --build-arg BUILD_VER=$(public_version)-$(public_buildid) -f docker_build/Dockerfile -t nubofrontend:$(public_version)-$(public_buildid) .
+	docker tag nubofrontend:$(public_version)-$(public_buildid) docker.nubosoftware.com:5000/nubo/nubofrontend:test
+	docker push docker.nubosoftware.com:5000/nubo/nubofrontend:test
+
 push-nubo-latest: push-nubo
 	docker tag nubofrontend:$(public_version)-$(public_buildid) docker.nubosoftware.com:5000/nubo/nubofrontend
 	docker push docker.nubosoftware.com:5000/nubo/nubofrontend

@@ -190,6 +190,29 @@ function createIntLogger() {
         exitOnError: false
     });
 
+    const acessLogFormat = printf(info => {
+        return `${info.timestamp} ${info.message}`;
+    });
+
+    Common.accessLogger = createLogger({
+        format: combine(
+            //label({ label: Common.path.basename(process.argv[1], '.js') }),
+            timestamp(),
+            acessLogFormat
+        ),
+        transports: [
+            new transports.File({
+                filename: Common.rootDir + '/log/' + 'access_log.log',
+                handleExceptions: false,
+                maxsize: 100 * 1024 * 1024, //100MB
+                maxFiles: 4
+            })
+        ],
+        exitOnError: false
+    });
+
+
+
     logger = Common.logger;
 
     Common.specialBuffers = {};

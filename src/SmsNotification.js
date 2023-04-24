@@ -15,7 +15,7 @@ var SmsNotification = {
 
 module.exports = SmsNotification;
 
-function sendSmsNotification(req, res) {
+function sendSmsNotification(req, res, next) {
     var status = 1;
     var msg = "OK";
     function readParam(paramName) {
@@ -79,7 +79,7 @@ function sendSmsNotificationInternal(toPhone, body, callback) {
  * installations Each server need to authenticate with serverID and
  * serverAuthKey
  */
-function sendSmsNotificationFromRemoteServer(req, res) {
+function sendSmsNotificationFromRemoteServer(req, res, next) {
     var status = 1;
     var msg = "OK";
     function readParam(paramName) {

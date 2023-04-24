@@ -8,7 +8,7 @@ var async = require('async');
 var gcm = require('node-gcm');
 var senderFCM = null;
 var senderGCM = null;
-var apn = require('apn');
+var apn = require('@hyperlink/node-apn');
 var request = require('./request.js');
 var querystring = require('querystring');
 var ThreadedLogger = require('./ThreadedLogger.js');
@@ -40,7 +40,7 @@ var SENDING_NOTIFICATION = "sending Notification"
  * Service for sending push from remote nubo installations
  * Each server need to authenticate with serverID and serverAuthKey
  */
-function sendNotificationFromRemoteServer(req, res) {
+function sendNotificationFromRemoteServer(req, res, next) {
 
     var response = {
         status: 1,

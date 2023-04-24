@@ -4,12 +4,10 @@ var net = require('net');
 var tls = require('tls');
 var url = require("url");
 var querystring = require("querystring");
-var accesslog = require('accesslog');
 var async = require("async");
 var fs = require("fs");
 var restify = require("restify");
 var cluster = require("cluster");
-var nodestatic = require('node-static');
 var websocket = require('websocket');
 
 var Common = require('./common.js');
@@ -31,9 +29,23 @@ const GuacGateway = require('./guacGateway');
 const guacWebSocketGateway = require ('./guacWebSocketGateway');
 //===============================================================
 
-var accesslogger = accesslog({
-    path: './log/access_log.log'
-});
+// var accesslogger = accesslog({
+//     path: './log/access_log.log'
+// });
+
+// var accesslogger = restify.plugins.requestLogger({
+//     log: logger
+// });
+
+// var auditLogger = restify.plugins.auditLogger({
+//     log: logger,
+//     event: 'after',
+//     //server: SERVER,
+//     //logMetrics : logBuffer,
+//     printLog : true
+//   })
+
+
 
 var filterObj;
 var serverAtExitProcess = false;
@@ -203,7 +215,21 @@ var mainFunction = function(err, firstTimeLoad) {
                                     opts.requestCert = true;
                                     //opts.rejectUnauthorized= false;
                                 }
-                                callback(null, host, port, opts);
+                                if (Common.httpsServerOptions) {
+                                    let newOpts =  {
+                                        httpsServerOptions : {
+                                            ...opts,
+                                            ...Common.httpsServerOptions,
+                                        }
+                                    }
+                                    if (newOpts.httpsServerOptions.certificate && !newOpts.httpsServerOptions.cert) {
+                                        newOpts.httpsServerOptions.cert = newOpts.httpsServerOptions.certificate
+                                        delete newOpts.certificate;
+                                    }
+                                    opts = newOpts;
+                                    logger.info("Using httpsServerOptions ");
+                                }
+                                callback(null, host, port, opts );
                             }
                         });
                     } else {
@@ -211,7 +237,10 @@ var mainFunction = function(err, firstTimeLoad) {
                     }
                 },
                 function(host, port, server_options, callback) {
+                    // logger.info(`Creating server for ${host}:${port}, server_options: ${JSON.stringify(server_options, null, 2)}`);
                     var myserver = restify.createServer(server_options);
+                    // const https = require("https");
+                    // myserver.server = https.createServer(server_options);
                     buildServerObject(myserver,listenOptions);
                     myserver.listen(port, host, function() {
                         logger.info(myserver.name + ' listening at ' + myserver.url);
@@ -242,25 +271,38 @@ var mainFunction = function(err, firstTimeLoad) {
             Common.sslCerts = {
                 key: "../cert/server.key",
                 certificate: "../cert/server.cert",
-                ca: "../cert/root.crt" // "./clientCerts/ca_cert.pem"
+                //ca: "../cert/root.crt" // "./clientCerts/ca_cert.pem"
             };
         }
-        console.log("Common.sslCerts: " + JSON.stringify(Common.sslCerts));
-        if (!Common.sslCerts || !Common.sslCerts.ca || !Common.sslCerts.certificate || !Common.sslCerts.key) return callback("bad parameter Common.sslCerts");
-        var sslCerts = {};
+        //console.log("Common.sslCerts: " + JSON.stringify(Common.sslCerts));
+        if (!Common.sslCerts || !Common.sslCerts.certificate || !Common.sslCerts.key) return callback("bad parameter Common.sslCerts");
+        var sslCerts = {
+            //httpsServerOptions: {}
+        };
+        //logger.info("readCerts. Common.sslCerts: " + JSON.stringify(Common.sslCerts, null, 2));
         async.forEachOf(
             Common.sslCerts,
             function(item, key, callback) {
-                fs.readFile(item, function(err, data) {
-                    if (err) {
-                        logger.error("Cannot read " + item + " file, err: " + err);
-                    } else {
-                        sslCerts[key] = data;
-                    }
+                if (typeof item === 'string' && (item.startsWith(".") || item.startsWith("/"))) {
+                    // item is a file name
+                    logger.info(`readCerts. Reading ${key} from file ${item}`);
+                    fs.readFile(item, function(err, data) {
+                        if (err) {
+                            logger.error("Cannot read " + item + " file, err: " + err);
+                        } else {
+                            sslCerts[key] = data;
+                        }
+                        callback();
+                    });
+                } else {
+                    // item is not a file name
+                    logger.info(`readCerts. ${key}: ${JSON.stringify(item,null,2)}.`);
+                    sslCerts[key] = item;
                     callback();
-                });
+                }
             },
             function(err) {
+                //logger.info("readCerts. httpsServerOptions: " + JSON.stringify(sslCerts.httpsServerOptions, null, 2));
                 callback(err, sslCerts);
                 /*secureCtx = tls.createSecureContext(sslCerts);
                 logger.info("secureCtx loaded");
@@ -420,6 +462,22 @@ function nocache(req, res, next) {
     next();
 }
 
+function auditLogger(req, res, route, error) {
+    const userAgent = req.headers['user-agent'];
+    if (!userAgent) {
+        userAgent = "-";
+    }
+    const contentLength = res.getHeader('Content-Length');
+    if (isNaN(contentLength)) {
+        contentLength = "-";
+    }
+
+    const routepath = route ? route.path : "-";
+    const msg = `${req.realIP} ${req.method} ${req.url} ${res.statusCode} ${routepath} ${contentLength} ${userAgent} ${error ? error: '-'}`;
+    //console.log(`auditLogger: ${msg}`);
+    Common.accessLogger.info(msg);
+}
+
 function yescache(req, res, next) {
     res.removeHeader('Cache-Control');
     res.removeHeader('Expires');
@@ -455,6 +513,7 @@ function buildServerObject(server,listenOptions) {
         response.send(error);
         return true;
     });
+    server.on('after', auditLogger );
     server.use(Common.restify.plugins.queryParser({ mapParams: true }));
     server.use(filterObjUseHandlerWrapper);
     server.use(function(req, res, next) {
@@ -478,7 +537,8 @@ function buildServerObject(server,listenOptions) {
     });
     // server.use(debugFunc);
 
-    server.use(accesslogger);
+    // server.use(accesslogger);
+
     server.use(nocache);
     /*if (Common.allowedOrigns && Common.allowedOrigns.length > 0) {
         const corsMiddleware = require('restify-cors-middleware');
@@ -552,10 +612,10 @@ function buildServerObject(server,listenOptions) {
             guacHandler = new GuacGateway();
         }
 
-        server.post('/html/guac/tunnel', /*guacTunnel.tunnel*/ function (req,res) {
+        server.post('/html/guac/tunnel', /*guacTunnel.tunnel*/ function (req,res,next) {
             guacHandler.handleTunnelRequest(req,res);
         });
-        server.get('/html/guac/tunnel', /*guacTunnel.tunnel*/ function (req,res) {
+        server.get('/html/guac/tunnel', /*guacTunnel.tunnel*/ function (req,res,next) {
             guacHandler.handleTunnelRequest(req,res);
         });
 
@@ -571,6 +631,10 @@ function buildServerObject(server,listenOptions) {
         server.put('/api/*', internalRequests.forwardPostRequest);
         server.del('/api/*', internalRequests.forwardPostRequest);
     }
+    server.get('/client/*', internalRequests.forwardPostRequest);
+    server.post('/client/*', internalRequests.forwardPostRequest);
+    server.put('/client/*', internalRequests.forwardPostRequest);
+    server.del('/client/*', internalRequests.forwardPostRequest);
 
 
     // if Exchange is external to organization (like office 365) the notification will come from it
@@ -581,35 +645,45 @@ function buildServerObject(server,listenOptions) {
     server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
     server.get('/Notifications/pushNotification', internalRequests.forwardGetRequest);
 
-    server.opts('/.*/', optionsHandler);
+    // server.opts('/.*/', optionsHandler);
 
-    function optionsHandler(req, res) {
-        logger.info("optionsHandler..");
-        if (!isPermittedUrl(req.url)) {
-            logger.info("Access to " + req.url + " does not permitted XX");
-            res.send(401, "Access denied", {
-                "Content-Type": "application/json",
-                "Transfer-Encoding": ""
-            });
-            return;
-        }
-        var allowHeaders = ['accept', 'cache-control', 'content-type', 'x-file-name', 'x-requested-with'];
+    // function optionsHandler(req, res, next) {
+    //     logger.info("optionsHandler..");
+    //     if (!isPermittedUrl(req.url)) {
+    //         logger.info("Access to " + req.url + " does not permitted XX");
+    //         res.send(401, "Access denied", {
+    //             "Content-Type": "application/json",
+    //             "Transfer-Encoding": ""
+    //         });
+    //         return;
+    //     }
+    //     var allowHeaders = ['accept', 'cache-control', 'content-type', 'x-file-name', 'x-requested-with'];
 
-        res.header('Access-Control-Allow-Headers', allowHeaders.join(', '));
-        res.header('Access-Control-Allow-Methods', 'POST');
-        return res.send(204);
-    }
+    //     res.header('Access-Control-Allow-Headers', allowHeaders.join(', '));
+    //     res.header('Access-Control-Allow-Methods', 'POST');
+    //     return res.send(204);
+    // }
 
-    var webclientfile = new nodestatic.Server('./', {
-        cache: 10
+    // var webclientfile = new nodestatic.Server('./', {
+    //     cache: 10
+    // });
+
+    // var resourcesfile;
+    // if (!Common.withService) {
+    //     resourcesfile = new nodestatic.Server(Common.nfshomefolder, {
+    //         cache: 10
+    //     });
+    // }
+
+
+    var webclientfile = restify.plugins.serveStatic({
+        directory: Common.rootDir,
+        default: 'index.html'
     });
-
-    var resourcesfile;
-    if (!Common.withService) {
-        resourcesfile = new nodestatic.Server(Common.nfshomefolder, {
-            cache: 10
-        });
-    }
+    var resourcesfile = restify.plugins.serveStatic({
+        directory: Common.nfshomefolder,
+        default: 'index.html'
+    });
     var isPermittedUrl = function(url) {
         var match;
         if (!listenOptions.api) {
@@ -653,8 +727,8 @@ function buildServerObject(server,listenOptions) {
     };
     server.use(yescache);
 
-    server.get("/appstore/*/repo/*", internalRequests.forwardGetRequest );
-    server.head("/appstore/*/repo/*", internalRequests.forwardGetRequest );
+    server.get("/appstore/*", internalRequests.forwardGetRequest );
+    server.head("/appstore/*", internalRequests.forwardGetRequest );
 
     server.get("/html/admin/*", (req, res, next) => {
         if (!isPermittedUrl(req.url)) {
@@ -694,39 +768,45 @@ function buildServerObject(server,listenOptions) {
         var pathname = urlObj.pathname;
 
         //handle apps resoureces
-        if (!Common.withService && (pathname.indexOf("/html/player/extres/") === 0 || pathname.indexOf("//html/player/extres/") === 0)) {
-            resourcesfile.serve(req, res, function(err, result) {
-                if (err) {
-                    logger.error("Error serving " + req.url + " - " + err.message);
-                    res.send(404, "Not found", {
-                        "Content-Type": "application/json",
-                        "Transfer-Encoding": ""
-                    });
-                    internalRequests.addMissingResource(req.url);
-                    return;
-                } else {
+        if ( pathname.indexOf("/html/player/extres/") === 0 || pathname.indexOf("//html/player/extres/") === 0) {
+            logger.info(`Service url: ${req.url} via resourcesfile`);
+            resourcesfile(req, res, next);
 
-                    internalRequests.updateUserConnectionStatics(req.params.deviceName, req.params.resolution, pathname);
-                }
-            });
+
+            // resourcesfile.serve(req, res, function(err, result) {
+            //     if (err) {
+            //         logger.error("Error serving " + req.url + " - " + err.message);
+            //         res.send(404, "Not found", {
+            //             "Content-Type": "application/json",
+            //             "Transfer-Encoding": ""
+            //         });
+            //         internalRequests.addMissingResource(req.url);
+            //         return;
+            //     } else {
+
+            //         internalRequests.updateUserConnectionStatics(req.params.deviceName, req.params.resolution, pathname);
+            //     }
+            // });
             //handle web client resources
         } else {
-            webclientfile.serve(req, res, function(err, result) {
-                if (err) { // There was an error serving the file
-                    logger.error("Error serving " + req.url + " - " + err.message);
-                    res.send(404, "Not found", {
-                        "Content-Type": "application/json",
-                        "Transfer-Encoding": ""
-                    });
-                    internalRequests.addMissingResource(req.url);
-                    return;
-                } else {
-                    if (!Common.withService) {
-                        internalRequests.updateUserConnectionStatics(req.params.deviceName, req.params.resolution, pathname);
-                    }
+            logger.info(`Service url: ${req.url} via webclientfile`);
+            webclientfile(req, res, next);
+            // webclientfile.serve(req, res, function(err, result) {
+            //     if (err) { // There was an error serving the file
+            //         logger.error("Error serving " + req.url + " - " + err.message);
+            //         res.send(404, "Not found", {
+            //             "Content-Type": "application/json",
+            //             "Transfer-Encoding": ""
+            //         });
+            //         internalRequests.addMissingResource(req.url);
+            //         return;
+            //     } else {
+            //         if (!Common.withService) {
+            //             internalRequests.updateUserConnectionStatics(req.params.deviceName, req.params.resolution, pathname);
+            //         }
 
-                }
-            });
+            //     }
+            // });
         }
     });
 }

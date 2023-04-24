@@ -47,76 +47,78 @@ class guacWebSocketGateway extends GuacamoleWebSocketTunnelHandler {
      *     conditions required for connection are not met.
      */
      async doConnect(request) {
-        let sessID = request.resourceURL.query['sessID'];
-        if (!sessID) {
-            throw new GuacamoleExceptions.GuacamoleUnauthorizedException("Missing seesion id");
-        }
-        this.sessID = sessID;
+         let sessID = request.resourceURL.query['sessID'];
+         if (!sessID) {
+             throw new GuacamoleExceptions.GuacamoleUnauthorizedException("Missing seesion id");
+         }
+         this.sessID = sessID;
 
-        let sessionParams;
-        try {
-            sessionParams = await validateUpdSession(sessID,2);
-        } catch (err) {
-            throw new GuacamoleExceptions.GuacamoleUnauthorizedException(`Cannot validate session: ${err}`);
-        }
-        //logger.info(`Found valid session. sessionParams: ${JSON.stringify(sessionParams,null,2)}`);
-        let conf = new GuacamoleConfiguration();
-        //conf.connectionID = "1";
-        if (oldConnID) {
-            conf.connectionID = oldConnID;
-        }
-        let info = new GuacamoleClientInformation();
+         let sessionParams;
+         try {
+             sessionParams = await validateUpdSession(sessID, 2);
+         } catch (err) {
+             throw new GuacamoleExceptions.GuacamoleUnauthorizedException(`Cannot validate session: ${err}`);
+         }
+         //logger.info(`Found valid session. sessionParams: ${JSON.stringify(sessionParams,null,2)}`);
+         let conf = new GuacamoleConfiguration();
+         //conf.connectionID = "1";
+         if (oldConnID) {
+             conf.connectionID = oldConnID;
+         }
+         let info = new GuacamoleClientInformation();
 
-        conf.protocol = "rdp";
-       let width = request.resourceURL.query['width'];
-       if (!width) {
-           width  = "1024";
-       }
-       let height = request.resourceURL.query['height'];
-       if (!height) {
-        height  = "768";
-       }
-       info.optimalScreenWidth = width;
-       info.optimalScreenHeight = height;
+         conf.protocol = sessionParams.session.protocol || "rdp";
 
-       conf.parameters = {
-            hostname: sessionParams.session.containerIpAddress,
-            port: "3389",
-            username: sessionParams.session.containerUserName,
-            password: sessionParams.session.containerUserPass,
-            "ignore-cert": "true",
-            "security": "any",
-            //"color-depth": "8",
-            "width": width,
-            "height": height
-        };
-        if (sessionParams.session.recording && sessionParams.session.recording_path) {
-            conf.parameters["recording-path"] = sessionParams.session.recording_path;
-            conf.parameters["recording-name"] = sessionParams.session.recording_name;
-            logger.log("info",`guacWebSocketGateway recording-path: ${conf.parameters["recording-path"]}, recording-name: ${conf.parameters["recording-name"]}`);
-        }
+         logger.info(`guacWebSocketGateway connect RDP. protocol: ${conf.protocol}`);
+         let width = request.resourceURL.query['width'];
+         if (!width) {
+             width = "1024";
+         }
+         let height = request.resourceURL.query['height'];
+         if (!height) {
+             height = "768";
+         }
+         info.optimalScreenWidth = width;
+         info.optimalScreenHeight = height;
 
-        let tunnel;
+         conf.parameters = {
+             hostname: sessionParams.session.containerIpAddress,
+             port: sessionParams.session.port || "3389",
+             username: sessionParams.session.containerUserName,
+             password: sessionParams.session.containerUserPass,
+             "ignore-cert": "true",
+             "security": "any",
+             //"color-depth": "8",
+             "width": width,
+             "height": height
+         };
+         if (sessionParams.session.recording && sessionParams.session.recording_path) {
+             conf.parameters["recording-path"] = sessionParams.session.recording_path;
+             conf.parameters["recording-name"] = sessionParams.session.recording_name;
+             logger.log("info", `guacWebSocketGateway recording-path: ${conf.parameters["recording-path"]}, recording-name: ${conf.parameters["recording-name"]}`);
+         }
+
+         let tunnel;
 
 
-        let guacAddr = sessionParams.session.guacAddr;
-        if (!guacAddr) {
-            guacAddr = "nubo-guac";
-        }
-        //console.log(`guacAddr: ${guacAddr}`);
-        this.user = sessionParams.session.email;
-        logger.log("info",`guacWebSocketGateway connect RDP. sessID: ${this.sessID}, guacAddr: ${guacAddr}, hostname: ${sessionParams.session.containerIpAddress}, user: ${sessionParams.session.containerUserName}`,
-            {
-                user: this.user,
-                mtype: "important"
-            });
+         let guacAddr = sessionParams.session.guacAddr;
+         if (!guacAddr) {
+             guacAddr = "nubo-guac";
+         }
+         console.log(`guacWebSocketGateway conf.parameters: ${JSON.stringify(conf.parameters, null, 2)}`);
+         this.user = sessionParams.session.email;
+         logger.log("info", `guacWebSocketGateway connect RDP. sessID: ${this.sessID}, guacAddr: ${guacAddr}, hostname: ${sessionParams.session.containerIpAddress}, user: ${sessionParams.session.containerUserName}`,
+             {
+                 user: this.user,
+                 mtype: "important"
+             });
 
-        let gsocket = new ConfiguredGuacamoleSocket(guacAddr, 4822, conf, info);
-        //console.log(`Before init. Headers: ${JSON.stringify(request.headers,null,2)}`);
-        gsocket.on("error", (err) => {
-            console.error("ConfiguredGuacamoleSocket error",err);
-        });
-        await gsocket.init();
+         let gsocket = new ConfiguredGuacamoleSocket(guacAddr, 4822, conf, info);
+         //console.log(`Before init. Headers: ${JSON.stringify(request.headers,null,2)}`);
+         gsocket.on("error", (err) => {
+             console.error("ConfiguredGuacamoleSocket error", err);
+         });
+         await gsocket.init();
 
 
         //console.log("After init..");

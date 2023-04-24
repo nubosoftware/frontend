@@ -462,21 +462,7 @@ function nocache(req, res, next) {
     next();
 }
 
-function auditLogger(req, res, route, error) {
-    const userAgent = req.headers['user-agent'];
-    if (!userAgent) {
-        userAgent = "-";
-    }
-    const contentLength = res.getHeader('Content-Length');
-    if (isNaN(contentLength)) {
-        contentLength = "-";
-    }
 
-    const routepath = route ? route.path : "-";
-    const msg = `${req.realIP} ${req.method} ${req.url} ${res.statusCode} ${routepath} ${contentLength} ${userAgent} ${error ? error: '-'}`;
-    //console.log(`auditLogger: ${msg}`);
-    Common.accessLogger.info(msg);
-}
 
 function yescache(req, res, next) {
     res.removeHeader('Cache-Control');
@@ -513,7 +499,7 @@ function buildServerObject(server,listenOptions) {
         response.send(error);
         return true;
     });
-    server.on('after', auditLogger );
+    server.on('after', internalRequests.auditLogger );
     server.use(Common.restify.plugins.queryParser({ mapParams: true }));
     server.use(filterObjUseHandlerWrapper);
     server.use(function(req, res, next) {
@@ -789,7 +775,7 @@ function buildServerObject(server,listenOptions) {
             // });
             //handle web client resources
         } else {
-            logger.info(`Service url: ${req.url} via webclientfile`);
+            //logger.info(`Service url: ${req.url} via webclientfile`);
             webclientfile(req, res, next);
             // webclientfile.serve(req, res, function(err, result) {
             //     if (err) { // There was an error serving the file

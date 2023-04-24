@@ -140,8 +140,10 @@ function forwardRequest(req, res, next) {
 
         serverResponse.pause();
         res.writeHeader(serverResponse.statusCode, serverResponse.headers);
+        //console.log(`forwardRequest: statusCode = ${serverResponse.statusCode}, url = ${req.url}`);
         serverResponse.pipe(res);
         serverResponse.resume();
+        auditLogger(req,res,undefined,undefined);
     });
     req.pipe(connector);
     req.resume();
@@ -170,6 +172,7 @@ function forwardGetRequest(req, res, next) {
             });
             return;
         }
+        //console.log(`forwardGetRequest: ${resData}`);
 
         var resObjData;
         try {
@@ -187,6 +190,26 @@ function forwardGetRequest(req, res, next) {
         return;
     });
 
+}
+
+/**
+ * Write access log
+ * @param {*} req
+ * @param {*} res
+ * @param {*} route
+ * @param {*} error
+ */
+function auditLogger(req, res, route, error) {
+    try {
+        const userAgent = req.headers['user-agent'] || "- ";
+        const contentLength = res.getHeader('Content-Length') || "-";
+        const routepath = route ? route.path : "-";
+        const msg = `${req.realIP} ${req.method} ${req.url} ${res.statusCode} ${contentLength} ${userAgent} ${error ? error: '-'}`;
+        //console.log(`auditLogger: ${msg}`);
+        Common.accessLogger.info(msg);
+    } catch (err) {
+        console.error(`auditLogger error: ${err}.`,err);
+    }
 }
 
 function checkServerAndForwardGetRequest(req, res, next) {
@@ -665,7 +688,8 @@ module.exports = {
     unregisterFrontEnd: unregisterFrontEnd,
     forwardPostRequest: forwardRequest,
     validateUpdSession,
-    forwardUnlockPasscodeLink
+    forwardUnlockPasscodeLink,
+    auditLogger
 
 
 }

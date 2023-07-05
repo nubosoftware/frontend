@@ -69,6 +69,11 @@ var Common = {
             "client": false
         }
     ],
+    customWebErrors: {
+        "ResourceNotFoundError": "Not Found",
+        "AccessDenied": "Forbidden",
+        "BadRequest": "Bad Request"
+    },
     activationTimeoutPeriod : 48,
     nuboMask : '24',
     logLevel: "info",

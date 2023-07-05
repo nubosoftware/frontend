@@ -343,7 +343,15 @@ var mainFunction = function(err, firstTimeLoad) {
             var filterOpts = {
                 loge: logger.error,
                 mode: filterModule.mode.URL,
-                permittedMode: permittedMode
+                permittedMode: permittedMode,
+                badRequestHandler: function(req, res, next,checkRes) {
+                    logger.info(`Parameters validation failed for ${req.url}, reason: ${JSON.stringify(checkRes)}`);
+                    const errMessage = Common.customWebErrors["BadRequest"] || "Bad request";
+                    res.send(400, errMessage, {
+                        "Content-Type": "text/plain",
+                        "Transfer-Encoding": ""
+                    });
+                }
             };
             const validate = require('validate.js');
             filterObj = new filterModule.filter(parametersMap.rules, filterOpts,validate);
@@ -716,13 +724,19 @@ function buildServerObject(server,listenOptions) {
     server.get("/appstore/*", internalRequests.forwardGetRequest );
     server.head("/appstore/*", internalRequests.forwardGetRequest );
 
+
+    var sendNotPermitted = function(req, res, next) {
+        logger.info("Access to " + req.url + " does not permitted");
+        const errMessage = Common.customWebErrors["AccessDenied"] || "Access denied";
+        res.send(401, errMessage, {
+            "Content-Type": "text/plain",
+            "Transfer-Encoding": ""
+        });
+    }
+
     server.get("/html/admin/*", (req, res, next) => {
         if (!isPermittedUrl(req.url)) {
-            logger.info("Access to " + req.url + " does not permitted");
-            res.send(401, "Access denied", {
-                "Content-Type": "application/json",
-                "Transfer-Encoding": ""
-            });
+            sendNotPermitted(req, res, next);
             return;
         }
         return internalRequests.forwardGetRequest(req,res,next);
@@ -730,11 +744,7 @@ function buildServerObject(server,listenOptions) {
 
     server.get("/html/desktop/*", (req, res, next) => {
         if (!isPermittedUrl(req.url)) {
-            logger.info("Access to " + req.url + " does not permitted");
-            res.send(401, "Access denied", {
-                "Content-Type": "application/json",
-                "Transfer-Encoding": ""
-            });
+            sendNotPermitted(req, res, next);
             return;
         }
         return internalRequests.forwardGetRequest(req,res,next);
@@ -742,11 +752,7 @@ function buildServerObject(server,listenOptions) {
 
     server.get("/*", function(req, res, next) {
         if (!isPermittedUrl(req.url)) {
-            logger.info("Access to " + req.url + " does not permitted");
-            res.send(401, "Access denied", {
-                "Content-Type": "application/json",
-                "Transfer-Encoding": ""
-            });
+            sendNotPermitted(req, res, next);
             return;
         }
 
@@ -794,6 +800,28 @@ function buildServerObject(server,listenOptions) {
             //     }
             // });
         }
+    });
+
+
+    server.on('restifyError', function (req, res, err, callback) {
+        logger.info(`restifyError: ${req.url}, err: ${err}`);
+
+        res.header('Content-Type', 'text/plain');
+
+        let errName = "InternalServerError";
+        let errMessage = "Internal Server Error";
+        if (Common.customWebErrors[err.name]) {
+            errName = err.name;
+            errMessage = Common.customWebErrors[err.name];
+        }
+
+        err.toJSON = function customToJSON() {
+            return errMessage;
+        };
+        err.toString = function customToString() {
+            return errMessage;
+        };
+        return callback();
     });
 }
 

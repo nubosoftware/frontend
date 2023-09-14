@@ -56,6 +56,16 @@ function sendNotificationFromRemoteServer(req, res, next) {
         }
         return value;
     }
+    function readBoolParam(paramName, defValue) {
+        var value = req.params[paramName];
+        if (value === 1 || value === "1" || value === "true" || value === "True") {
+            return 1;
+        } else if (value === 0 || value === "0" || value === "false" || value === "False") {
+            return 0;
+        } else {
+            return defValue;
+        }
+    }
     if (!Common.RemoteServers) {
         response.msg = "Missing RemoteServers";
         response.status = 0;
@@ -77,9 +87,9 @@ function sendNotificationFromRemoteServer(req, res, next) {
     var notifyTime = readParam("notifyTime");
     var notifyLocation = readParam("notifyLocation");
     var type = readParam("type");
-    var enableSound = req.params["enableSound"]; //readParam("enableSound");
-    var enableVibrate = req.params["enableVibrate"]; //readParam("enableVibrate");
-    var showFullNotif = req.params["showFullNotif"]; //readParam("showFullNotif");
+    var enableSound =  readBoolParam("enableSound",1); //req.params["enableSound"]; //readParam("enableSound");
+    var enableVibrate = readBoolParam("enableVibrate",1); //readParam("enableVibrate");
+    var showFullNotif = readBoolParam("showFullNotif",1); //readParam("showFullNotif");
     var packageID = req.params["packageID"];
 
     if (response.status !== 1) {

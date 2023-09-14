@@ -290,21 +290,12 @@ var filter = {
             "userName": constraints.ExcludeSpecialCharactersOptional,
             "enableVibrate": {
                 "presence": false,
-                "inclusion": {
-                    "within": ["0", "1"]
-                }
             },
             "enableSound": {
                 "presence": false,
-                "inclusion": {
-                    "within": ["0", "1"]
-                }
             },
             "showFullNotif": {
                 "presence": false,
-                "inclusion": {
-                    "within": ["0", "1"]
-                }
             },
             "packageID": {
                 "presence": false,

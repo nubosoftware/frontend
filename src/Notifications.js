@@ -92,10 +92,12 @@ function sendNotificationFromRemoteServer(req, res, next) {
     var showFullNotif = readBoolParam("showFullNotif",1); //readParam("showFullNotif");
     var packageID = req.params["packageID"];
 
+
     if (response.status !== 1) {
         res.send(response);
         return;
     }
+    logger.info(`sendNotificationFromRemoteServer. serverID: ${serverID}, packageID: ${packageID}, type: ${type}, notifyTitle: ${notifyTitle}`);
 
     if (notifyLocation != null && notifyLocation.indexOf("#!#offline") != -1) {
         notifyLocation = notifyLocation.replace("#!#offline", '');
@@ -283,7 +285,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         message.addData('enableVibrate', enableVibrate);
         message.addData('nuboPackageID', packageID);
 
-        logger.info("FCM message: "+JSON.stringify(message,null,2));
+        logger.info("FCM message: "+JSON.stringify(message,null,2)+", pushRegID: "+pushRegID);
         sender.send(message, [pushRegID], nOfRetries, function(err, result) {
             if (err) {
                 logger.error("Cannot send message to GCM err: " + err + "; res: " + result);
@@ -291,7 +293,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
                 return;
             }
 
-            logger.info("Notifications.js::sender.send result: "+JSON.stringify(result,null,2));
+            logger.info("Notifications.js::sender.send result for pushRegID "+pushRegID+": "+JSON.stringify(result,null,2));
             if (result.canonical_ids === 1) {
                 logger.info("Notifications.js::sender.send activation updated with new regid: ", result.results[0].registration_id);
                 callback(null, result.results[0].registration_id);
@@ -376,9 +378,9 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             note.contentAvailable = true;
         }
 	    note.category = "NuboNotification";
-        logger.info("APN note: "+JSON.stringify(note,null,2));
+        logger.info("APN note: "+JSON.stringify(note,null,2)+", pushRegID: "+pushRegID);
         apnProvider.send(note, token).then( (result) => {
-            logger.info("APN result: "+JSON.stringify(result,null,2));
+            logger.info("APN result for pushRegID "+pushRegID+": "+JSON.stringify(result,null,2));
             apnProvider.shutdown();
             callback(null);
         })

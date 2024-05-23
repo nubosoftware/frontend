@@ -10,6 +10,7 @@
     "@nubosoftware/winston-syslog": "^2.5.0",
     "async": "^2.6.4",
     "axios": "^0.26.0",
+    "firebase-admin": "^12.1.0",
     "html-entities": "1.2.1",
     "node-gcm": "^1.0.5",
     "querystring": "0.2.0",

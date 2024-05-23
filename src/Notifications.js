@@ -1,7 +1,8 @@
 "use strict";
 
-var Common = require('./common.js');
-var logger = Common.logger;
+const Common = require('./common.js');
+const logger = Common.logger;
+
 
 var async = require('async');
 // notification/GCM variables
@@ -15,7 +16,10 @@ var ThreadedLogger = require('./ThreadedLogger.js');
 var Entities = require('html-entities').XmlEntities;
 var dgram = require('dgram');
 const NCMSender = require('./ncmSender');
+const FirebaseCloudMessageAPI = require('./FirebaseCloudMessageAPI');
+
 var ncmSender = null;
+var firebaseCloudMessageAPI = null;
 
 var Notifications = {
     sendNotificationFromRemoteServer: sendNotificationFromRemoteServer
@@ -223,7 +227,8 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
     }
 
     if (!pushRegID || pushRegID == '' || pushRegID == '(null)') {
-        logger.info('Aborting push notification to ' + deviceType + ', push reg id is null');
+        // logger.info('Aborting push notification to ' + deviceType + ', push reg id is null');
+        callback(null);
         return;
     }
 
@@ -239,6 +244,11 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
     var entities = new Entities();
     notifyTitle = entities.decode(entities.decode(notifyTitle));
 
+    if (pushRegID === 'null' || pushRegID === 'NA') {
+        // logger.info('Aborting push notification to ' + deviceType + ', push reg id is null');
+        callback(null);
+        return;
+    }
     logger.info("Sending notification to " + pushRegID);
     if (deviceType === "Android") {
         var sender;
@@ -248,6 +258,47 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
                 ncmSender = new NCMSender(Common.NCMSenderID,Common.NCMServerURL);
             }
             sender = ncmSender;
+        } else if (Common.FCMServiceAccountFile) {
+            if (!firebaseCloudMessageAPI) {
+                firebaseCloudMessageAPI = new FirebaseCloudMessageAPI();
+            }
+            if (pushRegID.startsWith("base64")) {
+                pushRegID = new Buffer(pushRegID.substring(6), 'base64').toString();
+                // logger.info("Found base64 encoded FCM token. Translte to: " + pushRegID);
+            }
+
+            firebaseCloudMessageAPI.sendMessage({
+                android: {
+                    priority: 'high',
+                    data: {
+                      contentAvailable: 'true',
+                    }
+                },
+                // notification: {
+                //     title: notifyTitle,
+                //     body: notifyLocation
+                // },
+                data: {
+                    type: type,
+                    notifyTime: notifyTime.toString(),
+                    title: notifyTitle,
+                    notifyLocation: notifyLocation,
+                    enableSound: enableSound.toString(),
+                    enableVibrate: enableVibrate.toString(),
+                    nuboPackageID: packageID
+                },
+                token: pushRegID
+            })
+            .then(response => {
+                logger.info("Notifications.js::sender.send result for pushRegID "+pushRegID+": "+JSON.stringify(response,null,2));
+                callback(null);
+            })
+            .catch(error => {
+                logger.info(`Error sending message to FCM pushRegID ${pushRegID}: ${error}`);
+                callback(error);
+            });
+
+            return;
 
         } else if (pushRegID && pushRegID.length > 150) {
             // use FCM key
@@ -304,6 +355,11 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         });
         //@TODO - fix the iPhone notification params
     } else if (deviceType === "iPhone" || deviceType === "iPad") {
+        if (true) {
+            // temporary disable APN
+            callback(null);
+            return;
+        }
         var apnProvider;
 
         var regidArr = pushRegID.split(":");

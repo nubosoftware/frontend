@@ -734,13 +734,15 @@ function buildServerObject(server,listenOptions) {
         });
     }
 
-    server.get("/html/admin/*", (req, res, next) => {
-        if (!isPermittedUrl(req.url)) {
-            sendNotPermitted(req, res, next);
-            return;
-        }
-        return internalRequests.forwardGetRequest(req,res,next);
-    } );
+    if (!Common.serveAdminInFrontend) {
+        server.get("/html/admin/*", (req, res, next) => {
+            if (!isPermittedUrl(req.url)) {
+                sendNotPermitted(req, res, next);
+                return;
+            }
+            return internalRequests.forwardGetRequest(req,res,next);
+        } );
+    }
 
     server.get("/html/desktop/*", (req, res, next) => {
         if (!isPermittedUrl(req.url)) {

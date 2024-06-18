@@ -355,11 +355,6 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         });
         //@TODO - fix the iPhone notification params
     } else if (deviceType === "iPhone" || deviceType === "iPad") {
-        if (true) {
-            // temporary disable APN
-            callback(null);
-            return;
-        }
         var apnProvider;
 
         var regidArr = pushRegID.split(":");

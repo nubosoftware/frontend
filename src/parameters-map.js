@@ -92,7 +92,8 @@ var filter = {
             "playerVersion": constraints.playerVersionConstrRequested,
             "timeZone": constraints.timeZoneConstrOptional,
             "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional,
-            "newProcess": constraints.boolConstrOptional
+            "newProcess": constraints.boolConstrOptional,
+            "sessionTimeout": constraints.IndexConstrOptional,
         }
     }, {
         "path": "/startsession",
@@ -299,7 +300,7 @@ var filter = {
             },
             "packageID": {
                 "presence": false,
-                "format": "^[.a-zA-Z0-9_]+[a-zA-Z0-9_]([,][a-zA-Z0-9_]+)?$|^$",
+                "format": "^[.a-zA-Z0-9_]+[a-zA-Z0-9_]([,][a-zA-Z0-9_:]+)?$|^$",
                 "length": {
                     "minimum": 0,
                     "maximum": 255
@@ -354,7 +355,8 @@ var filter = {
             "notifyTime": constraints.ExcludeSpecialCharactersOptional,
             "notifyLocation": constraints.ExcludeSpecialCharactersOptional,
             "appName": constraints.ExcludeSpecialCharactersRequested,
-            "authKey": constraints.ExcludeSpecialCharactersRequested
+            "authKey": constraints.ExcludeSpecialCharactersRequested,
+            "contentId": constraints.ExcludeSpecialCharactersOptional,
         }
     }, {
         "path": "/EWSListener",

@@ -419,7 +419,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             if (enableSound == 1) {
                 note.sound = "default";
             }
-	    let collapseId = (packageID === undefined || packageID == "" ? type : packageID)
+	        let collapseId = (packageID === undefined || packageID == "" ? type : packageID)
             note.collapseId = collapseId;
             note.contentAvailable = true;
         } else {
@@ -427,6 +427,8 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
                 note.sound = "default";
             }
             note.contentAvailable = true;
+            note.priority = 10;
+            note.mutableContent = true;
         }
 	    note.category = "NuboNotification";
         logger.info("APN note: "+JSON.stringify(note,null,2)+", pushRegID: "+pushRegID);

@@ -66,7 +66,6 @@ ADD html ${TARGET_DIR}/html
 # RUN ./buildWebClients.sh
 # RUN rm -rf nubo-admin nubo-desktop-client buildWebClients.sh
 
-
 # build web player
 WORKDIR ${TARGET_DIR}/html/player
 RUN java -jar compiler.jar -O SIMPLE --language_in ECMASCRIPT6 --js_output_file=out.js login.js nubocache.js uxip.js uxipReader.js uxipWriter.js wm.js zlibReader.js NuboOutputStreamMgr.js nubocache.js opengl.js ops.js
@@ -74,6 +73,7 @@ RUN rm -f login.js nubocache.js uxip.js uxipReader.js uxipWriter.js wm.js zlibRe
 
 WORKDIR ${TARGET_DIR}
 RUN echo "VERSION: ${BUILD_VER}" > version.txt
+RUN echo "BUILD_TIME: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> version.txt
 
 # prepare the module
 RUN npm install

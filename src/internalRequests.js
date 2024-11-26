@@ -588,32 +588,25 @@ async function updateWebCommon(params) {
         logger.info(`updateWebCommon error: ${err}`,err);
     }
 }
-function registerFrontEnd(hostname, callback) {
+function registerFrontEnd(hostname, version, buildTime, callback) {
+    const queryParams = `hostname=${encodeURIComponent(hostname)}&version=${encodeURIComponent(version)}&buildTime=${encodeURIComponent(buildTime)}`;
     var options = getOptions();
-    options.path = '/frontEndService/registerFrontEnd?hostname=' + hostname;
-    http.doGetRequest(options, function(err, resData) {
+    options.path = `/frontEndService/registerFrontEnd?${queryParams}`;
+    http.doGetRequest(options, (err, res) => {
         if (err) {
+            logger.error(`registerFrontEnd error: ${err}`);
             return callback(err);
         }
-        let resObjData = {};
 
         try {
-            resObjData = JSON.parse(resData);
-            //console.log(resObjData)
-        } catch (e) {
-            console.log("ERROR!!");
-            callback(e);
-            return;
-        }
-        if (resObjData.status == Common.STATUS_OK) {
-            if (resObjData.params) {
-                updateWebCommon(resObjData.params);
+            const response = JSON.parse(res);
+            if (!response.status) {
+                return callback("Bad response from Management");
             }
-            callback(null, resObjData.index);
-        } else if (resObjData.status == Common.STATUS_ERROR) {
-            callback(resObjData.message);
-        } else {
-            callback("unknown status code");
+            callback(null, response.index);
+        } catch (error) {
+            logger.error(`registerFrontEnd parse error: ${error}`);
+            callback("Failed to parse response");
         }
     });
 }

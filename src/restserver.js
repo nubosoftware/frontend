@@ -575,6 +575,7 @@ function buildServerObject(server,listenOptions) {
         server.get('/resetPasscode', internalRequests.forwardGetRequest);
         server.get('/activate', internalRequests.checkServerAndForwardGetRequest);
         server.get('/validate', internalRequests.checkServerAndForwardGetRequest);
+        server.post('/validate', internalRequests.forwardPostRequest);
         server.get('/notificationPolling', internalRequests.forwardGetRequest);
         server.get('/resendUnlockPasswordLink', internalRequests.forwardGetRequest);
         // server.get('/activationLink', internalRequests.forwardGetRequest);

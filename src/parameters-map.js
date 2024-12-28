@@ -94,7 +94,10 @@ var filter = {
             "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional,
             "newProcess": constraints.boolConstrOptional,
             "sessionTimeout": constraints.IndexConstrOptional,
-        }
+        },
+        "bodyConstraints": {
+            "customParams": {}
+        },
     }, {
         "path": "/startsession",
         "constraints": {

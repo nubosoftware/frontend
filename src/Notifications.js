@@ -410,7 +410,8 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             "notifyTitle": notifyTitle,
             "notifyLocation": notifyLocation,
             "enableSound": enableSound,
-            "enableVibrate": enableVibrate
+            "enableVibrate": enableVibrate,
+            "mutable-content": 1
         };
 
 
@@ -419,16 +420,76 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             if (enableSound == 1) {
                 note.sound = "default";
             }
-	        let collapseId = (packageID === undefined || packageID == "" ? type : packageID)
+            let collapseId = (packageID === undefined || packageID == "" ? type : packageID)
             note.collapseId = collapseId;
             note.contentAvailable = true;
+            note.priority = 10;
+            note.mutableContent = true;
+        } else if (type == 6) {
+            // For add notification (type 6), create a structured notification
+            note.alert = {
+                title: notifyTitle,
+                body: notifyLocation
+            };
+            if (enableSound == 1) {
+                note.sound = "default";
+            }
+            let hash;
+            let packageIDPart;
+            if (packageID) {
+                const parts = packageID.split(',');
+                if (parts.length > 1) {
+                    packageIDPart = parts[0];
+                    hash = parts[1];
+                }
+            }
+            if (!packageIDPart) {
+                packageIDPart = packageID;
+            }
+            if (!hash) {
+                hash = "NA";
+            }
+            
+            note.payload = {
+                ...note.payload,  // Keep existing payload data
+                hash: hash,
+                packageID: packageIDPart,
+                AppId: "8", // change type to 8 so it will not add additional notification
+            };
+            logger.info("APN (type 6) note payload: "+JSON.stringify(note.payload,null,2));
+            note.threadId = hash;  // This corresponds to the identifier in iOS
+            note.category = "NuboNotification";
+            note.contentAvailable = true;
+            note.priority = 10;
+            note.mutableContent = true;
         } else {
+            // Handle other silent notification types (7,5)
             if (enableSound == 1) {
                 note.sound = "default";
             }
             note.contentAvailable = true;
             note.priority = 10;
             note.mutableContent = true;
+            note.badge = 0;
+            if (type == 7 && notifyLocation === "sessionClosedByUser") {
+                // we will send two notification, the first with alert and the standard notification with contentAvailable
+                const alertNote = new apn.Notification();
+                const sessionClosedByUser = Common.sessionClosedByUser;
+                alertNote.alert = {
+                    title: sessionClosedByUser ? sessionClosedByUser.title : "Session closed by user",
+                    body: sessionClosedByUser ? sessionClosedByUser.body : "The session is closed, since you have opened it in another device."
+                };
+                alertNote.topic = bundleID;
+                alertNote.priority = 10;
+                alertNote.contentAvailable = false;
+                alertNote.category = "NuboNotification";
+                apnProvider.send(alertNote, token).then( (result) => {
+                    logger.info("APN (alertNote)result for pushRegID "+pushRegID+": "+JSON.stringify(result,null,2));
+                });
+
+                // change the original notifyLocation so it will not diaply alert twice
+                note.payload.notifyLocation = "sessionClosedByUserSilent";
+            }
         }
 	    note.category = "NuboNotification";
         logger.info("APN note: "+JSON.stringify(note,null,2)+", pushRegID: "+pushRegID);

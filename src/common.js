@@ -109,6 +109,7 @@ var Common = {
     },
     encryptConf: false,
     exitJobs: [],
+    plugins: {},
     authValidatorPermittedMode: false,
     allowOnlyImportedADusers : false,
     disableIPBlockMechanism : false,

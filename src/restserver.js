@@ -27,23 +27,8 @@ var guacHandler;
 const guacTunnel = require('./guacTunnel');
 const GuacGateway = require('./guacGateway');
 const guacWebSocketGateway = require ('./guacWebSocketGateway');
-//===============================================================
+const plugins = require('./plugins');
 
-// var accesslogger = accesslog({
-//     path: './log/access_log.log'
-// });
-
-// var accesslogger = restify.plugins.requestLogger({
-//     log: logger
-// });
-
-// var auditLogger = restify.plugins.auditLogger({
-//     log: logger,
-//     event: 'after',
-//     //server: SERVER,
-//     //logMetrics : logBuffer,
-//     printLog : true
-//   })
 
 
 
@@ -509,6 +494,7 @@ function buildServerObject(server,listenOptions) {
     });
     server.on('after', internalRequests.auditLogger );
     server.use(Common.restify.plugins.queryParser({ mapParams: true }));
+    
     server.use(filterObjUseHandlerWrapper);
     server.use(function(req, res, next) {
         //logger.info(`url: ${req.url}, host: ${req.headers.host}`);
@@ -600,6 +586,15 @@ function buildServerObject(server,listenOptions) {
         server.post('/receiveSMS', internalRequests.forwardPostRequest);
         server.get('/getAvailableNumbers', internalRequests.forwardGetRequest);
         server.get('/subscribeToNumber', internalRequests.forwardGetRequest);
+
+         // src/restserver.js (modified)
+        const bodyParser = restify.plugins.bodyParser(); // Get instance of the plugin
+
+        server.post('/plugins/:pluginId', bodyParser, plugins.callPlugin);
+        server.get('/plugins/:pluginId', bodyParser, plugins.callPlugin); // Usually not needed for GET
+        server.put('/plugins/:pluginId', bodyParser, plugins.callPlugin);
+        server.del('/plugins/:pluginId', bodyParser, plugins.callPlugin); // Usually not needed for DEL without body
+
 
         //guacamole proxy
 

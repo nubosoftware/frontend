@@ -552,6 +552,17 @@ var filter = {
     },
     {
         "regex": true,
+        "path": "/plugins/.*",
+        "constraints": {
+        },
+        "headerConstraints": {
+        },
+        "bodyConstraints": {
+
+        }
+    },
+    {
+        "regex": true,
         "path": "/html/.*",
         "constraints": {
         },

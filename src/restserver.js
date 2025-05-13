@@ -634,6 +634,7 @@ function buildServerObject(server,listenOptions) {
     server.get('/SmsNotification/sendSmsNotificationFromRemoteServer', SmsNotification.sendSmsNotificationFromRemoteServer);
     server.get('/Notifications/sendNotificationFromRemoteServer', Notifications.sendNotificationFromRemoteServer);
     server.get('/Notifications/pushNotification', internalRequests.forwardGetRequest);
+    server.post('/Notifications/pushNotification', internalRequests.forwardPostRequest);
 
     // server.opts('/.*/', optionsHandler);
 

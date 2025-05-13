@@ -353,12 +353,12 @@ var filter = {
         "path": "/Notifications/pushNotification",
         "constraints": {
             "sessionid": constraints.sessionIdConstrOptional,
-            "email": constraints.emailConstrRequested,
-            "titleText": constraints.ExcludeSpecialCharactersRequested,
+            "email": constraints.emailConstrOptional,
+            "titleText": constraints.ExcludeSpecialCharactersOptional,
             "notifyTime": constraints.ExcludeSpecialCharactersOptional,
             "notifyLocation": constraints.ExcludeSpecialCharactersOptional,
-            "appName": constraints.ExcludeSpecialCharactersRequested,
-            "authKey": constraints.ExcludeSpecialCharactersRequested,
+            "appName": constraints.ExcludeSpecialCharactersOptional,
+            "authKey": constraints.ExcludeSpecialCharactersOptional,
             "contentId": constraints.ExcludeSpecialCharactersOptional,
         }
     }, {

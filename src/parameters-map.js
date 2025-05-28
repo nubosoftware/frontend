@@ -354,9 +354,10 @@ var filter = {
         "constraints": {
             "sessionid": constraints.sessionIdConstrOptional,
             "email": constraints.emailConstrOptional,
-            "titleText": constraints.ExcludeSpecialCharactersOptional,
-            "notifyTime": constraints.ExcludeSpecialCharactersOptional,
-            "notifyLocation": constraints.ExcludeSpecialCharactersOptional,
+            "titleText": constraints.openTextConstrOptional,
+            "notifyTime": constraints.openTextConstrOptional,
+            "notifyLocation": constraints.openTextConstrOptional,
+            "notifyBody": constraints.openTextConstrOptional,
             "appName": constraints.ExcludeSpecialCharactersOptional,
             "authKey": constraints.ExcludeSpecialCharactersOptional,
             "contentId": constraints.ExcludeSpecialCharactersOptional,

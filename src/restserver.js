@@ -11,6 +11,7 @@ var cluster = require("cluster");
 var websocket = require('websocket');
 
 var Common = require('./common.js');
+var kek = require('./kek.js');
 var logger = Common.logger;
 
 //================= requires =================================
@@ -271,14 +272,28 @@ var mainFunction = function(err, firstTimeLoad) {
                 if (typeof item === 'string' && (item.startsWith(".") || item.startsWith("/"))) {
                     // item is a file name
                     logger.info(`readCerts. Reading ${key} from file ${item}`);
-                    fs.readFile(item, function(err, data) {
-                        if (err) {
-                            logger.error("Cannot read " + item + " file, err: " + err);
-                        } else {
-                            sslCerts[key] = data;
-                        }
-                        callback();
-                    });
+                    
+                    // Use KEK framework for private key files, regular fs for others
+                    if (key === 'key') {
+                        // This is a private key file - use KEK framework
+                        kek.readPrivateKey(item).then(function(keyContent) {
+                            sslCerts[key] = Buffer.from(keyContent, 'utf8');
+                            callback();
+                        }).catch(function(err) {
+                            logger.error("Cannot read " + item + " private key file, err: " + err);
+                            callback();
+                        });
+                    } else {
+                        // This is not a private key (certificate, ca, etc.) - use regular fs
+                        fs.readFile(item, function(err, data) {
+                            if (err) {
+                                logger.error("Cannot read " + item + " file, err: " + err);
+                            } else {
+                                sslCerts[key] = data;
+                            }
+                            callback();
+                        });
+                    }
                 } else {
                     // item is not a file name
                     logger.info(`readCerts. ${key}: ${JSON.stringify(item,null,2)}.`);

@@ -2,7 +2,7 @@
 
 const Common = require('./common.js');
 const logger = Common.logger;
-
+const crypto = require('crypto');
 
 var async = require('async');
 // notification/GCM variables
@@ -226,6 +226,14 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         notifyTime = '';
     }
 
+    // Extract base packageID for grouping (without contentId or API hash)
+    // This ensures notifications are grouped correctly on both iOS and Android
+    let groupID = packageID;
+    if (packageID) {
+        const parts = packageID.split(',');
+        groupID = parts[0];  // Get base packageID without contentId or API hash
+    }
+
     if (!pushRegID || pushRegID == '' || pushRegID == '(null)') {
         // logger.info('Aborting push notification to ' + deviceType + ', push reg id is null');
         callback(null);
@@ -285,7 +293,8 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
                     notifyLocation: notifyLocation,
                     enableSound: enableSound.toString(),
                     enableVibrate: enableVibrate.toString(),
-                    nuboPackageID: packageID
+                    nuboPackageID: packageID,
+                    nuboGroupID: groupID  // Consistent group identifier for notification grouping
                 },
                 token: pushRegID
             })
@@ -335,6 +344,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         message.addData('enableSound', enableSound);
         message.addData('enableVibrate', enableVibrate);
         message.addData('nuboPackageID', packageID);
+        message.addData('nuboGroupID', groupID);  // Consistent group identifier for notification grouping
 
         logger.info("FCM message: "+JSON.stringify(message,null,2)+", pushRegID: "+pushRegID);
         sender.send(message, [pushRegID], nOfRetries, function(err, result) {
@@ -404,6 +414,8 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
 
         //note.topic = "com.nubo.NuboClientIOS";
         note.topic = bundleID;
+        // Generate a unique notification ID for each notification to prevent replacement
+        const notificationId = crypto.randomBytes(16).toString("hex");
         note.payload = {
             "AppId": type,
             "packageID": (packageID === undefined ? "" : packageID),
@@ -411,7 +423,8 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             "notifyLocation": notifyLocation,
             "enableSound": enableSound,
             "enableVibrate": enableVibrate,
-            "mutable-content": 1
+            "mutable-content": 1,
+            "notificationId": notificationId  // Unique ID for each notification to prevent replacement
         };
 
 
@@ -420,11 +433,14 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             if (enableSound == 1) {
                 note.sound = "default";
             }
-            let collapseId = (packageID === undefined || packageID == "" ? type : packageID)
-            note.collapseId = collapseId;
+            // Removed collapseId - it was causing notifications to replace each other instead of stacking
+            // collapseId makes iOS replace existing notifications with the same ID
+            // Set threadId for notification grouping (using groupID which is base packageID without contentId/hash)
+            note.threadId = (groupID === undefined || groupID == "" ? String(type) : groupID);
             note.contentAvailable = true;
             note.priority = 10;
             note.mutableContent = true;
+            logger.info("(type != 6 && type != 7 && type != 5)");
         } else if (type == 6) {
             // For add notification (type 6), create a structured notification
             note.alert = {
@@ -457,7 +473,9 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
                 AppId: "8", // change type to 8 so it will not add additional notification
             };
             logger.info("APN (type 6) note payload: "+JSON.stringify(note.payload,null,2));
-            note.threadId = hash;  // This corresponds to the identifier in iOS
+            // Use groupID (base packageID) for threadId to group notifications by app
+            // Each notification has unique notificationId in payload to prevent replacement
+            note.threadId = (groupID === undefined || groupID == "" ? String(type) : groupID);
             note.category = "NuboNotification";
             note.contentAvailable = true;
             note.priority = 10;
@@ -467,6 +485,8 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
             if (enableSound == 1) {
                 note.sound = "default";
             }
+            // Set threadId for notification grouping (using groupID which is base packageID without contentId/hash)
+            note.threadId = (groupID === undefined || groupID == "" ? String(type) : groupID);
             note.contentAvailable = true;
             note.priority = 10;
             note.mutableContent = true;

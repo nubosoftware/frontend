@@ -52,9 +52,7 @@ module.exports = {
     nodeExternals(),
   ], // Need this to avoid error when working with Express
   optimization: {
-    splitChunks: {
-      chunks: 'all',
-    },
+    splitChunks: false,
   },
   module: {
 
@@ -74,7 +72,11 @@ module.exports = {
         use: {
             loader: WebpackObfuscator.loader,
             options: {
-                rotateStringArray: true
+                rotateStringArray: true,
+                reservedStrings: [
+                    '^\\.\\.\\/.*',  // Protect ../ relative paths
+                    '^\\.\\/',       // Protect ./ local paths
+                ]
             }
         }
       },

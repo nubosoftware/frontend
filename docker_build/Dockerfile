@@ -34,7 +34,7 @@ RUN apt install -y \
     default-jre \
     sudo
 
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
 RUN apt install -y nodejs
 
 # # install nodejs 16.13.0

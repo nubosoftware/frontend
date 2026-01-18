@@ -82,36 +82,34 @@ Common.loadCallback = function(err, firstTimeLoad) {
 }
 
 function register(callback) {
-
     var registered = false;
     var error;
     var hostname = os.hostname();
 
-    async.whilst(
-        function() {
-            return (!registered && !serverAtExitProcess);
+    // Use async.retry instead of async.whilst for better compatibility
+    async.retry(
+        {
+            times: Infinity,
+            interval: 5000,
+            errorFilter: function(err) {
+                // Keep retrying as long as server is not exiting
+                return !serverAtExitProcess;
+            }
         },
-        function(callback) {
+        function(retryCallback) {
             mgmtPublicRegistration.register(function(err) {
                 if (err) {
                     logger.error("multithreadserver-public::register: " + err);
-                    error = err;
-                    setTimeout(function() {
-                        callback(null);
-                    }, 5000);
-                } else {
-                    error = null;
-                    registered = true;
-                    return callback(null);
+                    return retryCallback(err);
                 }
+                return retryCallback(null);
             });
         },
         function(err) {
-            if (error) {
+            if (err && !serverAtExitProcess) {
                 logger.error("multithreadserver-public::register: unable to register Front End");
                 return callback("unable to register Front End");
             }
-
             return callback(null);
         }
     );

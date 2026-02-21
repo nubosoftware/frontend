@@ -13,7 +13,7 @@ var apn = require('@hyperlink/node-apn');
 var request = require('./request.js');
 var querystring = require('querystring');
 var ThreadedLogger = require('./ThreadedLogger.js');
-var Entities = require('html-entities').XmlEntities;
+var htmlEntities = require('html-entities');
 var dgram = require('dgram');
 const NCMSender = require('./ncmSender');
 const FirebaseCloudMessageAPI = require('./FirebaseCloudMessageAPI');
@@ -249,8 +249,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         }
     }
 
-    var entities = new Entities();
-    notifyTitle = entities.decode(entities.decode(notifyTitle));
+    notifyTitle = htmlEntities.decode(htmlEntities.decode(notifyTitle));
 
     if (pushRegID === 'null' || pushRegID === 'NA') {
         // logger.info('Aborting push notification to ' + deviceType + ', push reg id is null');

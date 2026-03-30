@@ -303,10 +303,10 @@ var filter = {
             },
             "packageID": {
                 "presence": false,
-                "format": "^[.a-zA-Z0-9_]+[a-zA-Z0-9_]([,][a-zA-Z0-9_:]+)?$|^$",
+                "format": "^[.a-zA-Z0-9_]+[a-zA-Z0-9_]([,].+)?$|^$",
                 "length": {
                     "minimum": 0,
-                    "maximum": 255
+                    "maximum": 1280
                 }
             }
             //"packageID": constraints.packageNameConstrOptional
@@ -360,7 +360,9 @@ var filter = {
             "notifyBody": constraints.openTextConstrOptional,
             "appName": constraints.ExcludeSpecialCharactersOptional,
             "authKey": constraints.ExcludeSpecialCharactersOptional,
-            "contentId": constraints.ExcludeSpecialCharactersOptional,
+            "contentId": {
+                "length": { "minimum": 0, "maximum": 1024 }
+            },
         }
     }, {
         "path": "/EWSListener",

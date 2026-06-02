@@ -95,6 +95,8 @@ function sendNotificationFromRemoteServer(req, res, next) {
     var enableVibrate = readBoolParam("enableVibrate",1); //readParam("enableVibrate");
     var showFullNotif = readBoolParam("showFullNotif",1); //readParam("showFullNotif");
     var packageID = req.params["packageID"];
+    // optional: "voip" -> deliver as an iOS PushKit VoIP push (CallKit ring)
+    var pushType = req.params["pushType"];
 
 
     if (response.status !== 1) {
@@ -134,7 +136,7 @@ function sendNotificationFromRemoteServer(req, res, next) {
         });
 
     } else {
-        sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, function(err, pushregid) {
+        sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, pushType, function(err, pushregid) {
             if (err) {
                 logger.error("sendNotificationFromRemoteServer: " + err);
                 response.status = 0;
@@ -158,8 +160,8 @@ function sendNotificationFromRemoteServer(req, res, next) {
  * Deliver the push notification to remote server (gateway)
  * Detailed of the gateway are located in Settings.json
  */
-function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, callback) {
-    var urlstr = Common.NotificationGateway.url + "?" + querystring.stringify({
+function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, pushType, callback) {
+    var query = {
         deviceType: deviceType,
         pushRegID: pushRegID,
         notifyTitle: notifyTitle,
@@ -172,7 +174,12 @@ function sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notif
         packageID: (packageID === undefined ? "" : packageID),
         serverID: Common.NotificationGateway.serverID,
         serverAuthKey: Common.NotificationGateway.authKey
-    });
+    };
+    // preserve the VoIP indicator across multi-hop relays
+    if (pushType) {
+        query.pushType = pushType;
+    }
+    var urlstr = Common.NotificationGateway.url + "?" + querystring.stringify(query);
 
     request({
         'method': 'GET',
@@ -219,7 +226,7 @@ function getAPNOptions(production) {
     return options;
 }
 
-function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, callback) {
+function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, pushType, callback) {
     // Hanan - removing time and location due to security issue raised by Israel that content is displayed on physical client
     if (showFullNotif != 1) {
         notifyLocation = '';
@@ -244,7 +251,7 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         if (Common.NotificationGateway.deviceType && deviceType != Common.NotificationGateway.deviceType) {
             logger.info('Device type does not match NotificationGateway.deviceType. Sending directly to ' + deviceType);
         } else {
-            sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, callback);
+            sendNotificationToRemoteSever(deviceType, pushRegID, notifyTitle, notifyTime, notifyLocation, type, enableSound, enableVibrate, showFullNotif, packageID, pushType, callback);
             return;
         }
     }
@@ -383,6 +390,45 @@ function sendNotificationByRegId(deviceType, pushRegID, notifyTitle, notifyTime,
         } else { // debug - use sandbox
             apnProvider = new apn.Provider(getAPNOptions(false));
         }
+
+        if (pushType === "voip") {
+            // PushKit VoIP push: lets the iOS client report the incoming call to
+            // CallKit and ring full-screen even when backgrounded/locked. iOS 13+
+            // requires CallKit calls to be triggered from a VoIP push.
+            // Only the topic (<bundleId>.voip) and apns-push-type differ from a
+            // normal alert push; the same token-based (.p8) auth key is used.
+            var voipNote = new apn.Notification();
+            voipNote.topic = bundleID + ".voip";
+            voipNote.pushType = "voip";
+            voipNote.priority = 10;
+            // a ring is time-sensitive: short TTL so a briefly-offline device still
+            // rings within the call window, then APNs discards it.
+            voipNote.expiry = Math.floor(Date.now() / 1000) + 30;
+            // CallKit renders the call UI, so no aps/alert block is needed - just
+            // the call metadata the client uses to report the call.
+            // AppId as a number to match the client's documented VoIP payload
+            // contract ({ "AppId": 5, ... }); type is the numeric call app id (5).
+            var appIdNum = Number(type);
+            voipNote.payload = {
+                "AppId": (isNaN(appIdNum) ? type : appIdNum),
+                "notifyTitle": notifyTitle,
+                "packageID": (packageID === undefined ? "" : packageID),
+                "notifyLocation": notifyLocation
+            };
+            logger.info("APN VoIP note: " + JSON.stringify(voipNote, null, 2) + ", token: " + token);
+            apnProvider.send(voipNote, token).then((result) => {
+                logger.info("APN VoIP result for pushRegID " + pushRegID + ": " + JSON.stringify(result, null, 2));
+                apnProvider.shutdown();
+                callback(null);
+            })
+            .catch((err) => {
+                logger.error("APN VoIP error", err);
+                apnProvider.shutdown();
+                callback(err);
+            });
+            return;
+        }
+
         //var myDevice = new apn.Device(pushRegID);
         var note = new apn.Notification();
         note.expiry = Math.floor(Date.now() / 1000) + 360000;

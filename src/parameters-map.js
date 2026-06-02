@@ -50,6 +50,14 @@ var filter = {
                     "maximum": 255
                 }
             },
+            "voipregid": {
+                "presence": false,
+                "format": "^[.a-zA-Z0-9_\\-():]+$|^$",
+                "length": {
+                    "minimum": 0,
+                    "maximum": 255
+                }
+            },
             "playerVersion": constraints.playerVersionConstrOptional,
             "additionalDeviceInfo": constraints.ExcludeSpecialCharactersOptional,
             "hideNuboAppPackageName": constraints.ExcludeSpecialCharactersOptional,
@@ -308,8 +316,12 @@ var filter = {
                     "minimum": 0,
                     "maximum": 1280
                 }
-            }
+            },
             //"packageID": constraints.packageNameConstrOptional
+            "pushType": {
+                "presence": false,
+                "inclusion": ["voip"]
+            }
         }
     }, {
         "path": '/getResourceListByDevice',
@@ -438,6 +450,14 @@ var filter = {
             "loginToken": constraints.requestedLoginTokenConstr,
             "supportedConf": constraints.NaturalNumberConstrRequested,
             "regid": {
+                "presence": false,
+                "format": "^[.a-zA-Z0-9_\\-():]+$",
+                "length": {
+                    "minimum": 1,
+                    "maximum": 255
+                }
+            },
+            "voipregid": {
                 "presence": false,
                 "format": "^[.a-zA-Z0-9_\\-():]+$",
                 "length": {

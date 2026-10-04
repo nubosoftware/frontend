@@ -636,6 +636,10 @@ function buildServerObject(server,listenOptions) {
         server.put('/api/*', internalRequests.forwardPostRequest);
         server.del('/api/*', internalRequests.forwardPostRequest);
     }
+    // video redirect plugin playback URLs are opened by the native player on client devices
+    // (forwardRequest passes Range headers through and streams 206 responses)
+    server.get('/api/plugin/nubo-video-redirect/v/*', internalRequests.forwardGetRequest);
+    server.head('/api/plugin/nubo-video-redirect/v/*', internalRequests.forwardGetRequest);
     server.get('/client/*', internalRequests.forwardPostRequest);
     server.post('/client/*', internalRequests.forwardPostRequest);
     server.put('/client/*', internalRequests.forwardPostRequest);
